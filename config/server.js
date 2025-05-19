@@ -4,13 +4,14 @@ module.exports = ({ env }) => ({
   app: {
     keys: env.array('APP_KEYS'),
   },
+  url: env('PUBLIC_URL', 'eav-malharro.onrender.com'), // ¡Agrega esta línea!
   webhooks: {
     populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
   },
   settings: {
     allowedHosts: [
       'eav-malharro.onrender.com',
-      // Otros hosts si es necesario, como 'localhost'
+      'localhost', // Opcional: para desarrollo local
     ],
   },
 });
