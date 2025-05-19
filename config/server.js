@@ -4,7 +4,7 @@ module.exports = ({ env }) => ({
   app: {
     keys: env.array('APP_KEYS'),  // Debe estar definido en Render
   },
-  url: env('PUBLIC_URL', 'https://eav-malharro.onrender.com'),  // ¡Con https://!
+  url: env('PUBLIC_URL', 'https://eav-malharro.onrender.com'),
   proxy: true,  // Necesario para Render/Heroku
   settings: {
     allowedHosts: ['eav-malharro.onrender.com'],
