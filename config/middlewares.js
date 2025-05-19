@@ -1,6 +1,12 @@
 module.exports = [
   'strapi::logger',
   'strapi::errors',
+  {
+    name: 'strapi::cors',
+    config: {
+      origin: ['https://eav-malharro.onrender.com'],
+    },
+  },
   'strapi::security',
   'strapi::cors',
   'strapi::poweredBy',
