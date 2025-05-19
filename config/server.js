@@ -1,17 +1,17 @@
 module.exports = ({ env }) => ({
-  host: env('HOST', '0.0.0.0'),  // Necesario para Render
+  host: env('HOST', '0.0.0.0'),
   port: env.int('PORT', 1337),
   app: {
-    keys: env.array('APP_KEYS'),  // Debe estar definido en Render
+    keys: env.array('APP_KEYS'),
   },
-  url: env('PUBLIC_URL', 'localhost:1337'),
-  proxy: true,  // Necesario para Render/Heroku
-  settings: {
+  url: env('PUBLIC_URL', 'https://eav-malharro.onrender.com'),
+  proxy: true,
+  // Configuración correcta de allowedHosts:
+  server: {
     allowedHosts: ['eav-malharro.onrender.com'],
-    trustProxy: true,  // Clave para proxies como Render
   },
-    admin: {
-    url: '/admin',  // Ruta base del panel admin
-    serveAdminPanel: true,  // Asegúrate de que Strapi sirva el panel
+  admin: {
+    url: '/admin',
+    serveAdminPanel: true,
   },
 });
