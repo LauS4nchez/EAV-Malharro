@@ -10,11 +10,9 @@ module.exports = ({ env }) => ({
       salt: 'DtY7TOZweR',
     },
   },
-  config: {
-    // Desactiva la protección contra el uso en producción
-    disableNoProductionWarning: true,
-    // Habilita el Content-Type Builder
-    enable: true,
+  features: {
+    enable: true, // Habilita el builder
+    disableNoProductionWarning: true, // Ignora la advertencia de producción
   },
   flags: {
     nps: env.bool('FLAG_NPS', true),
