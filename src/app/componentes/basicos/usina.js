@@ -6,8 +6,7 @@ const STRAPI_URL = "https://proyectomalharro.onrender.com";
 async function getUsinas() {
   try {
     const res = await fetch(
-      `${STRAPI_URL}/api/usinas?populate=imagen`,
-      { cache: "no-store" }
+      `${STRAPI_URL}/api/usinas?populate=imagen`
     );
     if (!res.ok) {
       console.error("Error en fetch:", res.statusText);

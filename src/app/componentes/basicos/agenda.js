@@ -4,8 +4,7 @@ const STRAPI_URL = "https://proyectomalharro.onrender.com";
 async function getAgendas() {
   try {
     const res = await fetch(
-      `${STRAPI_URL}/api/agendas?populate=imagen`,
-      { cache: "no-store" }
+      `${STRAPI_URL}/api/agendas?populate=imagen`
     );
     if (!res.ok) {
       console.error("Error en fetch:", res.statusText);

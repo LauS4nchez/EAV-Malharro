@@ -1,9 +1,7 @@
 // Se buscan todos los links 
 export async function getLink() {
   try {
-    const res = await fetch('https://proyectomalharro.onrender.com/api/links', {
-      cache: 'no-store',
-    });
+    const res = await fetch('https://proyectomalharro.onrender.com/api/links');
     
     if (!res.ok) {
       console.error('Error en fetch:', res.statusText);
