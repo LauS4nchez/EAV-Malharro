@@ -1,0 +1,83 @@
+*{
+    color: black;
+}
+/* Estilos texto */
+
+.texto{
+  text-align: center;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.texto-error{
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+    color: brown;
+}
+
+/* Estilos documentos */
+
+.documento{
+    text-align: center;
+    line-height: 2;
+}
+
+.documento-boton{
+    
+      display: block;
+  text-align: center;
+  margin: 5px 0;
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+/* Estilos links */
+
+.links{
+      display: block;
+  text-align: center;
+  margin: 5px 0;
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.links-boton{
+    color: #0060d1;
+}
+
+/* Estilos imagenes */
+
+.imagen{
+  width: 300px;
+  border-radius: 12px;
+  margin: auto;
+  margin: 10px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.homeImagen{
+    margin: auto;
+    text-align: center;
+}
+
+/* Estilos usina*/
+
+.usina-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.usina-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.usina-card a {
+  color: #0070f3;
+  text-decoration: none;
+}
