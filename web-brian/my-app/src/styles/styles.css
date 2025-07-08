@@ -1,0 +1,100 @@
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: white;
+}
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+h1{font-size: 88px;}
+h2{font-size: 40px;}
+h3{font-size: 24px;}
+h4{font-size: 20px; font-weight: 300;}
+
+.header{
+  height: 100px;
+  display: flex;
+  background-color: #c7005a;
+  align-items: center;
+}
+
+.logo{
+  width: 110px;
+  height: 55px;
+  margin-left: 50px;
+}
+
+.head{
+  display: flex;
+  margin: auto;
+  margin-right: 50px;
+  gap: 10px;
+}
+
+.head h4{
+  margin-top: 14px;
+}
+
+.head h4:hover{
+  cursor: pointer;
+}
+
+.login{
+  background-color: #171717;
+  border: none;
+  width: 160px;
+  height: 50px;
+  border-radius: 15px;
+}
+
+.login:hover{
+  background-color: #373737;
+  cursor: pointer;
+  transition-duration: 0,4s;
+}
+
+.login h4{
+  margin-top: 0px;
+}
+
+.register{
+  background-color: #f7d702;
+  border: none;
+  width: 160px;
+  height: 50px;
+  border-radius: 15px;
+}
+
+.register h4{
+  color: black;
+  margin-top: 0px;
+}
+
+.register:hover{
+  background-color: #f9e24b;
+  cursor: pointer;
+  transition-duration: 0,4s;
+}
+
+.title{
+  background-color: #1f1f1f;
+  height: 100px;
+  text-align: center;
+  align-items: center;
+  padding-top: 15px;
+}
+
+.texto{
+  margin: -15px 40px;
+  background-color: #1f1f1f;
+}
+
+.texto-container{
+  background-color: #1f1f1f;
+}
