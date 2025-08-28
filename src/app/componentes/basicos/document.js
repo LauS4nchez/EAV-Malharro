@@ -1,8 +1,8 @@
+import { API_URL } from "@/app/config";
+
 export default async function Document() {
   // Se extraen todos los documentos
-  const res = await fetch('https://proyectomalharro.onrender.com/api/documentos?populate=archivo', {
-    cache: 'no-store',
-  });
+  const res = await fetch(`${API_URL}/documentos?populate=archivo`);
 
   const { data: documentos } = await res.json();
 

@@ -1,30 +1,32 @@
 'use client'
+
 import { useState, useEffect } from 'react';
 import { getImagenbyImagenID } from "./imagenByID";
 
-export const Imagen = ({ ImagenID }) => {
+// Componente que muestra una imagen basada en un ID recibido por props
+export const Imagen = ({ ImagenID, className }) => {
     const [urlImagen, setUrlImagen] = useState('');
-    const [status, setStatus] = useState('idle'); // 'idle'|'loading'|'success'|'error'
+    const [status, setStatus] = useState('idle'); // Maneja el estado de carga de la imagen
 
     useEffect(() => {
         if (!ImagenID) {
-            setStatus('error');
+            setStatus('error'); // Si no hay ID, marcar como error
             return;
         }
 
         const fetchData = async () => {
-            setStatus('loading');
+            setStatus('loading'); // Inicia la carga
             try {
-                const result = await getImagenbyImagenID(ImagenID);
+                const result = await getImagenbyImagenID(ImagenID); // Llama a la API con el ID
                 if (result) {
-                    setUrlImagen(result);
+                    setUrlImagen(result); // Guarda la URL si existe
                     setStatus('success');
                 } else {
-                    setStatus('error');
+                    setStatus('error'); // Si no hay resultado, marca error
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                setStatus('error');
+                setStatus('error'); // Captura errores de red o API
             }
         };
 
@@ -35,12 +37,15 @@ export const Imagen = ({ ImagenID }) => {
     if (status === 'error') return <p className="text">No se encontró la imagen</p>;
 
     return (
-        <div className="relative w-full">
-            <img 
-                src={`${urlImagen}`}
-                className="object-cover rounded"
-                sizes="(max-width: 768px) 100vw, 50vw"
-            />
+        <div className={`relative ${className}`}>
+            {urlImagen ? (
+                <img 
+                    src={urlImagen}
+                    alt="..."
+                    className="w-full h-auto"
+                    sizes="(max-width: 768px) 40vw, 180px"
+                />
+            ) : null}
         </div>
     );
 };

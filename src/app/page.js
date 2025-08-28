@@ -1,91 +1,82 @@
-
 import UsinaProtegida from "./componentes/crearComponentes/usinaProtegida";
-import Document from './componentes/basicos/document';
-import { Texto } from './componentes/basicos/texto/text';
-import Links from './componentes/basicos/link';
+import Acordeon from "./componentes/basicos/acordeon/acordeon";
 import { Imagen } from './componentes/basicos/imagen/imagen';
-import Carrusel from './componentes/carrusel';
-import Usina from './componentes/basicos/usina';
+import Carrusel from './componentes/basicos/carrusel';
 import Agenda from './componentes/basicos/agenda';
 import Link from 'next/link';
-import "./componentes/componentes-styles.css";
-import "./styles.css";
+import Usina from "./componentes/basicos/usina";
+import "@/styles/componentes-styles.css";
+import "@/styles/styles.css";
+import { UserMenu } from "./componentes/basicos/userMenu";
+import { Texto } from "./componentes/basicos/texto/text";
 
 export default function Page() {
-  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
-
   return (
     <div className="home">
-      <div className='container'>
-        <div className="title-container">
-          <p className="title-text">Presentación Avances Malharro</p>      
-        </div>
+      {/* Header con navegación */}
+      <div className="header">
+        <Imagen ImagenID="logo" className="logo" />
 
-        <div className="components-row">
-          <section className="container-components">
-            <Texto 
-              textoID="eav-malharro"
-            />
-            <Texto 
-              textoID="ejemplo-1"
-            />
-            <Texto 
-              textoID="ejemplo-2"
-            />
-          </section>
-        </div>
+        <nav className="nav-links">
+          <a href="#agenda">Agenda</a>
+          <a href="#usina">Usina</a>
+          <a href="#carreras">Carreras</a>
+        </nav>
 
-        <div className="components-row">
-          <section className="container-components">
-            <Document />
-          </section>
-        </div>
-
-        <div className="components-row">
-          <section className="container-components">
-            <Links />
-          </section>
-        </div>
-
-        <div className="components-row">
-          <section className="container-components">
-            <Imagen 
-              ImagenID="imagen-chanchos"
-            />
-
-            <Imagen 
-              ImagenID="imagen-chancho2"
-            />
-          </section>
-        </div>
-
-        <section>
-          <Carrusel />
-        </section>
-
-        <section>
-          <h2 className="title">Usina</h2>
-          <Usina />
-        </section>
-
-        <section>
-          <h2 className="title">Agenda</h2>
-          <Agenda />
-        </section>
-
-        <section className="auth-buttons-container">
+        <div className="head">
           <Link href="/login/">
-            <button className="auth-button login-button">Inciar Sesión</button>
+            <button className="login">
+              <h4>Iniciar Sesión</h4>
+            </button>
           </Link>
 
           <Link href="/registrar/">
-            <button className="auth-button register-button">Registrarse</button>
+            <button className="register">
+              <h4>Registrarse</h4>
+            </button>
           </Link>
-        </section>
+        </div>
+      </div>
 
-        <section>
-          <UsinaProtegida/>
-        </section>
+      <div className="carrusel-container">
+        <Carrusel />
+      </div>
+
+      <UserMenu />
+
+      <div className="textos-row">
+        <div className="texto-contenedor">
+          <Texto textoID="texto-introduccion" />
+        </div>
+        <div className="texto-contenedor">
+          <Texto textoID="texto-introduccion2" />
+        </div>
+      </div>
+
+      <div className="texto-container">
+        <div className="title">
+          <h2 id="carreras">Nuestras Carreras</h2>
+        </div>
+        <Acordeon acordeonID="carreras" />
+      </div>
+
+      <div className="agenda">
+        <div className="title-container">
+          <div className="title">
+            <h2 id="agenda">Agenda</h2>
+          </div>
+        </div>
+        <Agenda />
+      </div>
+
+      <div className="usina">
+        <div className="title-container">
+          <div className="title">
+            <h2 id="usina">Usina</h2>
+          </div>
+        </div>
+        <Usina />
+        <UsinaProtegida />
       </div>
     </div>
   );

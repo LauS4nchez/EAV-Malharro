@@ -1,13 +1,9 @@
-
-import "../componentes-styles.css";
-
-const STRAPI_URL = "https://proyectomalharro.onrender.com";
+import { API_URL } from "@/app/config";
 
 async function getUsinas() {
   try {
-    const res = await fetch(
-      `${STRAPI_URL}/api/usinas?populate=imagen`
-    );
+    const res = await fetch(`${API_URL}/usinas?populate=imagen`);
+    
     if (!res.ok) {
       console.error("Error en fetch:", res.statusText);
       return [];
@@ -24,30 +20,27 @@ export default async function Usina() {
   const usinas = await getUsinas();
 
   return (
-    <div>
+    <div className="usina-container">
       {usinas.length === 0 ? (
         <p>No hay datos disponibles.</p>
       ) : (
         usinas.map((item) => {
           const { id, nombre, carrera, link, imagen } = item;
-          const imageData = imagen?.data?.attributes;
-          const imageUrl = imagen.formats.thumbnail.url;
-          const altText = imageData?.alternativeText || nombre;
+          const imageUrl = imagen?.url ?? '';
 
           return (
-            <div key={id} className="usina-card">
-              <h2>{nombre}</h2>
-              {imageUrl && (
-                <img
-                  src={`${imageUrl}`}
-                  alt={altText}
-                  className="imagen"
-                />
-              )}
-              <p>Carrera: {carrera}</p>
-              <a href={link} target="_blank" rel="noopener noreferrer">
-                Ver perfil
-              </a>
+            <div key={id} className="usina-card" style={{
+                  backgroundImage: `url(${imageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}>
+              <div className="usina-contenido">
+                <h2>{nombre}</h2>
+                <p>Carrera: {carrera}</p>
+                <a href={link} target="_blank" rel="noopener noreferrer">
+                Ver contacto
+                </a>
+              </div>
             </div>
           );
         })

@@ -1,28 +1,21 @@
-"use client"; // Indica que este es un componente de cliente en Next.js 13+
+"use client";
 import { useState } from "react";
 import Link from "next/link";
-
-// URL base de la API de Strapi (backend)
-const STRAPI_URL = "https://proyectomalharro.onrender.com";
+import { API_URL } from "@/app/config";
+import LoginWithGoogle from "./loginWithGoogle";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  // Estados del componente
-  const [identifier, setIdentifier] = useState(""); // Email o nombre de usuario
-  const [password, setPassword] = useState(""); // Contraseña del usuario
-  const [user, setUser] = useState(null); // Datos del usuario después del login exitoso
-  const [error, setError] = useState(""); // Mensajes de error
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  /**
-   * Maneja el envío del formulario de login
-   * @param {Event} e - Evento del formulario
-   */
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
-      // Request a la API de autenticación de Strapi
-      const res = await fetch(`${STRAPI_URL}/api/auth/local`, {
+      const res = await fetch(`${API_URL}/auth/local`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password }),
@@ -32,63 +25,53 @@ export default function LoginPage() {
 
       if (!res.ok) throw new Error(data?.error?.message || "Login inválido");
 
-      // Si la autenticación es exitosa:
-      setUser(data.user); // Guarda datos del usuario en estado
-      localStorage.setItem("jwt", data.jwt); // Almacena token para futuras requests
+      localStorage.setItem("jwt", data.jwt);
+      toast.success(`Bienvenido, ${data.user.username}!`);
+      router.push("/"); // 🔹 redirige al inicio
     } catch (err) {
-      setError(err.message); // Muestra errores al usuario
+      toast.error(err.message);
     }
   };
 
   return (
-    <div className="login">
-      <div className="form-container">
-        <h2 className="title-text">Iniciar sesión</h2>
-        
-        {/* Formulario de login */}
+    <div className="body-inicio-sesion">
+      <div className="form-inicio-sesion">
+        <h2 className="title-inicio-sesion">Iniciar sesión</h2>
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label className="block form-label">Email o usuario</label>
             <input
               type="text"
+              placeholder="Email o usuario"
               className="form-input"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </div>
-          
           <div className="form-group">
             <label className="block form-label">Contraseña</label>
             <input
               type="password"
+              placeholder="Contraseña"
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          
-          <button className="form-button" type="submit">
-            Ingresar
-          </button>
+          <button className="form-button">Ingresar</button>
         </form>
-
-        {/* Botón de navegación */}
         <div className="buttons-container">
+          <LoginWithGoogle mode="login" />
+          <Link href="/registrar/">
+            <button className="return-button">Registrarse</button>
+          </Link>
           <Link href="/">
             <button className="return-button">Volver</button>
           </Link>
         </div>
-
-        {/* Feedback para el usuario */}
-        {error && <p className="error-message">{error}</p>}
-        {user && (
-          <p className="text-green-600 mt-4">
-            Bienvenido, {user.username || user.email}
-          </p>
-        )}
       </div>
-    </div>  
+    </div>
   );
 }

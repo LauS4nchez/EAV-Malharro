@@ -1,22 +1,46 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { API_URL } from "@/app/config";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
-
-const API_URL = "https://proyectomalharro.onrender.com"; // Endpoint de la API Strapi
+import LoginWithGoogle from "./loginWithGoogle";
 
 export default function Register() {
-  // Estados para el formulario
-  const [username, setUsername] = useState(""); // Nombre de usuario
-  const [email, setEmail] = useState(""); // Email del usuario
-  const [password, setPassword] = useState(""); // Contraseña
-  const [mensaje, setMensaje] = useState(""); // Mensajes de feedback
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  // Registra un nuevo usuario en Strapi
+  // --- VALIDACIONES ---
+  const validateEmail = (email) => /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+
+  const validateUsername = (username) => /^[a-zA-Z][a-zA-Z0-9._]{2,19}$/.test(username);
+
+  const validatePassword = (password) => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password);
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if (!validateUsername(username)) {
+      toast.error(
+        "Su usuario es inválido, escriba uno de 3-20 caracteres, que inicie con una letra y solo contenga letras, números, '.' o '_'."
+      );
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      toast.error("Su correo electrónico es inválido, ingrese otro.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      toast.error("Su contraseña es inválida use como mínimo 6 caracteres, al menos una letra y un número.");
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/api/auth/local/register`, {
+      const res = await fetch(`${API_URL}/auth/local/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
@@ -25,75 +49,77 @@ export default function Register() {
       const data = await res.json();
 
       if (res.ok) {
-        setMensaje("Registro exitoso. Ahora puedes iniciar sesión.");
-        // Limpia el formulario después de registro exitoso
-        setUsername("");
-        setEmail("");
-        setPassword("");
+        // login automático y redirección
+        localStorage.setItem("jwt", data.jwt);
+        router.push("/"); 
       } else {
-        setMensaje(data?.error?.message || "Error en el registro.");
+        toast.error(data?.error?.message || "Error en el registro.");
       }
     } catch (error) {
-      setMensaje("Hubo un error en el registro.");
       console.error("Error:", error);
+      toast.error("Hubo un error en el registro.");
     }
   };
 
   return (
-    <div className="register">
-      <div className="form-container">
-        <h2 className="title-text">Registrate!</h2>
-        
+    <div className="body-register">
+      <div className="form-register">
+        <h2 className="title-register">Registrarse</h2>
+
         <form onSubmit={handleRegister}>
-          {/* Campo nombre de usuario */}
           <div className="form-group">
             <label className="form-label">Nombre de Usuario</label>
             <input
               type="text"
+              placeholder="Nombre de usuario"
+              className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="form-input"
               required
             />
           </div>
 
-          {/* Campo email */}
           <div className="form-group">
             <label className="form-label">Correo Electrónico</label>
             <input
               type="email"
+              placeholder="Correo electrónico"
+              className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
               required
             />
           </div>
 
-          {/* Campo contraseña */}
           <div className="form-group">
             <label className="form-label">Contraseña</label>
             <input
               type="password"
+              placeholder="Contraseña"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
               required
             />
           </div>
 
-          <button type="submit" className="form-button">
+          <button type="submit" className="form-button-register">
             Registrarse
           </button>
         </form>
 
-        {/* Navegación y feedback */}
+        <div className="buttons-container" style={{ marginTop: 12 }}>
+          <LoginWithGoogle mode="register" />
+        </div>
+
         <div className="buttons-container">
+          <Link href="/login/">
+            <button className="return-button-register">Iniciar Sesion</button>
+          </Link>
           <Link href="/">
-            <button className="return-button">Volver</button>
+            <button className="return-button-register">Volver</button>
           </Link>
         </div>
-        
-        {mensaje && <p className="error-message">{mensaje}</p>}
       </div>
     </div>
   );

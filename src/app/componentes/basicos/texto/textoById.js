@@ -1,19 +1,21 @@
+import { API_URL } from "@/app/config";
+
+// Función que obtiene un texto desde la API a partir de su textoID
 export async function getTextoByTextoId(textoID) {
   try {
-    // Busca el componente que contenga la ID
-    const response = await fetch(`https://proyectomalharro.onrender.com/api/textos?filters[textoID][$eq]=${(textoID)}`);
+    // Realiza una consulta con filtro por textoID, incluyendo relaciones
+    const res = await fetch(`${API_URL}/textos?filters[textoID][$eq]=${textoID}&populate=*`);
     
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+    if (!res.ok) {
+      throw new Error(`Error HTTP: ${res.status}`);
     }
-    
-    const { data } = await response.json();
 
-    // Returna solo el texto, no un json
-    return data[0]?.texto || null;
-    
-  } catch (error) {
-    console.error('Error al obtener texto:', error);
+    const { data } = await res.json();
+
+    // Devuelve el contenido del primer resultado si existe
+    return data[0]?.contenido || null;
+  } catch (err) {
+    console.error("Error al obtener texto:", err);
     return null;
   }
 }
