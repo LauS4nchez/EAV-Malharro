@@ -81,3 +81,5 @@ export default function Page() {
     </div>
   );
 }
+
+// Developed by Lautaro Sánchez Bonaldo y Brian Sánchez
