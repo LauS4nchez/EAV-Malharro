@@ -39,4 +39,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Documentación para la integración de contenidos
 
-Para obtener una mayor explicación sobre la funcionalidad de la página y como integrar distintos contenidos, revisé la siguiente documentación: https://docs.google.com/document/d/16Df_NboE0k0XzKO7Gy5u97fF2xXrB4aCAzmmkSbcTgk/edit?usp=sharing
+Para obtener una mayor explicación sobre la funcionalidad de la página y como integrar distintos contenidos, revise la siguiente documentación: https://docs.google.com/document/d/16Df_NboE0k0XzKO7Gy5u97fF2xXrB4aCAzmmkSbcTgk/edit?usp=sharing
