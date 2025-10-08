@@ -1,0 +1,30 @@
+/* src/styles/globals.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: white;
+}
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --color-primary: #c5005a;
+  --color-secondary: #ffef0f;
+  --color-dark: #1f1f1f;
+  --color-dark-bg: #171516;
+  --color-red: #e6342e;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+h1{font-size: 88px;}
+h2{font-size: 40px; font-weight: 300;}
+h3{font-size: 24px; font-weight: 400;}
+h4{font-size: 20px; font-weight: 300;}
+
+/* Reset de colores - se aplicarán en cada módulo */
+h1, h2, h3, h4, p {
+  color: inherit;
+}

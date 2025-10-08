@@ -1,0 +1,135 @@
+/* src/styles/components/TextComponents.module.css */
+
+.texto {
+  text-align: center;
+  color: #444;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  margin: -15px 40px;
+  background-color: #1f1f1f;
+}
+
+.textoContainer {
+  background-color: #1f1f1f;
+  margin-top: 2rem;
+}
+
+.textoRegular {
+  font-size: 1.5em;
+  color: black;
+}
+
+.textoNegrita {
+  font-weight: bold;
+  color: #000000;
+}
+
+.textoContenedor {
+  width: 100%;
+  max-width: 400px;
+  flex: 1 1 300px;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.acordeonContainer {
+  background-color: #1b1b1b;
+}
+
+.textosRow {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.textoItem {
+  background-color: #6457d9;
+  text-align: left;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  margin-left: -50px;
+  margin-right: -50px;
+}
+
+.textoError {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 20px;
+  color: brown;
+  text-align: center;
+  padding: 1rem;
+}
+
+.textoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px 25px 40px;
+  cursor: pointer;
+}
+
+.textoContenido {
+  padding: 20px 40px;
+  padding-top: 0px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.textoContenidoAbierto {
+  max-height: 500px;
+  padding: 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+  background-color: transparent;
+  border-radius: 0 0 8px 8px;
+}
+
+.textoContenidoCerrado {
+  max-height: 0;
+  padding: 0 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.botonTexto {
+  border-radius: 30px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  margin-right: 25px;
+  align-items: center;
+  padding: 13px;
+  box-shadow: 1px 12px 22px 0px rgba(0, 0, 0, 0.75);
+  background-color: inherit;
+  border: none;
+  cursor: pointer;
+  justify-content: center;
+}
+
+/* Estados de carga */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #d32f2f;
+  font-size: 1.1rem;
+  background-color: #ffebee;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
+}

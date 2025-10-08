@@ -2,45 +2,42 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { API_URL } from "@/app/config";
-import Slider from 'react-slick'; // Librería para carruseles
-import ReactMarkdown from 'react-markdown'; // Para renderizar texto con formato Markdown
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa'; // Íconos de flechas
+import Slider from 'react-slick';
+import ReactMarkdown from 'react-markdown';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import styles from "@/styles/components/Agenda.module.css";
 
-// Componente de flecha izquierda personalizada
 const PrevArrow = ({ onClick }) => (
-  <button className="custom-arrow prev-arrow" onClick={onClick}>
+  <button className={`${styles.customArrow} ${styles.prevArrow}`} onClick={onClick}>
     <FaArrowLeft />
   </button>
 );
 
-// Componente de flecha derecha personalizada
 const NextArrow = ({ onClick }) => (
-  <button className="custom-arrow next-arrow" onClick={onClick}>
+  <button className={`${styles.customArrow} ${styles.nextArrow}`} onClick={onClick}>
     <FaArrowRight />
   </button>
 );
 
 export default function Agenda() {
-  const sliderRef = useRef(null); // Referencia al componente Slider
-  const [agendas, setAgendas] = useState([]); // Lista de eventos o actividades
+  const sliderRef = useRef(null);
+  const [agendas, setAgendas] = useState([]);
 
-  // Efecto que carga los datos de la API al montar el componente
   useEffect(() => {
     async function fetchAgendas() {
       try {
-        // Llama a la API de agendas incluyendo las imágenes
         const res = await fetch(`${API_URL}/agendas?populate=imagen`, {
-          cache: "no-store", // Evita usar caché (siempre solicita datos nuevos)
+          cache: "no-store",
         });
         if (!res.ok) {
           console.error("Error en fetch:", res.statusText);
           return;
         }
 
-        const { data } = await res.json(); // Extrae los datos del JSON
-        setAgendas(data); // Almacena los datos en el estado
+        const { data } = await res.json();
+        setAgendas(data);
       } catch (err) {
         console.error("Error en getAgendas:", err);
       }
@@ -49,7 +46,6 @@ export default function Agenda() {
     fetchAgendas();
   }, []);
 
-  // Configuración del carrusel
   const settings = {
     dots: false,
     infinite: true,
@@ -69,71 +65,64 @@ export default function Agenda() {
       {
         breakpoint: 1200,
         settings: {
-          slidesToShow: 2, // En pantallas medianas muestra 2
+          slidesToShow: 2,
         },
       },
       {
         breakpoint: 900,
         settings: {
-          slidesToShow: 1, // En pantallas pequeñas muestra 1
+          slidesToShow: 1,
         },
       },
     ],
   };
 
   return (
-    <div className="agenda-wrapper">
-      {/* Si no hay datos disponibles, muestra un mensaje */}
+    <div className={styles.agendaWrapper}>
       {agendas.length === 0 ? (
         <p>No hay datos disponibles.</p>
       ) : (
-        // Muestra el carrusel de agendas con sus datos
         <Slider ref={sliderRef} {...settings}>
           {agendas.map((item) => {
             const { id, tituloActividad, contenidoActividad, fecha, imagen } = item;
             const imageUrl = imagen.url;
 
             return (
-              <div key={id} className="agenda-container">
-                <div className="agenda-card">
-                  {/* Imagen principal del evento */}
+              <div key={id} className={styles.agendaContainer}>
+                <div className={styles.agendaCard}>
                   {imageUrl && (
                     <img
                       src={imageUrl}
                       alt="Imagen del evento"
-                      className="imagen-agenda"
+                      className={styles.imagenAgenda}
                     />
                   )}
 
-                  {/* Información visible siempre */}
-                  <div className="agenda-contenido">
-                    <div className="fecha">
+                  <div className={styles.agendaContenido}>
+                    <div className={styles.fecha}>
                       <p>{fecha}</p>
                     </div>
-                    {/* Título renderizado como markdown */}
                     <ReactMarkdown
                       components={{
-                        p: ({ node, ...props }) => <p className="texto-regular" {...props} />,
-                        strong: ({ node, ...props }) => <strong className="texto-negrita" {...props} />
+                        p: ({ node, ...props }) => <p className={styles.textoRegular} {...props} />,
+                        strong: ({ node, ...props }) => <strong className={styles.textoNegrita} {...props} />
                       }}
                     >
                       {tituloActividad}
                     </ReactMarkdown>
                   </div>
 
-                  {/* Información que aparece al pasar el mouse */}
-                  <div className="agenda-contenido-hover">
+                  <div className={styles.agendaContenidoHover}>
                     <ReactMarkdown
                       components={{
-                        p: ({ node, ...props }) => <p className="texto-regular" {...props} />,
-                        strong: ({ node, ...props }) => <strong className="texto-negrita" {...props} />
+                        p: ({ node, ...props }) => <p className={styles.textoRegular} {...props} />,
+                        strong: ({ node, ...props }) => <strong className={styles.textoNegrita} {...props} />
                       }}
                     >
                       {tituloActividad}
                     </ReactMarkdown>
 
-                    {/* Texto adicional del evento */}
-                    <div className="texto-contenido-actividad">
+                    <div className={styles.textoContenidoActividad}>
                       <p>{contenidoActividad}</p>
                     </div>
                   </div>

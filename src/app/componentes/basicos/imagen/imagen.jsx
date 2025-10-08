@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getImagenbyImagenID } from "./imagenByID";
 
 // Componente que muestra una imagen basada en un ID recibido por props
-export const Imagen = ({ ImagenID, className }) => {
+export const Imagen = ({ ImagenID }) => {
     const [urlImagen, setUrlImagen] = useState('');
     const [status, setStatus] = useState('idle'); // Maneja el estado de carga de la imagen
 
@@ -37,7 +37,7 @@ export const Imagen = ({ ImagenID, className }) => {
     if (status === 'error') return <p className="text">No se encontró la imagen</p>;
 
     return (
-        <div className={`relative ${className}`}>
+        <div className={`relative`}>
             {urlImagen ? (
                 <img 
                     src={urlImagen}

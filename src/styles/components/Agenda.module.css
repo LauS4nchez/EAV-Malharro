@@ -1,0 +1,136 @@
+.agendaWrapper {
+  max-width: 1500px;
+  margin: 0 auto;
+  position: relative;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+.customArrow {
+  text-align: center;
+  display: flex;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #c7005a;
+  border: none;
+  border-radius: 50%;
+  padding: 0.5rem;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.prevArrow {
+  left: 10px;
+}
+
+.nextArrow {
+  right: 10px;
+}
+
+.imagenAgenda {
+  width: 350px;
+  height: 330px;
+  object-fit: cover;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.agendaContainer {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.agendaContenido {
+  width: 350px;
+  height: 150px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  display: flex;
+  background-color: #c7005a;
+  align-items: center;
+}
+
+.agendaContenido p {
+  font-size: 25px;
+  margin-right: 15px;
+  color: white;
+}
+
+/* ESTILOS GLOBALES PARA REACT-SLICK */
+.agendaWrapper :global(.slick-slide) {
+  transition: all 0.3s ease;
+  opacity: 0.4;
+  transform: scale(0.95);
+  filter: grayscale(100%) brightness(80%);
+}
+
+.agendaWrapper :global(.slick-center) {
+  opacity: 1;
+  transform: scale(1);
+  filter: none;
+  z-index: 2;
+}
+
+.fecha {
+  margin-left: 20px;
+  margin-right: 15px;
+  font-size: 30px;
+  border-right: solid 3px;
+  height: 80px;
+  padding-right: 20px;
+  color: white;
+}
+
+.fecha p {
+  margin-top: 10px;
+  color: white;
+}
+
+.agendaCard {
+  border-radius: 15px;
+  box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
+}
+
+.agendaContenidoHover {
+  display: none;
+}
+
+.agendaCard:hover .imagenAgenda {
+  height: 230px;
+  transition: all 0.3s ease;
+}
+
+.agendaCard:hover .agendaContenido {
+  display: none;
+}
+
+.agendaCard:hover .agendaContenidoHover {
+  display: block;
+  width: 350px;
+  height: 250px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  transition: all 0.3s ease;
+  background-color: #f2f2f2;
+  padding: 22px;
+}
+
+.agendaCard:hover .agendaContenidoHover .textoRegular {
+  color: black;
+}
+
+.agendaCard:hover .agendaContenidoHover .textoNegrita {
+  color: black;
+}
+
+.textoContenidoActividad p {
+  color: black;
+  font-size: 20px;
+}

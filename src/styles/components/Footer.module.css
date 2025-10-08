@@ -1,0 +1,14 @@
+/* src/styles/components/Footer.module.css */
+.footer {
+  height: 100px;
+  display: flex;
+  background-color: var(--color-primary);
+  align-items: center;
+  margin-top: 100px;
+}
+
+.footer h2 {
+  display: flex;
+  margin: auto;
+  color: white;
+}
