@@ -9,6 +9,12 @@
   padding-top: 20px;
 }
 
+.titleAgenda {
+  text-align: center;
+  align-items: center;
+  color: black;
+}
+
 .agenda {
   /* Sección agenda */
   margin-top: 2rem;
@@ -24,6 +30,11 @@
   height: 640px;
   margin: 0 auto; 
   position: relative;
+}
+
+.agendaSection {
+  position: relative;
+  z-index: 3;
 }
 
 /* Tamaños de fuente base */

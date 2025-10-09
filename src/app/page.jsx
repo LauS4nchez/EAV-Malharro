@@ -35,22 +35,17 @@ export default function Page() {
       {/* SECCIÓN CARRERAS CON CONTENEDOR CIRCULAR */}
       <CircularContainer title="Nuestras Carreras">
         <Acordeon acordeonID="carreras" />
-          <div className={styles.title}>
-            <h2 id="agenda">Agenda</h2>
-          </div>
       </CircularContainer>
-      
-      <Agenda />
 
-      <div className={styles.usina}>
-        <div className={styles.titleContainer}>
-          <div className={styles.title}>
-            <h2 id="usina">Usina</h2>
-          </div>
-        </div>
-        <Usina />
-        <UsinaProtegida />
+      <div className={styles.titleAgenda}>
+        <h2 id="agenda">Agenda</h2>
       </div>
+      <div className={styles.agendaSection}>
+        <Agenda />
+      </div>
+
+      <Usina />
+      <UsinaProtegida />
     </div>
   );
 }

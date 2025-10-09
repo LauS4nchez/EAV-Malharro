@@ -133,3 +133,40 @@
   border-radius: 8px;
   border: 1px solid #ffcdd2;
 }
+
+.flechaIcono {
+  transition: transform 0.3s ease;
+}
+
+.flechaAbierta {
+  transform: rotate(180deg);
+}
+
+.contenidoInterno {
+  padding: 1rem 0;
+}
+
+/* Estilos para el botón "Saber más" */
+.saberMasBtn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.saberMasBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Asegúrate de que el botón de texto tenga un fondo transparente */
+.botonTexto {
+  background-color: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

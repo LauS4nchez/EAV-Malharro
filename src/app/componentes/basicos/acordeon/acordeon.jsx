@@ -6,8 +6,8 @@ import { API_URL } from '@/app/config';
 import styles from "@/styles/components/TextComponents.module.css";
 
 export default function Acordeon({ acordeonID }) {
-  const [labels, setLabels] = useState([]); // Almacena los ítems del acordeón
-  const [activo, setActivo] = useState(null); // ID del ítem actualmente desplegado
+  const [labels, setLabels] = useState([]);
+  const [activo, setActivo] = useState(null);
 
   useEffect(() => {
     if (!acordeonID) {
@@ -15,12 +15,11 @@ export default function Acordeon({ acordeonID }) {
       return;
     }
 
-    // Función asíncrona que obtiene los datos del acordeón desde la API
     const fetchData = async () => {
       try {
         const result = await getAcordeonByAcordeonID(acordeonID);
         if (result) {
-          setLabels(result); // Guarda los datos en el estado
+          setLabels(result);
         } else {
           console.log('Error en el fetch de acordeones');
         }
@@ -29,13 +28,29 @@ export default function Acordeon({ acordeonID }) {
       }
     };
 
-    fetchData(); // Ejecuta la función al cargar el componente
+    fetchData();
   }, [acordeonID]);
 
-  // Cambia el ítem abierto/cerrado al hacer click
   const toggle = (id) => {
     setActivo(activo === id ? null : id);
   };
+
+  // SVG para la flecha (puedes personalizar el color y tamaño)
+  const FlechaIcono = ({ abierto }) => (
+    <svg 
+      width="20" 
+      height="20" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className={`${styles.flechaIcono} ${abierto ? styles.flechaAbierta : ''}`}
+    >
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  );
 
   return (
     <div className={styles.texto}>
@@ -48,23 +63,31 @@ export default function Acordeon({ acordeonID }) {
 
           return (
             <div key={item.id} className={styles.textoItem} style={{ backgroundColor: fondo }}>
-              {/* Cabecera clickeable del acordeón */}
               <div className={styles.textoHeader} onClick={() => toggle(item.id)}>
                 <span><h2>{titulo}</h2></span>
                 <span className={styles.botonTexto} style={{ backgroundColor: fondo }}>
-                  {abierto ? '▲' : '▼'} {/* Flecha indicando abierto o cerrado */}
+                  <FlechaIcono abierto={abierto} />
                 </span>
               </div>
 
-              {/* Contenido mostrado solo si el ítem está abierto */}
-              <div className={`${styles.textoContenido} ${abierto ? styles.textoContenidoAbierto : ''}`}>
-                {abierto && <h3>{contenido}</h3>}
+              {/* Contenido con animación mejorada */}
+              <div 
+                className={`${styles.textoContenido} ${abierto ? styles.textoContenidoAbierto : styles.textoContenidoCerrado}`}
+              >
+                <div className={styles.contenidoInterno}>
+                  <h3>{contenido}</h3>
+                  {/* Botón "Saber más" solo si acordeonID es "carreras" */}
+                  {acordeonID === 'carreras' && (
+                    <button className={styles.saberMasBtn}>
+                      Saber más
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-      
     </div>
   );
 }
