@@ -7,7 +7,7 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt"); // o donde guardes el JWT
+    const token = localStorage.getItem("jwt");
     if (!token) {
       setLoading(false);
       return;

@@ -11,7 +11,6 @@ import { UserMenu } from "./componentes/basicos/userMenu";
 import { Texto } from "./componentes/basicos/texto/text";
 import styles from "@/styles/components/Common.module.css";
 import textStyles from "@/styles/components/TextComponents.module.css";
-import agendaStyles from "@/styles/components/Agenda.module.css";
 
 export default function Page() {
   return (
@@ -32,7 +31,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* SECCIÓN CARRERAS CON CONTENEDOR CIRCULAR */}
       <CircularContainer title="Nuestras Carreras">
         <Acordeon acordeonID="carreras" />
       </CircularContainer>

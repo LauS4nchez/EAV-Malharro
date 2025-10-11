@@ -1,178 +1,544 @@
-/* src/styles/components/Header.module.css */
+/* components/Header.module.css */
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: transparent;
+  padding: 0.75rem 0;
+}
 
-.header {
+.container {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #c5005a;
+  padding: 0 1rem;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  max-width: 180px;
-  width: 100%;
-  height: auto;
-}
-
-.head {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-left: auto;
-}
-
-.head h4 {
-  margin-top: 14px;
-  color: white;
-}
-
-.head h4:hover {
-  cursor: pointer;
-}
-
-.login, .register {
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.login {
-  background-color: black;
-  color: white;
-}
-
-.login:hover {
-  background-color: #373737;
-  transform: scale(1.05);
-}
-
-.register {
-  background-color: #ffef0f;
-  color: black;
-}
-
-.register:hover {
-  background-color: #f9e24b;
-  transform: scale(1.05);
-}
-
-.navLinks {
-  display: flex;
-  gap: 25px;
-  margin-left: auto;
-}
-
-.navLinks a {
-  text-decoration: none;
-  color: white;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.navLinks a:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-.headerLink {
-  text-decoration: none;
-  color: white;
-  margin-left: 15px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  transition: background-color 0.3s ease;
-}
-
-.headerLink:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-}
-
-.userMenuBtn {
-  background-color: transparent;
-  border: 2px solid black;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.userMenuBtn:hover {
-  background-color: rgba(255, 239, 15, 0.2);
-  transform: scale(1.1);
-}
-
-.userMenuDropdown {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  background-color: #1f1f1f;
-  border: 1px solid #46191b;
-  border-radius: 10px;
-  padding: 15px;
-  min-width: 220px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+/* Logo + Lupa - USANDO COLOR PRIMARY DEL GLOBAL */
+.logoLupaBox {
   z-index: 1001;
 }
 
-.userMenuDropdown p {
-  color: #ffffff;
-  margin: 5px 0;
-  font-weight: 500;
+.logoSearchContainer {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-primary); /* COLOR PRIMARY DEL GLOBAL */
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  width: 148px;
+  height: 48px;
+  justify-content: center;
+  margin-left: 24px;
 }
 
-.userMenuDropdown button {
-  width: 100%;
-  padding: 8px 0;
-  background-color: #e6342e;
-  color: #ffffff;
+.navbarBrand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.logoNav {
+  height: 23px;
+  width: auto;
+}
+
+.searchButton {
+  background: none;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 20px;
+  padding: 0;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
 }
 
-.userMenuDropdown button:hover {
-  background-color: #c72e29;
+.lupaNav {
+  height: 24px;
+  width: auto;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .header {
-    padding: 10px;
-  }
+/* Botón hamburguesa */
+.navbarToggler {
+  background-color: var(--color-primary); /* COLOR PRIMARY DEL GLOBAL */
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  margin-right: 24px;
+}
 
-  .navLinks {
+.navbarTogglerIcon {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: white;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbarTogglerIcon::before,
+.navbarTogglerIcon::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: white;
+  left: 0;
+  transition: all 0.3s ease;
+}
+
+.navbarTogglerIcon::before {
+  top: -6px;
+}
+
+.navbarTogglerIcon::after {
+  top: 6px;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon {
+  background: transparent;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+/* Menú lateral móvil */
+.menuCollapse {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  height: 100vh;
+  width: 80%;
+  max-width: 350px;
+  background-color: var(--color-dark); /* COLOR DARK DEL GLOBAL */
+  box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+  z-index: 1050;
+  padding-top: 10rem;
+  padding-right: 1rem;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(100%);
+}
+
+.menuCollapse.show {
+  transform: translateX(0);
+  right: 0;
+}
+
+.menuBox {
+  padding: 1rem;
+  height: 100%;
+  position: relative;
+}
+
+.closeMenuButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+  display: none;
+}
+
+.menuCollapse.show .closeMenuButton {
+  display: block;
+}
+
+.closeMenuButton img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Navegación */
+.navbarNav {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: right;
+}
+
+/* Items del menú */
+.navItemDropdown {
+  position: relative;
+}
+
+.navLinkDropdown {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  text-align: left;
+  transition: background-color 0.2s;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+.dropdownIcon {
+  height: 1rem;
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.navItemDropdown:focus-within .dropdownIcon,
+.navItemDropdown:hover .dropdownIcon {
+  transform: rotate(180deg);
+}
+
+/* Menús desplegables móvil - FONDO BLANCO Y LETRAS NEGRAS */
+.dropdownMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: white;
+  border-radius: 7px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+  text-align: right;
+  border: none; /* SIN CONTORNO */
+  outline: none; /* SIN OUTLINE */
+}
+
+.navItemDropdown:focus-within .dropdownMenu,
+.navItemDropdown:hover .dropdownMenu {
+  max-height: 500px;
+  opacity: 1;
+  margin: 0.5rem 0;
+}
+
+.dropdownMenu a {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: black; /* LETRAS NEGRAS */
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p5-r);
+  font-weight: var(--peso-regular);
+  border: none;
+}
+
+.dropdownMenu a:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: black; /* MANTENER NEGRO AL HOVER */
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0.5rem 1rem;
+  border: none;
+}
+
+/* Enlaces simples */
+.navItem {
+  border: none;
+}
+
+.navLink {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  border-radius: 7px;
+  white-space: nowrap;
+  border: none;
+}
+
+.navLink:hover,
+.navLinkDropdown:hover {
+  background: none !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: color 0.2s ease;
+}
+
+/* Modal de búsqueda */
+.searchModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.searchModalContent {
+  position: relative;
+  background: transparent;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+}
+
+.closeSearchButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.closeSearchButton img {
+  height: 1.5rem;
+  width: auto;
+}
+
+.searchIconContainer {
+  display: flex;
+  justify-content: center;
+  margin: 5rem auto 2rem;
+  text-align: center;
+}
+
+.searchIconContainer img {
+  max-width: 100%;
+  height: auto;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  border-radius: 18px;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #D0032E;
+}
+
+.searchInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  margin: 0 0.5rem;
+  padding: 0.5rem;
+  font-size: var(--p1-r);
+  color: var(--color-dark);
+}
+
+.searchInput::placeholder {
+  color: var(--color-neutral-6);
+}
+
+/* Overlay */
+.menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* ================= VERSIÓN DESKTOP ================= */
+@media (min-width: 992px) {
+  .navbarToggler {
     display: none;
   }
 
-  .head {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
+  .menuCollapse {
+    position: static;
+    height: auto;
+    width: auto;
+    max-width: none;
+    background: transparent;
+    transform: none;
+    padding: 0;
+    overflow: visible;
   }
 
-  .login, .register {
-    width: 100%;
-    max-width: 250px;
+  .menuBox {
+    border-radius: 7px;
+    padding: 0.5rem 1rem;
+    height: 60px;
+    justify-content: center;
+    display: flex;
+    width: fit-content;
+    animation: fadeSlideIn 0.4s ease forwards;
   }
-  
-  .logo {
-    max-width: 120px;
+
+  .closeMenuButton {
+    display: none !important;
   }
+
+  .navbarNav {
+    flex-direction: row;
+    margin: 0;
+    gap: 0;
+    text-align: right;
+  }
+
+  .navItemDropdown {
+    position: relative;
+  }
+
+  .navLinkDropdown {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem 0;
+    white-space: nowrap;
+    color: white;
+  }
+
+  /* DROPDOWNS DESKTOP - FONDO BLANCO, LETRAS NEGRAS, SIN CONTORNO */
+  .dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 250px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: none; /* SIN CONTORNO */
+    outline: none; /* SIN OUTLINE */
+    text-align: left;
+    max-height: 0;
+    opacity: 0;
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .navItemDropdown:focus-within .dropdownMenu,
+  .navItemDropdown:hover .dropdownMenu {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .dropdownMenu a {
+    color: black; /* LETRAS NEGRAS */
+    padding: 0.75rem 1.5rem;
+    font-size: var(--p5-r);
+  }
+
+  .dropdownMenu a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: black; /* MANTENER NEGRO AL HOVER */
+  }
+
+  .navLink {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem 0;
+    white-space: nowrap;
+    color: white;
+  }
+
+  /* Para que preguntas frecuentes no se divida en dos lineas */
+  .noWrap {
+    white-space: nowrap;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Asegurar que los textos usen la tipografía correcta */
+.navLinkDropdown,
+.navLink,
+.dropdownMenu a {
+  font-family: var(--font-family);
+}
+
+/* Reset para eliminar cualquier borde o outline que pueda estar causando el contorno */
+*:focus {
+  outline: none !important;
+}
+
+button:focus,
+a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar,
+.menuCollapse,
+.menuBox {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Flecha minimalista reemplazando el ícono */
+.dropdownIcon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+/* Cuando el dropdown está abierto o en hover */
+.navItemDropdown:hover .dropdownIcon,
+.navItemDropdown:focus-within .dropdownIcon {
+  transform: rotate(225deg);
+  color: rgba(255, 255, 255, 0.85); /* mismo tono que el texto hover */
 }
