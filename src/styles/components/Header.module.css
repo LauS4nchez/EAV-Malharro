@@ -503,12 +503,6 @@
   font-family: var(--font-family);
 }
 
-button:focus,
-a:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
 .navbar,
 .menuCollapse,
 .menuBox {
