@@ -503,11 +503,6 @@
   font-family: var(--font-family);
 }
 
-/* Reset para eliminar cualquier borde o outline que pueda estar causando el contorno */
-*:focus {
-  outline: none !important;
-}
-
 button:focus,
 a:focus {
   outline: none !important;
