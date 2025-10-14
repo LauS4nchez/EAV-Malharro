@@ -13,6 +13,15 @@
   --color-dark: #1f1f1f;
   --color-dark-bg: #171516;
   --color-red: #e6342e;
+  --color-neutral-6: #666666;
+  
+  /* Tamaños de texto */
+  --p1-r: 20px;
+  --p5-r: 16px;
+  
+  /* Pesos de fuente */
+  --peso-regular: 400;
+  --peso-light: 300;
 }
 
 body {

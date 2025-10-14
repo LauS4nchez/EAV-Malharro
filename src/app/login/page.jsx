@@ -1,7 +1,5 @@
 
-import Login from '../componentes/login/iniciarSesion';
-import "@/styles/componentes-styles.css";
-import "@/styles/styles.css";
+import Login from '../componentes/login/Login';
 
 export default function Page() {
   const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;

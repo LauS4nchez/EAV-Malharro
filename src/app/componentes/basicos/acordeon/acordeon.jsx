@@ -2,12 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { getAcordeonByAcordeonID } from './acordeonByID';
-import { API_URL } from '@/app/config';
 import styles from "@/styles/components/TextComponents.module.css";
 
 export default function Acordeon({ acordeonID }) {
   const [labels, setLabels] = useState([]);
   const [activo, setActivo] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    // Verificar al cargar
+    checkMobile();
+
+    // Escuchar cambios de tamaño
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     if (!acordeonID) {
@@ -35,7 +52,16 @@ export default function Acordeon({ acordeonID }) {
     setActivo(activo === id ? null : id);
   };
 
-  // SVG para la flecha (puedes personalizar el color y tamaño)
+  // Función para truncar el título si es necesario
+  const truncarTitulo = (titulo, limite = 12) => {
+    if (!isMobile || !titulo) return titulo;
+    
+    if (titulo.length > limite) {
+      return titulo.substring(0, limite) + '...';
+    }
+    return titulo;
+  };
+
   const FlechaIcono = ({ abierto }) => (
     <svg 
       width="20" 
@@ -58,25 +84,31 @@ export default function Acordeon({ acordeonID }) {
         {labels.map((item) => {
           const contenido = item.contenido || 'Sin contenido';
           const titulo = item.titulo || 'Sin título';
+          const tituloTruncado = truncarTitulo(titulo);
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
 
           return (
             <div key={item.id} className={styles.textoItem} style={{ backgroundColor: fondo }}>
               <div className={styles.textoHeader} onClick={() => toggle(item.id)}>
-                <span><h2>{titulo}</h2></span>
+                <span className={styles.tituloContainer}>
+                  <h2 
+                    className={styles.tituloAcordeon}
+                    title={isMobile && titulo.length > 15 ? titulo : ''}
+                  >
+                    {tituloTruncado}
+                  </h2>
+                </span>
                 <span className={styles.botonTexto} style={{ backgroundColor: fondo }}>
                   <FlechaIcono abierto={abierto} />
                 </span>
               </div>
 
-              {/* Contenido con animación mejorada */}
               <div 
                 className={`${styles.textoContenido} ${abierto ? styles.textoContenidoAbierto : styles.textoContenidoCerrado}`}
               >
                 <div className={styles.contenidoInterno}>
                   <h3>{contenido}</h3>
-                  {/* Botón "Saber más" solo si acordeonID es "carreras" */}
                   {acordeonID === 'carreras' && (
                     <button className={styles.saberMasBtn}>
                       Saber más

@@ -1,4 +1,4 @@
-/* components/Header.module.css */
+/* components/Header.module.css - VERSIÓN CORREGIDA */
 .navbar {
   position: absolute;
   top: 0;
@@ -14,18 +14,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0;
+  background: transparent;
 }
 
-/* Logo + Lupa - USANDO COLOR PRIMARY DEL GLOBAL */
-.logoLupaBox {
-  z-index: 1001;
-}
-
+/* Logo + Lupa */
 .logoSearchContainer {
   display: flex;
   align-items: center;
-  background-color: var(--color-primary); /* COLOR PRIMARY DEL GLOBAL */
+  background-color: var(--color-primary);
   border-radius: 7px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 0.5rem;
@@ -64,7 +61,7 @@
 
 /* Botón hamburguesa */
 .navbarToggler {
-  background-color: var(--color-primary); /* COLOR PRIMARY DEL GLOBAL */
+  background-color: var(--color-primary);
   border: none;
   cursor: pointer;
   padding: 0.5rem;
@@ -129,7 +126,7 @@
   height: 100vh;
   width: 80%;
   max-width: 350px;
-  background-color: var(--color-dark); /* COLOR DARK DEL GLOBAL */
+  background-color: var(--color-dark);
   box-shadow: -4px 0 12px rgba(0,0,0,0.2);
   z-index: 1050;
   padding-top: 10rem;
@@ -206,35 +203,37 @@
   white-space: nowrap;
 }
 
+/* Flecha del dropdown */
 .dropdownIcon {
-  height: 1rem;
-  width: auto;
-  transition: transform 0.3s ease;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s ease, color 0.2s ease;
 }
 
-.navItemDropdown:focus-within .dropdownIcon,
-.navItemDropdown:hover .dropdownIcon {
-  transform: rotate(180deg);
+.dropdownIcon.rotate {
+  transform: rotate(225deg);
 }
 
-/* Menús desplegables móvil - FONDO BLANCO Y LETRAS NEGRAS */
+/* Menús desplegables móvil */
 .dropdownMenu {
   list-style: none;
   padding: 0;
   margin: 0;
-  background: white;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 7px;
   overflow: hidden;
   max-height: 0;
   opacity: 0;
   transition: all 0.3s ease;
-  text-align: right;
-  border: none; /* SIN CONTORNO */
-  outline: none; /* SIN OUTLINE */
+  text-align: left;
 }
 
-.navItemDropdown:focus-within .dropdownMenu,
-.navItemDropdown:hover .dropdownMenu {
+.dropdownMenu.open {
   max-height: 500px;
   opacity: 1;
   margin: 0.5rem 0;
@@ -243,29 +242,27 @@
 .dropdownMenu a {
   display: block;
   padding: 0.75rem 1.5rem;
-  color: black; /* LETRAS NEGRAS */
+  color: white;
   text-decoration: none;
   transition: background-color 0.2s;
   font-size: var(--p5-r);
   font-weight: var(--peso-regular);
-  border: none;
 }
 
 .dropdownMenu a:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: black; /* MANTENER NEGRO AL HOVER */
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dropdownDivider {
   height: 1px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.3);
   margin: 0.5rem 1rem;
   border: none;
 }
 
 /* Enlaces simples */
 .navItem {
-  border: none;
+  position: relative;
 }
 
 .navLink {
@@ -278,13 +275,12 @@
   font-weight: var(--peso-regular);
   border-radius: 7px;
   white-space: nowrap;
-  border: none;
+  text-align: left;
 }
 
 .navLink:hover,
 .navLinkDropdown:hover {
-  background: none !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.85);
   transition: color 0.2s ease;
 }
 
@@ -326,18 +322,6 @@
   width: auto;
 }
 
-.searchIconContainer {
-  display: flex;
-  justify-content: center;
-  margin: 5rem auto 2rem;
-  text-align: center;
-}
-
-.searchIconContainer img {
-  max-width: 100%;
-  height: auto;
-}
-
 .searchBar {
   display: flex;
   align-items: center;
@@ -352,7 +336,6 @@
   border: none;
   background: transparent;
   outline: none;
-  box-shadow: none;
   margin: 0 0.5rem;
   padding: 0.5rem;
   font-size: var(--p1-r);
@@ -385,20 +368,24 @@
     height: auto;
     width: auto;
     max-width: none;
-    background: transparent;
+    background: transparent !important;
     transform: none;
     padding: 0;
     overflow: visible;
+    box-shadow: none !important;
+    border: none !important;
   }
 
   .menuBox {
-    border-radius: 7px;
-    padding: 0.5rem 1rem;
-    height: 60px;
+    padding: 0;
+    height: auto;
     justify-content: center;
     display: flex;
     width: fit-content;
-    animation: fadeSlideIn 0.4s ease forwards;
+    background: transparent !important;
+    margin: 0;
+    border: none;
+    box-shadow: none;
   }
 
   .closeMenuButton {
@@ -409,22 +396,25 @@
     flex-direction: row;
     margin: 0;
     gap: 0;
-    text-align: right;
-  }
-
-  .navItemDropdown {
-    position: relative;
+    text-align: left;
+    background: transparent;
+    padding: 0;
   }
 
   .navLinkDropdown {
     font-size: 20px;
     padding: 0.5rem 1rem;
-    margin: 0.25rem 0;
-    white-space: nowrap;
+    margin: 0;
     color: white;
+    background: transparent !important;
+    border: none !important;
   }
 
-  /* DROPDOWNS DESKTOP - FONDO BLANCO, LETRAS NEGRAS, SIN CONTORNO */
+  .navLinkDropdown:hover .dropdownIcon {
+    transform: rotate(225deg);
+  }
+
+  /* DROPDOWNS DESKTOP */
   .dropdownMenu {
     position: absolute;
     top: 100%;
@@ -432,16 +422,20 @@
     min-width: 250px;
     background: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: none; /* SIN CONTORNO */
-    outline: none; /* SIN OUTLINE */
     text-align: left;
     max-height: 0;
     opacity: 0;
     border-radius: 7px;
     overflow: hidden;
+    transition: all 0.3s ease;
   }
 
-  .navItemDropdown:focus-within .dropdownMenu,
+  .dropdownMenu.open {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
   .navItemDropdown:hover .dropdownMenu {
     max-height: 500px;
     opacity: 1;
@@ -449,85 +443,191 @@
   }
 
   .dropdownMenu a {
-    color: black; /* LETRAS NEGRAS */
+    color: black;
     padding: 0.75rem 1.5rem;
     font-size: var(--p5-r);
   }
 
   .dropdownMenu a:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: black; /* MANTENER NEGRO AL HOVER */
   }
 
   .navLink {
     font-size: 20px;
     padding: 0.5rem 1rem;
-    margin: 0.25rem 0;
-    white-space: nowrap;
+    margin: 0;
     color: white;
+    text-align: left;
+    background: transparent !important;
+    border: none !important;
   }
 
-  /* Para que preguntas frecuentes no se divida en dos lineas */
-  .noWrap {
-    white-space: nowrap;
+  .dropdownDivider {
+    background: rgba(0, 0, 0, 0.1);
   }
 }
 
-/* Animaciones */
-@keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+/* Estilos para el item de usuario/login */
+.navItemUser {
+  position: relative;
+}
+
+.userLink {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  border-radius: 7px;
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.userLink.loggedIn {
+  color: white;
+  background: none;
+  font-weight: var(--peso-regular);
+}
+
+.userLink.loggedIn:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.userDropdownMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+  text-align: left;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 180px;
+}
+
+.userDropdownMenu.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 0.5rem 0;
+}
+
+.userDropdownMenu a {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p5-r);
+  font-weight: var(--peso-regular);
+}
+
+.userDropdownMenu a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.logoutButton {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  cursor: pointer;
+  font-size: var(--p5-r);
+  font-family: inherit;
+}
+
+.logoutButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Versión Desktop para usuario - CORREGIDO */
+@media (min-width: 992px) {
+  .userLink {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    justify-content: flex-start;
+    background: transparent !important;
+    border: none !important;
   }
-  to {
+  
+  .userDropdownMenu {
+    background: white;
+    text-align: left;
+    left: 0;
+    right: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .userDropdownMenu.open {
+    max-height: 500px;
     opacity: 1;
-    transform: translateY(0);
+    margin: 0;
   }
-}
 
-@keyframes dropFade {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
+  /* HOVER FUNCIONAL EN DESKTOP */
+  .navItemUser:hover .userDropdownMenu {
+    max-height: 500px;
     opacity: 1;
-    transform: translateY(0);
+    margin: 0;
+  }
+
+  .userDropdownMenu a {
+    color: black;
+  }
+
+  .userDropdownMenu a:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .logoutButton {
+    color: black;
+  }
+
+  .logoutButton:hover {
+    background: rgba(0, 0, 0, 0.05);
   }
 }
 
-/* Asegurar que los textos usen la tipografía correcta */
-.navLinkDropdown,
-.navLink,
-.dropdownMenu a {
-  font-family: var(--font-family);
+/* Dropdown de usuario en móvil - usar todo el ancho */
+@media (max-width: 991px) {
+  .navItemUser {
+    width: 100%;
+  }
+  
+  .userLink {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .userDropdownMenu {
+    position: static;
+    width: 100%;
+    min-width: auto;
+  }
 }
 
-.navbar,
-.menuCollapse,
-.menuBox {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  outline: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Flecha minimalista reemplazando el ícono */
-.dropdownIcon {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-left: 6px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.3s ease, color 0.2s ease;
-}
-
-/* Cuando el dropdown está abierto o en hover */
-.navItemDropdown:hover .dropdownIcon,
-.navItemDropdown:focus-within .dropdownIcon {
-  transform: rotate(225deg);
-  color: rgba(255, 255, 255, 0.85); /* mismo tono que el texto hover */
+/* Fondo oscuro solo para móvil */
+@media (max-width: 991px) {
+  .menuCollapse {
+    background-color: var(--color-dark);
+  }
+  
+  .menuBox {
+    background-color: var(--color-dark);
+  }
 }

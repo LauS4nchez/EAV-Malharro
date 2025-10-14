@@ -7,7 +7,6 @@ import Carrusel from './componentes/basicos/carrusel';
 import Agenda from './componentes/basicos/agenda';
 import Link from 'next/link';
 import Usina from "./componentes/basicos/usina";
-import { UserMenu } from "./componentes/basicos/userMenu";
 import { Texto } from "./componentes/basicos/texto/text";
 import styles from "@/styles/components/Common.module.css";
 import textStyles from "@/styles/components/TextComponents.module.css";
@@ -19,8 +18,6 @@ export default function Page() {
       <div className={styles.carruselContainer}>
         <Carrusel />
       </div>
-
-      <UserMenu />
 
       <div className={textStyles.textosRow}>
         <div className={textStyles.textoContenedor}>

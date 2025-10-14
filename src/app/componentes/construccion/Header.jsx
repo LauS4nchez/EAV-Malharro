@@ -1,24 +1,84 @@
 // components/Header.jsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from '@/styles/components/Header.module.css'
+import { API_URL } from '@/app/config'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Verificar autenticación con Strapi
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('jwt')
+        
+        if (!token) {
+          setUser(null)
+          setLoading(false)
+          return
+        }
+
+        // Hacer request al endpoint de Strapi para obtener datos del usuario
+        const response = await fetch(`${API_URL}/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
+        } else {
+          // Token inválido, limpiar
+          localStorage.removeItem('jwt')
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Error verificando autenticación:', error)
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+    if (!isMenuOpen) {
+      setOpenDropdown(null)
+    }
   }
 
   const closeMenu = () => {
     setIsMenuOpen(false)
+    setOpenDropdown(null)
   }
 
   const toggleSearch = () => {
     setSearchOpen(!searchOpen)
+  }
+
+  const toggleDropdown = (dropdownName) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName)
+  }
+
+  const isDropdownOpen = (dropdownName) => {
+    return openDropdown === dropdownName
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwt')
+    setUser(null)
+    closeMenu()
   }
 
   return (
@@ -35,7 +95,6 @@ export default function Header() {
                   className={styles.logoNav}
                 />
               </Link>
-              {/* Lupa abre modal de búsqueda */}
               <button 
                 onClick={toggleSearch}
                 className={styles.searchButton}
@@ -62,7 +121,6 @@ export default function Header() {
           {/* Menú lateral */}
           <div className={`${styles.menuCollapse} ${isMenuOpen ? styles.show : ''}`}>
             <div className={styles.menuBox}>
-              {/* Botón de cierre solo se muestra en móviles */}
               <button 
                 className={styles.closeMenuButton}
                 onClick={closeMenu}
@@ -74,11 +132,15 @@ export default function Header() {
               <ul className={styles.navbarNav}>
                 {/* Carreras Dropdown */}
                 <li className={styles.navItemDropdown}>
-                  <button className={styles.navLinkDropdown}>
+                  <button 
+                    className={styles.navLinkDropdown}
+                    onClick={() => toggleDropdown('carreras')}
+                  >
                     Carreras
-                      <span className={styles.dropdownIcon}></span>
+                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('carreras') ? styles.rotate : ''}`}></span>
                   </button>
-                  <ul className={styles.dropdownMenu}>
+
+                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('carreras') ? styles.open : ''}`}>
                     <li><Link href="/disenografico" onClick={closeMenu}>Diseño Gráfico</Link></li>
                     <li><Link href="/escenografia" onClick={closeMenu}>Escenografía</Link></li>
                     <li><Link href="/fotografia" onClick={closeMenu}>Fotografía</Link></li>
@@ -91,11 +153,14 @@ export default function Header() {
 
                 {/* Institucional Dropdown */}
                 <li className={styles.navItemDropdown}>
-                  <button className={styles.navLinkDropdown}>
+                  <button 
+                    className={styles.navLinkDropdown}
+                    onClick={() => toggleDropdown('institucional')}
+                  >
                     Institucional
-                      <span className={styles.dropdownIcon}></span>
+                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('institucional') ? styles.rotate : ''}`}></span>
                   </button>
-                  <ul className={styles.dropdownMenu}>
+                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('institucional') ? styles.open : ''}`}>
                     <li><Link href="/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
                     <li><Link href="/autoridades" onClick={closeMenu}>Autoridades</Link></li>
                     <li><Link href="/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
@@ -111,11 +176,14 @@ export default function Header() {
 
                 {/* Estudiantes Dropdown */}
                 <li className={styles.navItemDropdown}>
-                  <button className={styles.navLinkDropdown}>
+                  <button 
+                    className={styles.navLinkDropdown}
+                    onClick={() => toggleDropdown('estudiantes')}
+                  >
                     Estudiantes
-                      <span className={styles.dropdownIcon}></span>
+                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('estudiantes') ? styles.rotate : ''}`}></span>
                   </button>
-                  <ul className={styles.dropdownMenu}>
+                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('estudiantes') ? styles.open : ''}`}>
                     <li><Link href="/convivencia" onClick={closeMenu}>Convivencia</Link></li>
                     <li><Link href="/documentacion" onClick={closeMenu}>Documentación</Link></li>
                     <li><Link href="/titulos" onClick={closeMenu}>Títulos</Link></li>
@@ -124,11 +192,14 @@ export default function Header() {
 
                 {/* Ciclo 2025 Dropdown */}
                 <li className={styles.navItemDropdown}>
-                  <button className={styles.navLinkDropdown}>
+                  <button 
+                    className={styles.navLinkDropdown}
+                    onClick={() => toggleDropdown('ciclo')}
+                  >
                     Ciclo 2025
-                      <span className={styles.dropdownIcon}></span>
+                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('ciclo') ? styles.rotate : ''}`}></span>
                   </button>
-                  <ul className={styles.dropdownMenu}>
+                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('ciclo') ? styles.open : ''}`}>
                     <li><Link href="/horarios" onClick={closeMenu}>Horarios</Link></li>
                     <li><Link href="/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
                     <li><Link href="/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
@@ -137,11 +208,14 @@ export default function Header() {
 
                 {/* Talleres Dropdown */}
                 <li className={styles.navItemDropdown}>
-                  <button className={styles.navLinkDropdown}>
+                  <button 
+                    className={styles.navLinkDropdown}
+                    onClick={() => toggleDropdown('talleres')}
+                  >
                     Talleres
-                      <span className={styles.dropdownIcon}></span>
+                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('talleres') ? styles.rotate : ''}`}></span>
                   </button>
-                  <ul className={styles.dropdownMenu}>
+                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('talleres') ? styles.open : ''}`}>
                     <li><Link href="/talleres/jovenes-adultos" onClick={closeMenu}>Jóvenes - Adultos</Link></li>
                     <li><Link href="/talleres/infancias-adolescentes" onClick={closeMenu}>Infancias - Adolescentes</Link></li>
                   </ul>
@@ -158,6 +232,43 @@ export default function Header() {
                     CAMPUS
                   </Link>
                 </li>
+
+                {/* Item de Usuario/Login */}
+                {!loading && (
+                  <li className={styles.navItemUser}>
+                    {user ? (
+                      <>
+                        <button 
+                          className={`${styles.userLink} ${styles.loggedIn}`}
+                          onClick={() => toggleDropdown('usuario')}
+                        >
+                          {user.username}
+                          <span className={`${styles.dropdownIcon} ${isDropdownOpen('usuario') ? styles.rotate : ''}`}></span>
+                        </button>
+                        <ul className={`${styles.userDropdownMenu} ${isDropdownOpen('usuario') ? styles.open : ''}`}>
+                          <li>
+                            <Link href="/profile" onClick={closeMenu}>
+                              Mi Perfil
+                            </Link>
+                          </li>
+                          <li className={styles.dropdownDivider}></li>
+                          <li>
+                            <button 
+                              onClick={handleLogout}
+                              className={styles.logoutButton}
+                            >
+                              Cerrar Sesión
+                            </button>
+                          </li>
+                        </ul>
+                      </>
+                    ) : (
+                      <Link href="/login" onClick={closeMenu} className={styles.userLink}>
+                        Iniciar Sesión
+                      </Link>
+                    )}
+                  </li>
+                )}
               </ul>
             </div>
           </div>
