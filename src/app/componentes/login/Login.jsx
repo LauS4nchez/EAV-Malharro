@@ -138,127 +138,132 @@ export default function UnifiedAuth() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.formCard}>
-        <h2 className={styles.title}>
-          {step === 'email' && 'Ingresa a tu cuenta'}
-          {step === 'login' && 'Iniciar sesión'}
-          {step === 'register' && 'Crear cuenta'}
-        </h2>
-
-        <div className={styles.stepIndicator}>
-          {step === 'email' && 'Ingresa tu email para continuar'}
-          {step === 'login' && `Ingresa tu contraseña para ${email}`}
-          {step === 'register' && `Completa tu registro para ${email}`}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2>
+            {step === 'email' && 'Ingresa a tu cuenta'}
+            {step === 'login' && 'Iniciar sesión'}
+            {step === 'register' && 'Crear cuenta'}
+          </h2>
+          <p className={styles.stepIndicator}>
+            {step === 'email' && 'Ingresa tu email para continuar'}
+            {step === 'login' && `Ingresa tu contraseña para ${email}`}
+            {step === 'register' && `Completa tu registro para ${email}`}
+          </p>
         </div>
-
-        <form onSubmit={
-          step === 'email' ? checkEmail :
-          step === 'login' ? handleLogin :
-          handleRegister
-        } className={styles.form}>
-          
-          {/* Paso 1: Email */}
-          {step === 'email' && (
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Correo electrónico</label>
-              <input
-                type="email"
-                placeholder="tu@email.com"
-                className={styles.input}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
-          )}
-
-          {/* Paso 2: Login (solo contraseña) */}
-          {step === 'login' && (
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Contraseña</label>
-              <input
-                type="password"
-                placeholder="Ingresa tu contraseña"
-                className={styles.input}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
-          )}
-
-          {/* Paso 3: Registro (usuario y contraseña) */}
-          {step === 'register' && (
-            <>
+        
+        <div className={styles.cardBody}>
+          <form onSubmit={
+            step === 'email' ? checkEmail :
+            step === 'login' ? handleLogin :
+            handleRegister
+          } className={styles.form}>
+            
+            {/* Paso 1: Email */}
+            {step === 'email' && (
               <div className={styles.formGroup}>
-                <label className={styles.label}>Nombre de usuario</label>
+                <label htmlFor="email" className={styles.formLabel}>Correo electrónico</label>
                 <input
-                  type="text"
-                  placeholder="Elige un nombre de usuario"
-                  className={styles.input}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  className={styles.formControl}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
                 />
               </div>
+            )}
+
+            {/* Paso 2: Login (solo contraseña) */}
+            {step === 'login' && (
               <div className={styles.formGroup}>
-                <label className={styles.label}>Contraseña</label>
+                <label htmlFor="password" className={styles.formLabel}>Contraseña</label>
                 <input
+                  id="password"
                   type="password"
-                  placeholder="Crea una contraseña segura"
-                  className={styles.input}
+                  placeholder="Ingresa tu contraseña"
+                  className={styles.formControl}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoFocus
                 />
               </div>
+            )}
+
+            {/* Paso 3: Registro (usuario y contraseña) */}
+            {step === 'register' && (
+              <>
+                <div className={styles.formGroup}>
+                  <label htmlFor="username" className={styles.formLabel}>Nombre de usuario</label>
+                  <input
+                    id="username"
+                    type="text"
+                    placeholder="Elige un nombre de usuario"
+                    className={styles.formControl}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="registerPassword" className={styles.formLabel}>Contraseña</label>
+                  <input
+                    id="registerPassword"
+                    type="password"
+                    placeholder="Crea una contraseña segura"
+                    className={styles.formControl}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            <button 
+              type="submit" 
+              className={styles.btnPrimary}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className={styles.loading}>Cargando...</span>
+              ) : (
+                step === 'email' ? 'Continuar' :
+                step === 'login' ? 'Ingresar' : 'Crear cuenta'
+              )}
+            </button>
+          </form>
+
+          {/* Botón de Google */}
+          {(step === 'email') && (
+            <>
+              <div className={styles.divider}>
+                <span>o continuar con</span>
+              </div>
+              <LoginWithGoogle mode="login" />
             </>
           )}
 
-          <button 
-            type="submit" 
-            className={styles.primaryButton}
-            disabled={loading}
-          >
-            {loading ? (
-              <span className={styles.loading}></span>
-            ) : (
-              step === 'email' ? 'Continuar' :
-              step === 'login' ? 'Ingresar' : 'Crear cuenta'
+          {/* Botones secundarios */}
+          <div className={styles.links}>
+            {step !== 'email' && (
+              <button 
+                type="button" 
+                className={styles.link}
+                onClick={resetFlow}
+              >
+                ← Volver atrás
+              </button>
             )}
-          </button>
-        </form>
-
-        {/* Botón de Google */}
-        {(step === 'email') && (
-          <>
-            <div className={styles.divider}>
-              <span>o continuar con</span>
-            </div>
-            <LoginWithGoogle mode="login" />
-          </>
-        )}
-
-        {/* Botones secundarios */}
-        <div className={styles.secondaryButtons}>
-          {step !== 'email' && (
-            <button 
-              type="button" 
-              className={styles.secondaryButton}
-              onClick={resetFlow}
-            >
-              Volver
-            </button>
-          )}
-          
-          <Link href="/" className={styles.secondaryButton}>
-            <button type="button" className={styles.secondaryButton}>
-              Inicio
-            </button>
-          </Link>
+            
+            <Link href="/" className={styles.link}>
+              Ir al inicio
+            </Link>
+          </div>
         </div>
       </div>
     </div>

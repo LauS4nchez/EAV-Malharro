@@ -178,6 +178,100 @@
   background-color: #0056b3;
 }
 
+/* Estilos Acordeon */
+.adminControls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  margin-top: 0.8rem;
+}
+
+.adminBtn {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.adminBtn:hover {
+  background-color: #005bb5;
+}
+
+/* --- Botones de acción (editar, guardar, cancelar) --- */
+.btnAccion {
+  background-color: #e7f0ff;
+  color: #1a4fb3;
+  border: 1px solid #b9d3ff;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btnAccion:hover {
+  background-color: #1a4fb3;
+  color: white;
+  border-color: #1a4fb3;
+  transform: translateY(-2px);
+}
+
+.btnAccion:active {
+  transform: scale(0.97);
+}
+
+/* --- Contenedor de botones (guardar / cancelar) --- */
+.buttonGroup {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 0.8rem;
+}
+
+/* --- Campos de edición --- */
+.textareaEditar,
+input.textareaEditar {
+  width: 100%;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 0.7rem;
+  margin-top: 0.5rem;
+  resize: vertical;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.textareaEditar:focus {
+  border-color: #1a4fb3;
+  box-shadow: 0 0 0 2px rgba(26,79,179,0.2);
+  outline: none;
+}
+
+.botonesFila {
+  display: flex;
+  justify-content: space-between; /* separa uno a la izquierda y otro a la derecha */
+  align-items: center;
+  margin-top: 10px;
+  gap: 10px; /* si querés que estén más juntos, bajá este valor */
+}
+
+/* 🔹 Texto negro al editar */
+.textareaEditar {
+  color: #000 !important; /* fuerza el color negro */
+  background-color: #fff !important;
+}
+
+.editingTitulo {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #000;
+}
+
 /* Media Queries para responsividad */
 @media (max-width: 768px) {
   .texto {

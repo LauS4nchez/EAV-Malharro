@@ -107,9 +107,6 @@ export const Texto = ({ textoID }) => {
                     />
                     <div className={styles.buttonGroup}>
                         <button onClick={saveContent} className={styles.btnAccion}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className={styles.iconoBoton} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                            </svg>
                             Guardar
                         </button>
                         <button
@@ -119,9 +116,6 @@ export const Texto = ({ textoID }) => {
                             }}
                             className={styles.btnAccion}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className={styles.iconoBoton} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12"/>
-                            </svg>
                             Cancelar
                         </button>
                     </div>
@@ -142,12 +136,6 @@ export const Texto = ({ textoID }) => {
                     {isAdmin && (
                         <div className={styles.adminControls}>
                             <button className={styles.btnAccion} onClick={() => setIsEditing(true)}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 
-                                    7.04a1.003 1.003 0 000-1.41l-2.34-2.34a1.003 
-                                    0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" 
-                                    />
-                                </svg>
                                 Editar
                             </button>
                         </div>

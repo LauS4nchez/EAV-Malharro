@@ -1,24 +1,68 @@
-import { API_URL } from "@/app/config";
-import styles from "@/styles/components/Usina.module.css";
+'use client';
 
-async function getUsinas() {
-  try {
-    const res = await fetch(`${API_URL}/usinas?populate=imagen`);
-    
-    if (!res.ok) {
-      console.error("Error en fetch:", res.statusText);
-      return [];
-    }
-    const { data } = await res.json();
-    return data;
-  } catch (err) {
-    console.error("Error en getUsinas:", err);
-    return [];
-  }
-}
+import { useEffect, useState } from 'react';
+import { API_URL } from '@/app/config';
+import styles from '@/styles/components/Usina.module.css';
 
-export default async function Usina() {
-  const usinas = await getUsinas();
+export default function Usina() {
+  const [usinas, setUsinas] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsinas = async () => {
+      try {
+        const res = await fetch(`${API_URL}/usinas?populate=imagen`, {
+          cache: 'no-store',
+        });
+
+        if (!res.ok) {
+          console.error('Error en fetch usinas:', res.status, res.statusText);
+          setUsinas([]);
+          return;
+        }
+
+        const json = await res.json();
+        const items = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
+
+        const normalized = items
+          .map((item) => {
+            const attributes = item.attributes ?? item;
+            if (!attributes) return null;
+
+            let imageUrl = '/placeholder.jpg';
+            const imagenField = attributes.imagen;
+            const baseUrl = API_URL.replace(/\/api\/?$/, '');
+            const imgData = imagenField?.data ?? imagenField;
+            const imgAttrs = imgData?.attributes ?? imgData;
+            const urlPath = imgAttrs?.url;
+
+            if (urlPath) imageUrl = urlPath.startsWith('http') ? urlPath : `${baseUrl}${urlPath}`;
+
+            return {
+              id: item.id ?? attributes.id ?? Math.random(),
+              nombre: attributes.nombre ?? attributes.titulo ?? 'Sin nombre',
+              carrera: attributes.carrera ?? '',
+              link: attributes.link ?? '',
+              imageUrl,
+              raw: item,
+            };
+          })
+          .filter(Boolean);
+
+        setUsinas(normalized);
+      } catch (err) {
+        console.error('Error al obtener usinas:', err);
+        setUsinas([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsinas();
+  }, []);
+
+  if (loading) return <p>Cargando usinas...</p>;
+  if (usinas.length === 0) return <p>No hay usinas disponibles.</p>;
 
   return (
     <div className={styles.usinaCircularContainer}>
@@ -26,63 +70,29 @@ export default async function Usina() {
         <div className={styles.usinaTitulo}>
           <h2>Usina</h2>
         </div>
-        
+
         <div className={styles.usinaParrafo}>
           <p>Conocé los emprendimientos y proyectos de nuestros estudiantes y egresados.</p>
         </div>
 
         <div className={styles.usinaGaleria}>
-          {usinas.length === 0 ? (
-            <div className={styles.usinaEmpty}>
-              <p>No hay usinas disponibles en este momento.</p>
-            </div>
-          ) : (
-            usinas.map((item) => {
-              const { id, nombre, carrera, link, imagen } = item;
-              const imageUrl = imagen?.url ? `${imagen.url}` : '';
+          {usinas.map((u) => (
+            <div key={u.id} className={styles.usinaCard}>
+              <div className={styles.usinaImageContainer}>
+                <img src={u.imageUrl} alt={u.nombre} className={styles.usinaImage} />
+              </div>
 
-              return (
-                <div key={id} className={styles.usinaCard}>
-                  <div className={styles.usinaImageContainer}>
-                    {imageUrl ? (
-                      <img 
-                        src={imageUrl} 
-                        alt={nombre}
-                        className={styles.usinaImage}
-                      />
-                    ) : (
-                      <div style={{
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: '#333',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#ccc'
-                      }}>
-                        Sin imagen
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className={styles.usinaContenido}>
-                    <h3>{nombre}</h3>
-                    <p>{carrera}</p>
-                    {link && (
-                      <a 
-                        href={link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className={styles.usinaLink}
-                      >
-                        Contactar
-                      </a>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+              <div className={styles.usinaContenido}>
+                <h3>{u.nombre}</h3>
+                <p>{u.carrera}</p>
+                {u.link && (
+                  <a href={u.link} target="_blank" rel="noopener noreferrer" className={styles.usinaLink}>
+                    Contactar
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -2,10 +2,9 @@ import UsinaProtegida from "./componentes/crearComponentes/usinaProtegida";
 import CircularContainer from "./componentes/construccion/CircularContainer";
 import Acordeon from "./componentes/basicos/acordeon/acordeon";
 import Header from "./componentes/construccion/Header";
-import { Imagen } from './componentes/basicos/imagen/imagen';
 import Carrusel from './componentes/basicos/carrusel';
 import Agenda from './componentes/basicos/agenda';
-import Link from 'next/link';
+import Footer from "./componentes/construccion/Footer";
 import Usina from "./componentes/basicos/usina";
 import { Texto } from "./componentes/basicos/texto/text";
 import styles from "@/styles/components/Common.module.css";
@@ -41,6 +40,8 @@ export default function Page() {
 
       <Usina />
       <UsinaProtegida />
+
+      <Footer/>
     </div>
   );
 }

@@ -1,31 +1,50 @@
 /* src/styles/components/login.module.css */
 
 .container {
+  background: var(--color-dark-bg);
   min-height: 100vh;
-  background-color: var(--color-dark-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 20px;
 }
 
-.formCard {
-  background-color: #1f1f1f;
+.card {
+  background: var(--color-dark);
+  border: 1px solid #333;
   border-radius: 12px;
-  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
   width: 100%;
   max-width: 450px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid #333;
 }
 
-.title {
-  font-size: 2.5rem;
-  font-weight: 300;
-  text-align: center;
-  margin-bottom: 2rem;
+.cardHeader {
+  background: linear-gradient(135deg, var(--color-primary), #a0004a);
   color: white;
-  background-color: transparent;
+  padding: 2rem;
+  text-align: center;
+  border-bottom: none;
+}
+
+.cardHeader h2 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 300;
+  font-size: 2.5rem;
+  color: white;
+}
+
+.stepIndicator {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1rem;
+  font-weight: 300;
+  color: white;
+}
+
+.cardBody {
+  padding: 2rem;
+  background: var(--color-dark);
 }
 
 .form {
@@ -40,14 +59,14 @@
   gap: 0.5rem;
 }
 
-.label {
+.formLabel {
   font-size: 1rem;
   font-weight: 400;
   color: #ccc;
   margin-bottom: 0.25rem;
 }
 
-.input {
+.formControl {
   background-color: #2d2d2d;
   border: 1px solid #444;
   border-radius: 8px;
@@ -56,19 +75,20 @@
   color: white;
   transition: all 0.3s ease;
   font-family: var(--font-inter);
+  width: 100%;
 }
 
-.input:focus {
+.formControl:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(197, 0, 90, 0.2);
 }
 
-.input::placeholder {
+.formControl::placeholder {
   color: #888;
 }
 
-.primaryButton {
+.btnPrimary {
   background: linear-gradient(135deg, var(--color-primary), #a0004a);
   color: white;
   border: none;
@@ -80,69 +100,20 @@
   transition: all 0.3s ease;
   font-family: var(--font-inter);
   margin-top: 0.5rem;
+  width: 100%;
 }
 
-.primaryButton:hover {
+.btnPrimary:hover:not(:disabled) {
   background: linear-gradient(135deg, #d50064, #b00050);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(197, 0, 90, 0.4);
 }
 
-.primaryButton:disabled {
+.btnPrimary:disabled {
   background: #666;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
-}
-
-.googleButton {
-  background-color: #2d2d2d;
-  color: white;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-inter);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.googleButton:hover {
-  background-color: #3d3d3d;
-  border-color: #555;
-}
-
-.secondaryButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.secondaryButton {
-  background-color: transparent;
-  color: #ccc;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-inter);
-  flex: 1;
-  min-width: 120px;
-}
-
-.secondaryButton:hover {
-  background-color: #2d2d2d;
-  border-color: #555;
-  color: white;
 }
 
 .loading {
@@ -157,36 +128,6 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.errorMessage {
-  background-color: rgba(230, 52, 46, 0.1);
-  border: 1px solid var(--color-red);
-  border-radius: 6px;
-  padding: 0.75rem;
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.successMessage {
-  background-color: rgba(255, 239, 15, 0.1);
-  border: 1px solid var(--color-secondary);
-  border-radius: 6px;
-  padding: 0.75rem;
-  color: var(--color-secondary);
-  font-size: 0.9rem;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.stepIndicator {
-  text-align: center;
-  color: #888;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  background-color: transparent;
 }
 
 .divider {
@@ -207,7 +148,57 @@
 
 .divider span {
   padding: 0 1rem;
-  background-color: #1f1f1f;
+  background-color: var(--color-dark);
+}
+
+.links {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.link:hover {
+  color: #ffef0f;
+  text-decoration: underline;
+}
+
+/* Estilos para el botón de Google (si los necesitas) */
+.googleButton {
+  background-color: #2d2d2d;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-inter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.googleButton:hover {
+  background-color: #3d3d3d;
+  border-color: #555;
 }
 
 /* Responsive */
@@ -216,19 +207,15 @@
     padding: 1rem;
   }
   
-  .formCard {
-    padding: 2rem 1.5rem;
+  .cardBody {
+    padding: 1.5rem;
   }
   
-  .title {
+  .cardHeader {
+    padding: 1.5rem;
+  }
+  
+  .cardHeader h2 {
     font-size: 2rem;
-  }
-  
-  .secondaryButtons {
-    flex-direction: column;
-  }
-  
-  .secondaryButton {
-    flex: none;
   }
 }

@@ -1,0 +1,185 @@
+import React from "react";
+import styles from '@/styles/components/Footer.module.css'
+
+const Footer = () => {
+  return (
+    <footer className={styles.footerMalharro}>
+      <div className={styles.footerFormaCurva}>
+            <svg
+            viewBox="0 0 360 150"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+            >
+            <path
+                d="M0 0C73 0 146 10 214 30C267 47 316 69 360 95V150H0V0Z"
+                fill="#1B1B1B"
+            />
+            </svg>
+        </div>
+
+      <div className="container-fluid">
+        <div className={styles.contenidoFooter}>
+          {/* ====== BOTÓN SUBIR ====== */}
+          <div className={`${styles.footerScroll} text-end mb-3`}>
+            <a href="#top" className={styles.footerScrollBtn} aria-label="Ir arriba">
+              <img src="/img/Icon_SubirFooter.svg" alt="Subir" />
+            </a>
+          </div>
+
+          {/* ====== VERSIÓN MOBILE ====== */}
+          <div className="col-12 d-md-none text-left">
+            <p className={`${styles.footerFrase} h1-titulor`}>
+              Educación <br /> pública con <br /> identidad
+            </p>
+
+            <div>
+              <img
+                src="/img/Personajes_Footer_Prueba.svg"
+                alt="Decoración"
+                className="img-fluid"
+              />
+            </div>
+
+            <div className={`${styles.logoCampus} d-flex align-items-center gap-3`}>
+              <div>
+                <img
+                  src="/img/Logo_Malharro.svg"
+                  alt="Logo Malharro"
+                  className={`${styles.footerCampusLogo} img-fluid`}
+                />
+              </div>
+              <div className={styles.footerCampus}>
+                <a
+                  href="https://esavmamalharro-bue.infd.edu.ar/"
+                  className={styles.footerCampusLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  CAMPUS
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ====== VERSIÓN DESKTOP ====== */}
+          <div className="col-md-6 d-none d-md-flex align-items-center gap-3">
+            <img
+              src="/img/Personajes_Footer_Prueba.svg"
+              alt=""
+              className="img-fluid"
+              style={{ maxHeight: "100px" }}
+            />
+            <p className={`${styles.footerFrase} m-0`}>
+              Educación <br /> pública con <br /> identidad
+            </p>
+          </div>
+
+          <div className="col-md-6 d-none d-md-block text-start">
+            <div className={`${styles.footerCampus} mb-3`}>
+              <a
+                href="https://esavmamalharro-bue.infd.edu.ar/"
+                className={styles.footerCampusLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                CAMPUS
+              </a>
+            </div>
+
+            <div>
+              <img
+                src="/img/Logo_Malharro.svg"
+                alt="Logo Malharro"
+                className={`${styles.footerCampusLogo} img-fluid`}
+              />
+            </div>
+          </div>
+
+          {/* ====== LINKS ====== */}
+          <div className="row">
+            <div className="col-12">
+              <div className={`row g-2 ${styles.footerLinks} justify-content-left`}>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Carreras</a>
+                </div>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Institucional</a>
+                </div>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Estudiantes</a>
+                </div>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Agenda</a>
+                </div>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Talleres</a>
+                </div>
+                <div className="col-auto">
+                  <a href="#" className={styles.footerLink}>Preguntas frecuentes</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ====== DIRECCIÓN ====== */}
+          <div className="row">
+            <div className="col-12 text-left">
+              <p className={styles.footerDireccion}>
+                La Pampa 1619, Mar del Plata, Argentina. 7600
+              </p>
+            </div>
+          </div>
+
+          {/* ====== REDES INFERIORES ====== */}
+          <div className={styles.footerSocial}>
+            <a href="#"><img src="/img/Icon_Facebook.svg" alt="Facebook" /></a>
+            <a
+              href="https://www.instagram.com/avmartinmalharro/?hl=es"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="/img/Icon_Instagram.svg" alt="Instagram" />
+            </a>
+            <a href="#"><img src="/img/Icon_Twitter.svg" alt="Twitter" /></a>
+            <a href="#"><img src="/img/Icon_YT.svg" alt="YouTube" /></a>
+          </div>
+
+          {/* ====== LOGOS INSTITUCIONALES ====== */}
+          <div className={styles.footerLogos}>
+            <div className="container-fluid">
+              <div className="row justify-content-center align-items-center">
+                <div className="col-auto">
+                  <img
+                    src="/img/Logo_Educ_Art.svg"
+                    alt="Logo Educación Artística"
+                    className={`${styles.footerLogo} img-fluid`}
+                  />
+                </div>
+                <div className="col-auto">
+                  <img
+                    src="/img/Logo_Direcc_BsAs.svg"
+                    alt="Logo Dirección Cultura"
+                    className={`${styles.footerLogo} img-fluid`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ====== CRÉDITOS ====== */}
+          <div className="row">
+            <div className="col-12 text-left">
+              <p className={styles.footerCreditos}>
+                2025 © ESCUELA DE ARTES VISUALES MARTÍN A. MALHARRO | Sitio
+                diseñado por alumn@s de la carrera de Diseño Gráfico 4ºA y desarrollado por
+                Sánchez Lautaro y Sánchez Brian.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { clientIDGoogle } from "./config";
 import { Toaster } from "react-hot-toast";
+import "bootstrap/dist/css/bootstrap.min.css";
 import '@/styles/globals.css'
 
 const geistSans = Geist({
