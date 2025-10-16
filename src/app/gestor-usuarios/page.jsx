@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { API_URL, API_TOKEN } from '@/app/config'
-import styles from './GestorUsuarios.module.css'
+import styles from '@/styles/components/GestorUsuarios.module.css'
 
 export default function GestorUsuarios() {
   const [users, setUsers] = useState([])
