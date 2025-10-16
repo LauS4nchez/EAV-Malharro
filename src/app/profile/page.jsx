@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { API_URL } from "@/app/config";
+import { logout } from '../componentes/login/Logout';
 import styles from "../../styles/components/Perfil.module.css";
 
 export default function PerfilPage() {
@@ -68,11 +69,6 @@ export default function PerfilPage() {
     const visiblePart = username.substring(0, 3);
     const censoredPart = '*'.repeat(Math.max(username.length - 3, 5));
     return `${visiblePart}${censoredPart}@${domain}`;
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("jwt");
-    window.location.href = "/";
   };
 
   const handleEdit = () => {
@@ -240,7 +236,7 @@ export default function PerfilPage() {
             </div>
           )}
           <button 
-            onClick={handleLogout}
+            onClick={logout}
             className={styles.logoutButton}
           >
             Cerrar Sesión

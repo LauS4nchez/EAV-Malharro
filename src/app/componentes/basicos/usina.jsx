@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/app/config';
+import { URL } from '@/app/config';
 import styles from '@/styles/components/Usina.module.css';
 
 export default function Usina() {
@@ -31,12 +32,11 @@ export default function Usina() {
 
             let imageUrl = '/placeholder.jpg';
             const imagenField = attributes.imagen;
-            const baseUrl = API_URL.replace(/\/api\/?$/, '');
             const imgData = imagenField?.data ?? imagenField;
             const imgAttrs = imgData?.attributes ?? imgData;
             const urlPath = imgAttrs?.url;
 
-            if (urlPath) imageUrl = urlPath.startsWith('http') ? urlPath : `${baseUrl}${urlPath}`;
+            if (urlPath) imageUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
 
             return {
               id: item.id ?? attributes.id ?? Math.random(),

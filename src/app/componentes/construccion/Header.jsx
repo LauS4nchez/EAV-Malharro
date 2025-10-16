@@ -1,15 +1,18 @@
-// components/Header.jsx
+// components/construccion/Header.jsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from '@/styles/components/Header.module.css'
 import { API_URL } from '@/app/config'
+import { checkUserRole } from '../validacion/checkRole'
+import { logout } from '../login/Logout'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
   const [openDropdown, setOpenDropdown] = useState(null);
 
@@ -21,6 +24,7 @@ export default function Header() {
         
         if (!token) {
           setUser(null)
+          setUserRole(null)
           setLoading(false)
           return
         }
@@ -35,14 +39,20 @@ export default function Header() {
         if (response.ok) {
           const userData = await response.json()
           setUser(userData)
+          
+          // Obtener el rol del usuario
+          const role = checkUserRole()
+          setUserRole(role)
         } else {
           // Token inválido, limpiar
           localStorage.removeItem('jwt')
           setUser(null)
+          setUserRole(null)
         }
       } catch (error) {
         console.error('Error verificando autenticación:', error)
         setUser(null)
+        setUserRole(null)
       } finally {
         setLoading(false)
       }
@@ -75,10 +85,56 @@ export default function Header() {
     return openDropdown === dropdownName
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('jwt')
-    setUser(null)
-    closeMenu()
+  // Función para renderizar las opciones según el rol
+  const renderUserMenuItems = () => {
+    const items = []
+
+    // Opción común para todos los usuarios autenticados
+    items.push(
+      <li key="profile">
+        <Link href="/profile" onClick={closeMenu}>
+          Mi Perfil
+        </Link>
+      </li>
+    )
+
+    // Opciones específicas según el rol
+    if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador') {
+      items.push(
+        <li key="mis-trabajos">
+          <Link href="/mis-trabajos" onClick={closeMenu}>
+            Mis trabajos
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Profesor' || userRole === 'Administrador') {
+      items.push(
+        <li key="mis-agendas">
+          <Link href="/mis-agendas" onClick={closeMenu}>
+            Mis agendas
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Administrador') {
+      items.push(
+        <li key="gestor-usuarios">
+          <Link href="/gestor-usuarios" onClick={closeMenu}>
+            Gestor de usuarios
+          </Link>
+        </li>
+      )
+    }
+
+    // Agregar separador antes del logout si hay items
+    if (items.length > 0) {
+      items.push(<li key="divider" className={styles.dropdownDivider}></li>)
+    }
+
+    return items
   }
 
   return (
@@ -90,7 +146,7 @@ export default function Header() {
             <div className={styles.logoSearchContainer}>
               <Link href="/" className={styles.navbarBrand} onClick={closeMenu}>
                 <img 
-                  src="/svg/Iso_Malharro.svg" 
+                  src="/img/Iso_Malharro.svg" 
                   alt="Isotipo Malharro" 
                   className={styles.logoNav}
                 />
@@ -101,7 +157,7 @@ export default function Header() {
                 aria-label="Buscar"
               >
                 <img 
-                  src="/svg/Icon_Lupa.svg" 
+                  src="/img/Icon_Lupa.svg" 
                   alt="Buscar" 
                   className={styles.lupaNav}
                 />
@@ -126,7 +182,7 @@ export default function Header() {
                 onClick={closeMenu}
                 aria-label="Cerrar menú"
               >
-                <img src="/svg/Icon_X_Blanca.svg" alt="Cerrar menú" />
+                <img src="/img/Icon_X_Blanca.svg" alt="Cerrar menú" />
               </button>
 
               <ul className={styles.navbarNav}>
@@ -246,15 +302,10 @@ export default function Header() {
                           <span className={`${styles.dropdownIcon} ${isDropdownOpen('usuario') ? styles.rotate : ''}`}></span>
                         </button>
                         <ul className={`${styles.userDropdownMenu} ${isDropdownOpen('usuario') ? styles.open : ''}`}>
-                          <li>
-                            <Link href="/profile" onClick={closeMenu}>
-                              Mi Perfil
-                            </Link>
-                          </li>
-                          <li className={styles.dropdownDivider}></li>
+                          {renderUserMenuItems()}
                           <li>
                             <button 
-                              onClick={handleLogout}
+                              onClick={logout}
                               className={styles.logoutButton}
                             >
                               Cerrar Sesión
@@ -284,10 +335,10 @@ export default function Header() {
               onClick={toggleSearch}
               aria-label="Cerrar búsqueda"
             >
-              <img src="/svg/Icon_X_Magenta.svg" alt="Cerrar barra de búsqueda" />
+              <img src="/img/Icon_X_Magenta.svg" alt="Cerrar barra de búsqueda" />
             </button>
             <div className={styles.searchIconContainer}>
-              <img src="/svg/Icon_LupaBarraBusqueda.svg" alt="ícono lupa" />
+              <img src="/img/Icon_LupaBarraBusqueda.svg" alt="ícono lupa" />
             </div>
             <div className={styles.searchBar}>
               <input 

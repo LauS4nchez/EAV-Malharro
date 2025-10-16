@@ -37,7 +37,7 @@ export default function Acordeon({ acordeonID }) {
 
   useEffect(() => {
     const verifyAdmin = async () => {
-      const role = await checkUserRole();
+      const role = checkUserRole();
       if (role === "Administrador") setIsAdmin(true);
     };
 

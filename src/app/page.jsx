@@ -45,3 +45,5 @@ export default function Page() {
     </div>
   );
 }
+
+// Developed by Sánchez Lautaro and Sánchez Brian
