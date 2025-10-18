@@ -38,3 +38,25 @@ h4{font-size: 20px; font-weight: 300;}
 h1, h2, h3, h4, p {
   color: inherit;
 }
+
+/* Estilos para react-hot-toast */
+.Toastify__toast {
+  border-radius: 8px !important;
+  font-family: inherit !important;
+}
+
+.Toastify__toast--success {
+  background-color: #4caf50 !important;
+}
+
+.Toastify__toast--error {
+  background-color: #f44336 !important;
+}
+
+.Toastify__toast--loading {
+  background-color: #2196f3 !important;
+}
+
+.Toastify__toast-body {
+  font-family: inherit !important;
+}

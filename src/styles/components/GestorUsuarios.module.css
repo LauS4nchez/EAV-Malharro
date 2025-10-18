@@ -613,21 +613,3 @@
   cursor: not-allowed;
   background-color: #f9f9f9;
 }
-
-/* Estilos para los toasts (puedes personalizar según tu tema) */
-:global(.Toastify__toast) {
-  border-radius: 8px;
-  font-family: inherit;
-}
-
-:global(.Toastify__toast--success) {
-  background-color: #4caf50;
-}
-
-:global(.Toastify__toast--error) {
-  background-color: #f44336;
-}
-
-:global(.Toastify__toast--loading) {
-  background-color: #2196f3;
-}
