@@ -9,6 +9,7 @@
 :root {
   --font-inter: 'Inter', sans-serif;
   --color-primary: #c5005a;
+  --color-primary-hover: #a1044b;
   --color-secondary: #ffef0f;
   --color-dark: #1f1f1f;
   --color-dark-bg: #171516;

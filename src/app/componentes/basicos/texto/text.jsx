@@ -25,7 +25,7 @@ export const Texto = ({ textoID }) => {
     useEffect(() => {
         const verifyAdmin = async () => {
             const role = checkUserRole();
-            if (role === "Administrador") setIsAdmin(true);
+            if (role === "Administrador" || role === 'SuperAdministrador') setIsAdmin(true);
         };
         
         verifyAdmin();

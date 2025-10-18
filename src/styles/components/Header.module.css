@@ -554,7 +554,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Versión Desktop para usuario - CORREGIDO */
 @media (min-width: 992px) {
   .userLink {
     font-size: 20px;
@@ -568,18 +567,19 @@
   .userDropdownMenu {
     background: white;
     text-align: left;
-    left: 0;
-    right: auto;
+    right: 0;            /* 🔧 ahora se alinea con el lado derecho del botón */
+    left: auto;          /* quita el anclaje al lado izquierdo */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform-origin: top right; /* 🔧 mejora la animación */
   }
-  
+
   .userDropdownMenu.open {
     max-height: 500px;
     opacity: 1;
     margin: 0;
   }
 
-  /* HOVER FUNCIONAL EN DESKTOP */
+  /* Mostrar el dropdown al hacer hover */
   .navItemUser:hover .userDropdownMenu {
     max-height: 500px;
     opacity: 1;

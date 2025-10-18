@@ -99,7 +99,7 @@ export default function Header() {
     )
 
     // Opciones específicas según el rol
-    if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador') {
+    if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="mis-trabajos">
           <Link href="/mis-trabajos" onClick={closeMenu}>
@@ -109,7 +109,7 @@ export default function Header() {
       )
     }
 
-    if (userRole === 'Profesor' || userRole === 'Administrador') {
+    if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="mis-agendas">
           <Link href="/mis-agendas" onClick={closeMenu}>
@@ -119,7 +119,7 @@ export default function Header() {
       )
     }
 
-    if (userRole === 'Administrador') {
+    if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="gestor-usuarios">
           <Link href="/gestor-usuarios" onClick={closeMenu}>
