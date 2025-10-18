@@ -18,18 +18,24 @@ export default function Page() {
         <Carrusel />
       </div>
 
-      <div className={textStyles.textosRow}>
+      <div className={`${textStyles.textosRow} mt-5`}>
         <div className={textStyles.textoContenedor}>
-          <Texto textoID="texto-introduccion" />
+          <h3>
+            <Texto textoID="texto-introduccion" />
+          </h3>
         </div>
-        <div className={textStyles.textoContenedor}>
-          <Texto textoID="texto-introduccion2" />
+        <div className={textStyles.textoContenedor2}>
+          <h4>
+            <Texto textoID="texto-introduccion2" />
+          </h4>
         </div>
       </div>
 
-      <CircularContainer title="Nuestras Carreras">
-        <Acordeon acordeonID="carreras" />
-      </CircularContainer>
+      <div id="carreras">
+        <CircularContainer title="Nuestras Carreras">
+          <Acordeon acordeonID="carreras" variant="carreras"/>
+        </CircularContainer>
+      </div>
 
       <div className={styles.titleAgenda}>
         <h2 id="agenda">Agenda</h2>
@@ -38,8 +44,30 @@ export default function Page() {
         <Agenda />
       </div>
 
-      <Usina />
-      <UsinaProtegida />
+      <div className={`${textStyles.textosRow} mt-5`}>
+        <div className={textStyles.textoContenedor}>
+          <h3>
+            <Texto textoID="texto-introduccion3" />
+          </h3>
+        </div>
+        <div className={textStyles.textoContenedor2}>
+          <h4>
+            <Texto textoID="texto-introduccion4" />
+          </h4>
+        </div>
+      </div>
+
+      <div id="estudiantes">
+        <Usina />
+        <UsinaProtegida />
+      </div>
+
+      <div className={styles.titlePreguntas}>
+        <h2 id="preguntas-frecuentes">Preguntas Frecuentes</h2>
+      </div>
+      <div className={styles.preguntasSection}>
+        <Acordeon acordeonID="preguntas" variant="preguntas"/>
+      </div>
 
       <Footer/>
     </div>

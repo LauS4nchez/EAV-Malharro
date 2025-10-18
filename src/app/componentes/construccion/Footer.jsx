@@ -21,7 +21,7 @@ const Footer = () => {
         <div className={styles.contenidoFooter}>
           {/* ====== BOTÓN SUBIR ====== */}
           <div className={`${styles.footerScroll} text-end mb-3`}>
-            <a href="#top" className={styles.footerScrollBtn} aria-label="Ir arriba">
+            <a href="#" className={styles.footerScrollBtn} aria-label="Ir arriba">
               <img src="/img/Icon_SubirFooter.svg" alt="Subir" />
             </a>
           </div>
@@ -74,18 +74,7 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="col-md-6 d-none d-md-block text-start">
-            <div className={`${styles.footerCampus} mb-3`}>
-              <a
-                href="https://esavmamalharro-bue.infd.edu.ar/"
-                className={styles.footerCampusLink}
-                target="_blank"
-                rel="noreferrer"
-              >
-                CAMPUS
-              </a>
-            </div>
-
+          <div className="col-md-6 mt-4 d-none d-md-block text-start">
             <div>
               <img
                 src="/img/Logo_Malharro.svg"
@@ -100,22 +89,25 @@ const Footer = () => {
             <div className="col-12">
               <div className={`row g-2 ${styles.footerLinks} justify-content-left`}>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Carreras</a>
+                  <a href="#carreras" className={styles.footerLink}>Carreras</a>
                 </div>
                 <div className="col-auto">
                   <a href="#" className={styles.footerLink}>Institucional</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Estudiantes</a>
+                  <a href="#estudiantes" className={styles.footerLink}>Estudiantes</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Agenda</a>
+                  <a href="#agenda" className={styles.footerLink}>Agenda</a>
                 </div>
                 <div className="col-auto">
                   <a href="#" className={styles.footerLink}>Talleres</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Preguntas frecuentes</a>
+                  <a href="#preguntas-frecuentes" className={styles.footerLink}>Preguntas frecuentes</a>
+                </div>
+                <div className="col-auto">
+                  <a href="https://esavmamalharro-bue.infd.edu.ar/" rel="noreferrer noopener" target="_blank" className={styles.footerLink}>Campus</a>
                 </div>
               </div>
             </div>
@@ -132,16 +124,10 @@ const Footer = () => {
 
           {/* ====== REDES INFERIORES ====== */}
           <div className={styles.footerSocial}>
-            <a href="#"><img src="/img/Icon_Facebook.svg" alt="Facebook" /></a>
-            <a
-              href="https://www.instagram.com/avmartinmalharro/?hl=es"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img src="/img/Icon_Instagram.svg" alt="Instagram" />
-            </a>
-            <a href="#"><img src="/img/Icon_Twitter.svg" alt="Twitter" /></a>
-            <a href="#"><img src="/img/Icon_YT.svg" alt="YouTube" /></a>
+            <a href="https://www.facebook.com/avmalharro/" target="_blank" rel="noreferrer noopener"><img src="/img/Icon_Facebook.svg" alt="Facebook" /></a>
+            <a href="https://www.instagram.com/avmartinmalharro/?hl=es" target="_blank" rel="noreferrer noopener"> <img src="/img/Icon_Instagram.svg" alt="Instagram" /></a>
+            <a href="https://x.com/avmalharro" target="_blank" rel="noreferrer noopener"><img src="/img/Icon_Twitter.svg" alt="Twitter" /></a>
+            <a href="https://www.youtube.com/@AVMartinMalharroOK" target="_blank" rel="noreferrer noopener"><img src="/img/Icon_YT.svg" alt="YouTube" /></a>
           </div>
 
           {/* ====== LOGOS INSTITUCIONALES ====== */}

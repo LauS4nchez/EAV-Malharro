@@ -1,0 +1,181 @@
+/* src/styles/components/AcordeonPreguntas.module.css */
+
+.acordeonContainer {
+  background-color: white;
+}
+
+.textoItem {
+  background-color: white;
+  text-align: left;
+  margin-bottom: 0;
+  border: none;
+  border-bottom: 2px solid #d0d0d0; /* Línea más gruesa */
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 0;
+  transition: background-color 0.2s ease;
+}
+
+.textoItem:hover {
+  background-color: #f8f9fa;
+}
+
+.textoItem:last-child {
+  border-bottom: none;
+}
+
+.textoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 15px; /* Más padding interno */
+  cursor: pointer;
+  gap: 15px;
+  color: #333;
+}
+
+.tituloContainer {
+  flex: 1;
+  min-width: 0;
+}
+
+.tituloAcordeon {
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  color: #000000;
+  font-size: 1.8rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.textoContenido {
+  padding: 0 15px; /* Padding lateral consistente */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease; /* Mismas animaciones que carreras */
+  background: white;
+  margin: 0;
+}
+
+.textoContenidoAbierto {
+  max-height: 500px;
+  padding: 0 15px 25px 15px; /* Padding bottom agregado */
+}
+
+.textoContenidoCerrado {
+  max-height: 0;
+  padding: 0 15px; /* Padding lateral consistente */
+}
+
+.botonTexto {
+  /* Quitamos el círculo pero mantenemos el tamaño y posición */
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 0;
+  box-shadow: none !important;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flechaIcono {
+  transition: transform 0.3s ease;
+  width: 28px;
+  height: 28px;
+  stroke: #000000; /* Color negro para preguntas */
+  stroke-width: 1.5; /* Mantener el strokeWidth del SVG */
+}
+
+.flechaAbierta {
+  transform: rotate(45deg); /* Para que el plus se convierta en X */
+}
+
+.contenidoInterno {
+  padding: 0;
+}
+
+.contenidoTexto {
+  color: #000000;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+/* No incluir botón "Saber más" para preguntas frecuentes */
+.saberMasBtn {
+  display: none;
+}
+
+/* Ocultar admin controls específicos si no son necesarios */
+.adminControls {
+  display: none;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+  .acordeonContainer {
+    padding: 0 15px; /* Ajustar margen en móvil */
+  }
+  
+  .textoHeader {
+    padding: 20px 10px;
+  }
+  
+  .tituloAcordeon {
+    font-size: 1.2rem; /* Ajuste proporcional en móvil */
+  }
+  
+  .textoContenido,
+  .textoContenidoAbierto,
+  .textoContenidoCerrado {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .botonTexto {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .flechaIcono {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .contenidoTexto {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .acordeonContainer {
+    padding: 0 10px; /* Menos margen en pantallas muy pequeñas */
+  }
+  
+  .textoHeader {
+    padding: 18px 8px;
+  }
+  
+  .tituloAcordeon {
+    font-size: 1.1rem;
+  }
+  
+  .botonTexto {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .flechaIcono {
+    width: 22px;
+    height: 22px;
+  }
+}

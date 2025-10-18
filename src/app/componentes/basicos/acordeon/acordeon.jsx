@@ -1,3 +1,4 @@
+// components/Acordeon.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,9 +6,17 @@ import { getAcordeonByAcordeonID } from './acordeonByID';
 import { checkUserRole } from '../../validacion/checkRole';
 import { handleSave } from '../../validacion/handleSave';
 import { API_URL } from '@/app/config';
-import styles from "@/styles/components/TextComponents.module.css";
+import textStyles from "@/styles/components/TextComponents.module.css";
+import acordeonCarrerasStyles from "@/styles/components/AcordeonCarreras.module.css";
+import acordeonPreguntasStyles from "@/styles/components/AcordeonPreguntas.module.css";
 
-export default function Acordeon({ acordeonID }) {
+// Mapeo de variantes a estilos
+const variantStyles = {
+  carreras: acordeonCarrerasStyles,
+  preguntas: acordeonPreguntasStyles,
+};
+
+export default function Acordeon({ acordeonID, variant = "carreras" }) {
   const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
   const [labels, setLabels] = useState([]);
@@ -18,16 +27,16 @@ export default function Acordeon({ acordeonID }) {
   const [editedTitle, setEditedTitle] = useState('');
   const [isMobile, setIsMobile] = useState(false);
 
+  // Obtener los estilos según la variante
+  const acordeonStyles = variantStyles[variant] || acordeonCarrerasStyles;
+
   // Detectar si es móvil
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
 
-    // Verificar al cargar
     checkMobile();
-
-    // Escuchar cambios de tamaño
     window.addEventListener('resize', checkMobile);
 
     return () => {
@@ -59,31 +68,47 @@ export default function Acordeon({ acordeonID }) {
 
   const toggle = (id) => setActivo(activo === id ? null : id);
 
-  // Función para truncar el título si es necesario
   const truncarTitulo = (titulo, limite = 12) => {
-    if (!isMobile || !titulo) return titulo;
+    // No truncar si es el acordeón de preguntas
+    if (variant === 'preguntas') return titulo;
     
+    if (!isMobile || !titulo) return titulo;
     if (titulo.length > limite) {
       return titulo.substring(0, limite) + '...';
     }
     return titulo;
   };
 
-  const FlechaIcono = ({ abierto }) => (
+  // Flecha para carreras (chevron)
+  const FlechaCarreras = ({ abierto }) => (
     <svg 
-      width="20" 
-      height="20" 
-      viewBox="0 0 24 24" 
+      xmlns="http://www.w3.org/2000/svg" 
       fill="none" 
+      viewBox="0 0 24 24" 
+      strokeWidth={1.5} 
       stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-      className={`${styles.flechaIcono} ${abierto ? styles.flechaAbierta : ''}`}
+      className={`${acordeonStyles.flechaIcono} ${abierto ? acordeonStyles.flechaAbierta : ''}`}
     >
-      <polyline points="6 9 12 15 18 9"></polyline>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
     </svg>
   );
+
+  // Flecha para preguntas (plus/close)
+  const FlechaPreguntas = ({ abierto }) => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      strokeWidth={1.5} 
+      stroke="currentColor" 
+      className={`${acordeonStyles.flechaIcono} ${abierto ? acordeonStyles.flechaAbierta : ''}`}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  );
+
+  // Seleccionar el ícono según la variante
+  const FlechaIcono = variant === 'preguntas' ? FlechaPreguntas : FlechaCarreras;
 
   const saveChanges = async (id) => {
     try {
@@ -116,8 +141,8 @@ export default function Acordeon({ acordeonID }) {
   };
 
   return (
-    <div className={styles.texto}>
-      <div className={styles.acordeonContainer}>
+    <div className={textStyles.texto}>
+      <div className={acordeonStyles.acordeonContainer}>
         {labels.map((item) => {
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
@@ -126,60 +151,57 @@ export default function Acordeon({ acordeonID }) {
           const tituloTruncado = truncarTitulo(titulo);
 
           return (
-            <div key={item.id} className={styles.textoItem} style={{ backgroundColor: fondo }}>
-              <div className={styles.textoHeader} onClick={() => toggle(item.id)}>
-                <span className={styles.tituloContainer}>
+            <div key={item.id} className={acordeonStyles.textoItem} style={{ backgroundColor: fondo }}>
+              <div className={acordeonStyles.textoHeader} onClick={() => toggle(item.id)}>
+                <span className={acordeonStyles.tituloContainer}>
                   <h2 
-                    className={styles.tituloAcordeon}
-                    title={isMobile && titulo.length > 15 ? titulo : ''}
+                    className={acordeonStyles.tituloAcordeon}
+                    title={isMobile && titulo.length > 15 && variant === 'carreras' ? titulo : ''}
                   >
                     {isEditingThis ? titulo : tituloTruncado}
                   </h2>
                 </span>
-                <span className={styles.botonTexto} style={{ backgroundColor: fondo }}>
+                <span className={acordeonStyles.botonTexto}>
                   <FlechaIcono abierto={abierto} />
                 </span>
               </div>
 
-              <div className={`${styles.textoContenido} ${abierto ? styles.textoContenidoAbierto : styles.textoContenidoCerrado}`}>
-                <div className={styles.contenidoInterno}>
+              <div className={`${acordeonStyles.textoContenido} ${abierto ? acordeonStyles.textoContenidoAbierto : acordeonStyles.textoContenidoCerrado}`}>
+                <div className={acordeonStyles.contenidoInterno}>
                   {isEditingThis ? (
-                    <div className={styles.editingContainer}>
+                    <div className={textStyles.editingContainer}>
                       <input
-                        className={styles.textareaEditar}
+                        className={textStyles.textareaEditar}
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         placeholder="Editar título"
-                        style={{ color: '#000' }}
                       />
                       <textarea
-                        className={styles.textareaEditar}
+                        className={textStyles.textareaEditar}
                         value={editedText}
                         onChange={(e) => setEditedText(e.target.value)}
                         placeholder="Editar contenido"
-                        style={{ color: '#000' }}
                       />
-                      <div className={styles.buttonGroup}>
-                        <button onClick={() => saveChanges(item.documentId)} className={styles.btnAccion}>
+                      <div className={textStyles.buttonGroup}>
+                        <button onClick={() => saveChanges(item.documentId)} className={textStyles.btnAccion}>
                           Guardar
                         </button>
-                        <button onClick={() => setEditingItem(null)} className={styles.btnAccion}>
+                        <button onClick={() => setEditingItem(null)} className={textStyles.btnAccion}>
                           Cancelar
                         </button>
                       </div>
                     </div>
                   ) : (
                     <>
-                      <h3>{item.contenido || 'Sin contenido'}</h3>
+                      <h3 className={acordeonStyles.contenidoTexto}>{item.contenido || 'Sin contenido'}</h3>
 
-                      {/* Botones en la misma fila */}
-                      <div className={styles.botonesFila}>
-                        {acordeonID === 'carreras' && (
-                          <button className={styles.saberMasBtn}>Saber más</button>
+                      <div className={textStyles.botonesFila}>
+                        {variant === 'carreras' && (
+                          <button className={acordeonStyles.saberMasBtn}>Saber más</button>
                         )}
                         {isAdmin && (
                           <button
-                            className={styles.btnAccion}
+                            className={textStyles.btnAccion}
                             onClick={() => {
                               setEditingItem(item.id);
                               setEditedText(item.contenido);

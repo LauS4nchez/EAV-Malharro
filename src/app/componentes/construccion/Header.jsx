@@ -284,7 +284,7 @@ export default function Header() {
                   </Link>
                 </li>
                 <li className={styles.navItem}>
-                  <Link href="/campus" onClick={closeMenu} className={styles.navLink}>
+                  <Link href="https://esavmamalharro-bue.infd.edu.ar/" onClick={closeMenu} className={styles.navLink}>
                     CAMPUS
                   </Link>
                 </li>

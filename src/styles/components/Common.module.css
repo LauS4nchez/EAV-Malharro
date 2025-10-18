@@ -36,3 +36,14 @@
   position: relative;
   z-index: 3;
 }
+
+.preguntasSection {
+  background-color: white;
+  margin-bottom: 50px;
+}
+
+.titlePreguntas {
+  text-align: center;
+  align-items: center;
+  color: black;
+}

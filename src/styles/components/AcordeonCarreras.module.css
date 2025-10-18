@@ -1,0 +1,176 @@
+/* src/styles/components/AcordeonCarreras.module.css */
+.acordeonContainer {
+  background-color: #1b1b1b;
+}
+
+.textoItem {
+  background-color: #6457d9;
+  text-align: left;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  margin-left: -50px;
+  margin-right: -50px;
+}
+
+.textoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px 25px 40px;
+  cursor: pointer;
+  gap: 15px;
+}
+
+/* Nuevo contenedor para el título */
+.tituloContainer {
+  flex: 1;
+  min-width: 0; /* Esto permite que el texto se trunque */
+}
+
+.tituloAcordeon {
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.textoContenido {
+  padding: 20px 40px;
+  padding-top: 0px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.textoContenidoAbierto {
+  max-height: 500px;
+  padding: 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+  background-color: transparent;
+  border-radius: 0 0 8px 8px;
+}
+
+.textoContenidoCerrado {
+  max-height: 0;
+  padding: 0 1rem;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.botonTexto {
+  /* Quitamos todos los estilos de círculo */
+  background-color: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 25px;
+  box-shadow: none !important;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+}
+
+.flechaIcono {
+  transition: transform 0.3s ease;
+  width: 24px; /* Tamaño del SVG */
+  height: 24px; /* Tamaño del SVG */
+  stroke: white; /* Color blanco para carreras */
+  stroke-width: 2.5; /* Más gruesa */
+}
+
+.flechaAbierta {
+  transform: rotate(180deg);
+}
+
+.contenidoInterno {
+  padding: 1rem 0;
+}
+
+/* Estilos para el botón "Saber más" */
+.saberMasBtn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.saberMasBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Estilos Acordeon */
+.adminControls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  margin-top: 0.8rem;
+}
+
+.adminBtn {
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.adminBtn:hover {
+  background-color: #005bb5;
+}
+
+/* Media Queries para responsividad del acordeón */
+@media (max-width: 768px) {
+  .textoItem {
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  
+  .textoHeader {
+    padding: 15px 20px 25px 20px;
+  }
+  
+  .botonTexto {
+    margin-right: 0;
+  }
+  
+  .flechaIcono {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .tituloAcordeon {
+    font-size: 2rem;
+    line-height: 1.3;
+  }
+}
+
+@media (max-width: 480px) {
+  .textoItem {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+  
+  .textoHeader {
+    padding: 12px 15px 20px 15px;
+  }
+  
+  .flechaIcono {
+    width: 20px;
+    height: 20px;
+  }
+}

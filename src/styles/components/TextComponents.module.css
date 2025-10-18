@@ -9,6 +9,24 @@
   background-color: #1f1f1f;
 }
 
+.textoIntro {
+  color: black;
+  margin-top: -5px;
+  font-size: 20cm;
+}
+
+.textoContenedor2 {
+  width: 100%;
+  max-width: 700px;
+  flex: 1 1 300px;
+  padding: 1rem;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
 .textoContainer {
   background-color: #1f1f1f;
   margin-top: 2rem;
@@ -36,10 +54,6 @@
   margin-right: 20px;
 }
 
-.acordeonContainer {
-  background-color: #1b1b1b;
-}
-
 .textosRow {
   margin-top: 30px;
   margin-bottom: 30px;
@@ -49,86 +63,12 @@
   justify-content: center;
 }
 
-.textoItem {
-  background-color: #6457d9;
-  text-align: left;
-  margin-bottom: 15px;
-  border-radius: 10px;
-  margin-left: -50px;
-  margin-right: -50px;
-}
-
 .textoError {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 20px;
   color: brown;
   text-align: center;
   padding: 1rem;
-}
-
-.textoHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 40px 25px 40px;
-  cursor: pointer;
-  gap: 15px;
-}
-
-/* Nuevo contenedor para el título */
-.tituloContainer {
-  flex: 1;
-  min-width: 0; /* Esto permite que el texto se trunque */
-}
-
-.tituloAcordeon {
-  margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-.textoContenido {
-  padding: 20px 40px;
-  padding-top: 0px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.3s ease;
-  padding: 0 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
-}
-
-.textoContenidoAbierto {
-  max-height: 500px;
-  padding: 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
-  background-color: transparent;
-  border-radius: 0 0 8px 8px;
-}
-
-.textoContenidoCerrado {
-  max-height: 0;
-  padding: 0 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
-}
-
-.botonTexto {
-  border-radius: 30px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  margin-right: 25px;
-  align-items: center;
-  padding: 13px;
-  box-shadow: 1px 12px 22px 0px rgba(0, 0, 0, 0.75);
-  background-color: transparent !important;
-  border: none;
-  cursor: pointer;
-  justify-content: center;
-  flex-shrink: 0; /* Evita que se encoja el botón */
 }
 
 /* Estados de carga */
@@ -147,58 +87,6 @@
   background-color: #ffebee;
   border-radius: 8px;
   border: 1px solid #ffcdd2;
-}
-
-.flechaIcono {
-  transition: transform 0.3s ease;
-}
-
-.flechaAbierta {
-  transform: rotate(180deg);
-}
-
-.contenidoInterno {
-  padding: 1rem 0;
-}
-
-/* Estilos para el botón "Saber más" */
-.saberMasBtn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 1rem;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.saberMasBtn:hover {
-  background-color: #0056b3;
-}
-
-/* Estilos Acordeon */
-.adminControls {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-  margin-top: 0.8rem;
-}
-
-.adminBtn {
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 5px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.adminBtn:hover {
-  background-color: #005bb5;
 }
 
 /* --- Botones de acción (editar, guardar, cancelar) --- */
@@ -244,6 +132,8 @@ input.textareaEditar {
   resize: vertical;
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: #000 !important; /* fuerza el color negro */
+  background-color: #fff !important;
 }
 
 .textareaEditar:focus {
@@ -260,16 +150,14 @@ input.textareaEditar {
   gap: 10px; /* si querés que estén más juntos, bajá este valor */
 }
 
-/* 🔹 Texto negro al editar */
-.textareaEditar {
-  color: #000 !important; /* fuerza el color negro */
-  background-color: #fff !important;
-}
-
 .editingTitulo {
   font-weight: bold;
   margin-bottom: 8px;
   color: #000;
+}
+
+.editingContainer {
+  width: 100%;
 }
 
 /* Media Queries para responsividad */
@@ -277,46 +165,10 @@ input.textareaEditar {
   .texto {
     margin: -15px 20px;
   }
-  
-  .textoItem {
-    margin-left: -20px;
-    margin-right: -20px;
-  }
-  
-  .textoHeader {
-    padding: 15px 20px 25px 20px;
-  }
-  
-  .botonTexto {
-    margin-right: 0;
-    width: 35px;
-    height: 35px;
-    padding: 10px;
-  }
-  
-  .tituloAcordeon {
-    font-size: 2rem;
-    line-height: 1.3;
-  }
 }
 
 @media (max-width: 480px) {
   .texto {
     margin: -15px 10px;
-  }
-  
-  .textoItem {
-    margin-left: -10px;
-    margin-right: -10px;
-  }
-  
-  .textoHeader {
-    padding: 12px 15px 20px 15px;
-  }
-  
-  .botonTexto {
-    width: 30px;
-    height: 30px;
-    padding: 8px;
   }
 }
