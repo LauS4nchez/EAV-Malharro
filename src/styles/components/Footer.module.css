@@ -1,6 +1,7 @@
 /* ====== FOOTER ====== */
 .footerMalharro {
   background-color: #1B1B1B;
+  clip-path: ellipse(100% 90% at 70% 90%);
   color: #fff;
   position: relative;
   font-family: 'Inter', sans-serif;
@@ -58,7 +59,7 @@
 }
 
 .footerCampusLink:hover {
-  color: #1DA1F2; /* efecto hover azul */
+  color: #1DA1F2;
 }
 
 /* ====== LOGOS ====== */
@@ -116,6 +117,9 @@
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 768px) {
+  .footerMalharro {
+    clip-path: none !important;
+  }
   .footerFrase {
     font-size: 1.5rem;
   }

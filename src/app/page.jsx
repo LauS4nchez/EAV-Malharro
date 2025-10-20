@@ -1,5 +1,5 @@
 import UsinaProtegida from "./componentes/crearComponentes/usinaProtegida";
-import CircularContainer from "./componentes/construccion/CircularContainer";
+import CircularContainer from "./componentes/basicos/acordeon/CircularContainerAcordeon";
 import Acordeon from "./componentes/basicos/acordeon/acordeon";
 import Header from "./componentes/construccion/Header";
 import Carrusel from './componentes/basicos/carrusel';

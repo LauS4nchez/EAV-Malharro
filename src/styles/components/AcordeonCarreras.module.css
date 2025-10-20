@@ -4,12 +4,10 @@
 }
 
 .textoItem {
-  background-color: #6457d9;
+  background-color: #fafafa;
   text-align: left;
-  margin-bottom: 15px;
+  margin: 0 auto 12px auto;
   border-radius: 10px;
-  margin-left: -50px;
-  margin-right: -50px;
 }
 
 .textoHeader {
@@ -28,6 +26,7 @@
 }
 
 .tituloAcordeon {
+  font-weight: 500;
   margin: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -43,6 +42,7 @@
   padding: 0 1rem;
   margin-left: 25px;
   margin-right: 25px;
+  font-size: 1.2rem;
 }
 
 .textoContenidoAbierto {
@@ -155,7 +155,11 @@
   
   .tituloAcordeon {
     font-size: 2rem;
-    line-height: 1.3;
+  }
+
+  .contenidoTexto {
+    font-size: 1rem;
+    font-weight: var(--peso-light);
   }
 }
 

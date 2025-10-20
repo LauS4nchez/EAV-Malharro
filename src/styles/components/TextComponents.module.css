@@ -160,6 +160,54 @@ input.textareaEditar {
   width: 100%;
 }
 
+/* En tu archivo TextComponents.module.css */
+.switchContainer {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.switchLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.switchInput {
+  display: none;
+}
+
+.switchSlider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: background-color 0.3s;
+}
+
+.switchSlider:before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
+
+.switchInput:checked + .switchSlider {
+  background-color: #252525;
+}
+
+.switchInput:checked + .switchSlider:before {
+  transform: translateX(26px);
+}
+
 /* Media Queries para responsividad */
 @media (max-width: 768px) {
   .texto {

@@ -5,10 +5,15 @@ import { useState, useEffect } from 'react';
 import { getAcordeonByAcordeonID } from './acordeonByID';
 import { checkUserRole } from '../../validacion/checkRole';
 import { handleSave } from '../../validacion/handleSave';
-import { API_URL } from '@/app/config';
+import dynamic from 'next/dynamic';
 import textStyles from "@/styles/components/TextComponents.module.css";
 import acordeonCarrerasStyles from "@/styles/components/AcordeonCarreras.module.css";
 import acordeonPreguntasStyles from "@/styles/components/AcordeonPreguntas.module.css";
+
+// Importación dinámica de ReactMarkdown
+const ReactMarkdown = dynamic(() => import('react-markdown'), {
+  ssr: false
+});
 
 // Mapeo de variantes a estilos
 const variantStyles = {
@@ -25,24 +30,11 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
   const [editingItem, setEditingItem] = useState(null);
   const [editedText, setEditedText] = useState('');
   const [editedTitle, setEditedTitle] = useState('');
+  const [editedTextColor, setEditedTextColor] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Obtener los estilos según la variante
   const acordeonStyles = variantStyles[variant] || acordeonCarrerasStyles;
-
-  // Detectar si es móvil
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
 
   useEffect(() => {
     const verifyAdmin = async () => {
@@ -67,17 +59,6 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
   }, [acordeonID]);
 
   const toggle = (id) => setActivo(activo === id ? null : id);
-
-  const truncarTitulo = (titulo, limite = 12) => {
-    // No truncar si es el acordeón de preguntas
-    if (variant === 'preguntas') return titulo;
-    
-    if (!isMobile || !titulo) return titulo;
-    if (titulo.length > limite) {
-      return titulo.substring(0, limite) + '...';
-    }
-    return titulo;
-  };
 
   // Flecha para carreras (chevron)
   const FlechaCarreras = ({ abierto }) => (
@@ -128,12 +109,24 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
         campoAModificar: "titulo",
       });
 
+      // Solo guardar textoNegro si la variante es carreras
+      if (variant === "carreras") {
+        await handleSave({
+          objetoAEditar: "texto",
+          idObjeto: id,
+          nuevoContenido: Boolean(editedTextColor),
+          jwt,
+          campoAModificar: "textoNegro",
+        });
+      }
+
       const updated = await getAcordeonByAcordeonID(acordeonID);
       if (updated) setLabels(updated);
 
       setEditingItem(null);
       setEditedText('');
       setEditedTitle('');
+      setEditedTextColor(false);
     } catch (error) {
       console.error("Error al guardar los cambios:", error);
       alert("Hubo un error al guardar los cambios del acordeón");
@@ -146,19 +139,27 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
         {labels.map((item) => {
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
+          // Si la variante es preguntas, texto siempre negro, sino usar textoNegro de Strapi
+          const textoColor = variant === 'preguntas' ? '#000000' : (item.textoNegro ? '#252525' : '#FFFFFF');
           const isEditingThis = editingItem === item.id;
           const titulo = item.titulo || 'Sin título';
-          const tituloTruncado = truncarTitulo(titulo);
 
           return (
-            <div key={item.id} className={acordeonStyles.textoItem} style={{ backgroundColor: fondo }}>
-              <div className={acordeonStyles.textoHeader} onClick={() => toggle(item.id)}>
+            <div 
+              key={item.id} 
+              className={acordeonStyles.textoItem} 
+              style={{ backgroundColor: fondo, color: textoColor }}
+            >
+              <div 
+                className={acordeonStyles.textoHeader} 
+                onClick={() => toggle(item.id)}
+              >
                 <span className={acordeonStyles.tituloContainer}>
                   <h2 
                     className={acordeonStyles.tituloAcordeon}
                     title={isMobile && titulo.length > 15 && variant === 'carreras' ? titulo : ''}
                   >
-                    {isEditingThis ? titulo : tituloTruncado}
+                    {isEditingThis ? titulo : titulo}
                   </h2>
                 </span>
                 <span className={acordeonStyles.botonTexto}>
@@ -166,7 +167,9 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                 </span>
               </div>
 
-              <div className={`${acordeonStyles.textoContenido} ${abierto ? acordeonStyles.textoContenidoAbierto : acordeonStyles.textoContenidoCerrado}`}>
+              <div 
+                className={`${acordeonStyles.textoContenido} ${abierto ? acordeonStyles.textoContenidoAbierto : acordeonStyles.textoContenidoCerrado}`}
+              >
                 <div className={acordeonStyles.contenidoInterno}>
                   {isEditingThis ? (
                     <div className={textStyles.editingContainer}>
@@ -182,6 +185,21 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                         onChange={(e) => setEditedText(e.target.value)}
                         placeholder="Editar contenido"
                       />
+                      {/* Solo mostrar el switch si la variante es carreras */}
+                      {variant === 'carreras' && (
+                        <div className={textStyles.switchContainer}>
+                          <label className={textStyles.switchLabel}>
+                            <span>Texto negro</span>
+                            <input
+                              type="checkbox"
+                              checked={editedTextColor}
+                              onChange={(e) => setEditedTextColor(e.target.checked)}
+                              className={textStyles.switchInput}
+                            />
+                            <span className={textStyles.switchSlider}></span>
+                          </label>
+                        </div>
+                      )}
                       <div className={textStyles.buttonGroup}>
                         <button onClick={() => saveChanges(item.documentId)} className={textStyles.btnAccion}>
                           Guardar
@@ -193,11 +211,30 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                     </div>
                   ) : (
                     <>
-                      <h3 className={acordeonStyles.contenidoTexto}>{item.contenido || 'Sin contenido'}</h3>
+                      <div className={acordeonStyles.contenidoTexto}>
+                        <ReactMarkdown
+                          components={{
+                            // Aplicar el color a todos los elementos del markdown
+                            p: ({node, ...props}) => <p style={{color: textoColor}} {...props} />,
+                            strong: ({node, ...props}) => <strong style={{color: textoColor}} {...props} />,
+                            em: ({node, ...props}) => <em style={{color: textoColor}} {...props} />
+                          }}
+                        >
+                          {item.contenido || 'Sin contenido'}
+                        </ReactMarkdown>
+                      </div>
 
                       <div className={textStyles.botonesFila}>
                         {variant === 'carreras' && (
-                          <button className={acordeonStyles.saberMasBtn}>Saber más</button>
+                          <button 
+                            className={acordeonStyles.saberMasBtn}
+                            style={{ 
+                              color: textoColor,
+                              borderColor: textoColor 
+                            }}
+                          >
+                            Saber más
+                          </button>
                         )}
                         {isAdmin && (
                           <button
@@ -206,6 +243,10 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                               setEditingItem(item.id);
                               setEditedText(item.contenido);
                               setEditedTitle(item.titulo);
+                              // Solo cargar textoNegro si la variante es carreras
+                              if (variant === 'carreras') {
+                                setEditedTextColor(Boolean(item.textoNegro));
+                              }
                             }}
                           >
                             Editar
