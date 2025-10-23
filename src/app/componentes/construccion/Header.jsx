@@ -139,6 +139,16 @@ export default function Header() {
       )
     }
 
+      if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="admin-usina">
+          <Link href="/admin/usinas" onClick={closeMenu}>
+            Administrador de Trabajos
+          </Link>
+        </li>
+      )
+    }
+
     // Agregar separador antes del logout si hay items
     if (items.length > 0) {
       items.push(<li key="divider" className={styles.dropdownDivider}></li>)
@@ -234,7 +244,7 @@ export default function Header() {
                     <li className={styles.dropdownDivider}></li>
                     <li><Link href="/institucional/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
                     <li><Link href="/institucional/docentes" onClick={closeMenu}>Docentes</Link></li>
-                    <li><Link href="#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
+                    <li><Link href="/#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
                     <li><Link href="/institucional/pasantias" onClick={closeMenu}>Pasantías</Link></li>
                     <li><Link href="/institucional/planimetria" onClick={closeMenu}>Planimetría</Link></li>
                   </ul>
