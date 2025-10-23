@@ -258,6 +258,54 @@
   animation: spin 0.9s linear infinite;
 }
 
+.modalBox {
+  background: #1a1a1a;
+  color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.modalText {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btnConfirmar {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.btnCancelar {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.btnConfirmar:hover { background-color: #218838; }
+.btnCancelar:hover { background-color: #c82333; }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
