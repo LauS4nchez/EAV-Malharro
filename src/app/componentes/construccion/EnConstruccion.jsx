@@ -17,8 +17,8 @@ export default function EnConstruccion() {
         <h1 className={styles.title}>En construcción</h1>
         
         <p className={styles.subtitle}>
-          Esta página está en desarrollo. Estamos trabajando para traerte 
-          una experiencia increíble.
+          Esta página está en desarrollo. <br></br>
+          ¡Vuelve cuando esté terminada!
         </p>
         
         <Link href="/" className={styles.homeButton}>

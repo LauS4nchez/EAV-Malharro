@@ -282,7 +282,7 @@ export default function MisUsinasPage() {
       </div>
     );
 
-  if (rol !== 'Estudiante' && rol !== 'Profesor')
+  if (rol !== 'Estudiante' && rol !== 'Profesor' && rol !== 'Administrador'&& rol !== 'SuperAdministrador')
     return (
       <div className={styles.loadingContainer}>
         <p>No tienes permiso para acceder aquí.</p>

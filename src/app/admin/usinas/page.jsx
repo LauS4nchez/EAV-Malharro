@@ -59,7 +59,7 @@ export default function AdminUsinasPage() {
           const a = item.attributes ?? item;
           let imageUrl = '/placeholder.jpg';
           const img = a.imagen?.data?.attributes?.url;
-          if (img) imageUrl = img.startsWith('http') ? img : `${URL}${img}`;
+          if (img) imageUrl = img;
           return {
             id: item.id,
             documentId: item.documentId,

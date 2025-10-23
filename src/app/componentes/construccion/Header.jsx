@@ -289,7 +289,7 @@ export default function Header() {
 
                 {/* Enlaces simples */}
                 <li className={styles.navItem}>
-                  <Link href="#preguntas-frecuentes" onClick={closeMenu} className={styles.navLink}>
+                  <Link href="/#preguntas-frecuentes" onClick={closeMenu} className={styles.navLink}>
                     Preguntas frecuentes
                   </Link>
                 </li>

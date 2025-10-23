@@ -76,7 +76,7 @@ export default function Usina() {
     <div className={styles.usinaCircularContainer}>
       <div className={styles.usinaContent}>
         <div className={styles.usinaTitulo}>
-          <h2>Usina</h2>
+          <h2 id='estudiantes'>Nuestros Estudiantes</h2>
         </div>
 
         <div className={styles.usinaParrafo}>
