@@ -63,6 +63,10 @@ export const canModifyUser = (currentUserId, currentUser, targetUser) => {
     return false
   }
 
+  if (currentUser.role?.name === 'Administrador' && targetUser.role?.name === 'SuperAdministrador') {
+    return false
+  }
+
   return true
 }
 

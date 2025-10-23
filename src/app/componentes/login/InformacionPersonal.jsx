@@ -1,11 +1,12 @@
+// componentes/login/InformacionPersonal.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { API_URL } from "@/app/config";
-import { logout } from '../componentes/login/Logout';
-import styles from "../../styles/components/Perfil.module.css";
+import { API_URL, API_TOKEN } from "@/app/config";
+import { logout } from '@/app/componentes/login/Logout';
+import styles from "@/styles/components/Perfil.module.css";
 
-export default function PerfilPage() {
+export default function InformacionPersonal() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,19 +15,15 @@ export default function PerfilPage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showEmail, setShowEmail] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
+    const jwt = localStorage.getItem("jwt");
+
     const fetchUserData = async () => {
       try {
-        const jwt = localStorage.getItem("jwt");
-        
-        if (!jwt) {
-          setError("No estás autenticado");
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/users/me`, {
+        // Primero obtenemos el ID del usuario con el endpoint normal
+        const meResponse = await fetch(`${API_URL}/users/me`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${jwt}`,
@@ -34,18 +31,39 @@ export default function PerfilPage() {
           },
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Error ${response.status}: No se pudieron obtener los datos del usuario`);
+        if (!meResponse.ok) {
+          throw new Error(`Error ${meResponse.status}: No se pudieron obtener los datos del usuario`);
         }
 
-        const userData = await response.json();
-        console.log('User data received:', userData);
+        const meData = await meResponse.json();
+        console.log('Me data:', meData);
+        
+        // Luego obtenemos los datos completos con avatar usando el API Token
+        const userResponse = await fetch(`${API_URL}/users/${meData.id}?populate=avatar`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!userResponse.ok) {
+          throw new Error(`Error ${userResponse.status}: No se pudieron obtener los datos completos del usuario`);
+        }
+
+        const userDataResponse = await userResponse.json();
+        console.log('User data with avatar:', userDataResponse);
+        
+        // En Strapi v5 los datos vienen directamente en el objeto, sin attributes
+        const userData = userDataResponse.data || userDataResponse;
+        console.log('User data:', userData);
+        console.log('Avatar data:', userData?.avatar);
+        
         setUserData(userData);
         setFormData({
-          name: userData.name || '',
-          surname: userData.surname || '',
-          Carrera: userData.Carrera || '',
+          name: userData?.name || '',
+          surname: userData?.surname || '',
+          Carrera: userData?.Carrera || '',
         });
         
       } catch (err) {
@@ -59,7 +77,7 @@ export default function PerfilPage() {
     fetchUserData();
   }, []);
 
-  // Función para censurar el email
+  // Función para censurar el email - siempre 5 asteriscos
   const getCensoredEmail = (email) => {
     if (!email) return 'No especificado';
     
@@ -67,8 +85,7 @@ export default function PerfilPage() {
     if (!username || !domain) return email;
     
     const visiblePart = username.substring(0, 3);
-    const censoredPart = '*'.repeat(Math.max(username.length - 3, 5));
-    return `${visiblePart}${censoredPart}@${domain}`;
+    return `${visiblePart}*****@${domain}`;
   };
 
   const handleEdit = () => {
@@ -80,9 +97,9 @@ export default function PerfilPage() {
   const handleCancel = () => {
     setEditing(false);
     setFormData({
-      name: userData.name || '',
-      surname: userData.surname || '',
-      Carrera: userData.Carrera || '',
+      name: userData?.name || '',
+      surname: userData?.surname || '',
+      Carrera: userData?.Carrera || '',
     });
     setError(null);
   };
@@ -129,12 +146,11 @@ export default function PerfilPage() {
       
       setUserData(prev => ({
         ...prev,
-        ...updateData,
-        updatedAt: new Date().toISOString()
+        ...updateData
       }));
       
       setEditing(false);
-      setSuccessMessage(result.message || 'Perfil actualizado correctamente');
+      setSuccessMessage('Perfil actualizado correctamente');
       
       setTimeout(() => {
         setSuccessMessage('');
@@ -148,6 +164,115 @@ export default function PerfilPage() {
     }
   };
 
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor, selecciona un archivo de imagen válido');
+      return;
+    }
+
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen debe ser menor a 5MB');
+      return;
+    }
+
+    try {
+      setAvatarUploading(true);
+      setError(null);
+      const jwt = localStorage.getItem("jwt");
+
+      // 1. Primero obtenemos el ID del usuario actual
+      const meResponse = await fetch(`${API_URL}/users/me`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${jwt}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!meResponse.ok) {
+        throw new Error('Error al obtener datos del usuario');
+      }
+
+      const meData = await meResponse.json();
+      const userId = meData.id;
+
+      // 2. Subir la imagen usando el API Token
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const uploadResponse = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Error al subir la imagen');
+      }
+
+      const uploadData = await uploadResponse.json();
+      const avatarId = uploadData[0].id;
+
+      console.log('Avatar uploaded with ID:', avatarId);
+
+      // 3. Actualizar el usuario con el nuevo avatar usando el API Token
+      const updateResponse = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          avatar: avatarId
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Error al actualizar el avatar del usuario');
+      }
+
+      const updateData = await updateResponse.json();
+      console.log('User updated:', updateData);
+
+      // 4. Obtener los datos actualizados del usuario con el avatar
+      const userResponse = await fetch(`${API_URL}/users/${userId}?populate=avatar`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Error al obtener datos actualizados');
+      }
+
+      const userDataResponse = await userResponse.json();
+      const updatedUserData = userDataResponse.data || userDataResponse;
+
+      // 5. Actualizar el estado local
+      setUserData(updatedUserData);
+      setSuccessMessage('Avatar actualizado correctamente');
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+
+    } catch (err) {
+      setError(err.message);
+      console.error('Error updating avatar:', err);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -158,6 +283,15 @@ export default function PerfilPage() {
   const toggleEmailVisibility = () => {
     setShowEmail(!showEmail);
   };
+
+  // Verificar JWT antes de renderizar
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt");
+    if (!jwt) {
+      window.location.href = "/";
+      return;
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -252,21 +386,39 @@ export default function PerfilPage() {
         )}
 
         <div className={styles.infoSection}>
-          {/* Avatar comentado por ahora
           <div className={styles.avatarContainer}>
-            {userData.avatar ? (
+            {userData.avatar?.url ? (
               <img 
-                src={`${API_URL}${userData.avatar.url}`} 
+                src={userData.avatar.url} 
                 alt="Avatar" 
                 className={styles.avatar}
+                onError={(e) => {
+                  console.error('Error loading avatar');
+                  e.target.style.display = 'none';
+                }}
               />
             ) : (
               <div className={styles.avatarPlaceholder}>
                 {userData.username?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
+            
+            {editing && (
+              <div className={styles.avatarEditOverlay}>
+                <label htmlFor="avatar-upload" className={styles.avatarUploadLabel}>
+                  {avatarUploading ? 'Subiendo...' : 'Cambiar foto'}
+                </label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className={styles.avatarUploadInput}
+                  disabled={avatarUploading}
+                />
+              </div>
+            )}
           </div>
-          */}
 
           <div className={styles.userInfo}>
             <h2>Información Personal</h2>
@@ -289,7 +441,7 @@ export default function PerfilPage() {
                     className={styles.emailToggle}
                     title={showEmail ? 'Ocultar email' : 'Mostrar email'}
                   >
-                    {showEmail ? 'Ver' : 'Ver'}
+                    {showEmail ? 'Ocultar' : 'Mostrar'}
                   </button>
                 </div>
               </div>
@@ -347,16 +499,16 @@ export default function PerfilPage() {
                     <option value="Realizador en Artes Visuales">Realizador en Artes Visuales</option>
                   </select>
                 ) : (
-                  <span>{userData.Carrera || 'No hay una carrera especificada'}</span>
+                  <span>{userData.Carrera || 'No se ha especificado una carrera'}</span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {error && editing && (
+        {error && (
           <div className={styles.errorMessage}>
-            <p>Error al guardar: {error}</p>
+            <p>Error: {error}</p>
           </div>
         )}
       </div>

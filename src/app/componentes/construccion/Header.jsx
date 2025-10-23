@@ -92,7 +92,7 @@ export default function Header() {
     // Opción común para todos los usuarios autenticados
     items.push(
       <li key="profile">
-        <Link href="/profile" onClick={closeMenu}>
+        <Link href={`/perfil/${user.username}`} onClick={closeMenu}>
           Mi Perfil
         </Link>
       </li>
@@ -102,7 +102,7 @@ export default function Header() {
     if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="mis-trabajos">
-          <Link href="/mis-trabajos" onClick={closeMenu}>
+          <Link href={`/perfil/${user.username}#trabajos`} onClick={closeMenu}>
             Mis trabajos
           </Link>
         </li>
@@ -112,8 +112,18 @@ export default function Header() {
     if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="mis-agendas">
-          <Link href="/mis-agendas" onClick={closeMenu}>
+          <Link href={`/perfil/${user.username}#agendas`} onClick={closeMenu}>
             Mis agendas
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="informacion">
+          <Link href={`/perfil/${user.username}#informacion`} onClick={closeMenu}>
+            Información Personal
           </Link>
         </li>
       )
@@ -217,16 +227,16 @@ export default function Header() {
                     <span className={`${styles.dropdownIcon} ${isDropdownOpen('institucional') ? styles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${styles.dropdownMenu} ${isDropdownOpen('institucional') ? styles.open : ''}`}>
-                    <li><Link href="/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
-                    <li><Link href="/autoridades" onClick={closeMenu}>Autoridades</Link></li>
-                    <li><Link href="/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
-                    <li><Link href="/consejo-academico" onClick={closeMenu}>Consejo Académico</Link></li>
+                    <li><Link href="/institucional/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
+                    <li><Link href="/institucional/autoridades" onClick={closeMenu}>Autoridades</Link></li>
+                    <li><Link href="/institucional/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
+                    <li><Link href="/institucional/consejo-academico" onClick={closeMenu}>Consejo Académico</Link></li>
                     <li className={styles.dropdownDivider}></li>
-                    <li><Link href="/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
-                    <li><Link href="/docentes" onClick={closeMenu}>Docentes</Link></li>
-                    <li><Link href="/nuestros-estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
-                    <li><Link href="/pasantias" onClick={closeMenu}>Pasantías</Link></li>
-                    <li><Link href="/planimetria" onClick={closeMenu}>Planimetría</Link></li>
+                    <li><Link href="/institucional/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
+                    <li><Link href="/institucional/docentes" onClick={closeMenu}>Docentes</Link></li>
+                    <li><Link href="#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
+                    <li><Link href="/institucional/pasantias" onClick={closeMenu}>Pasantías</Link></li>
+                    <li><Link href="/institucional/planimetria" onClick={closeMenu}>Planimetría</Link></li>
                   </ul>
                 </li>
 
@@ -240,9 +250,9 @@ export default function Header() {
                     <span className={`${styles.dropdownIcon} ${isDropdownOpen('estudiantes') ? styles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${styles.dropdownMenu} ${isDropdownOpen('estudiantes') ? styles.open : ''}`}>
-                    <li><Link href="/convivencia" onClick={closeMenu}>Convivencia</Link></li>
-                    <li><Link href="/documentacion" onClick={closeMenu}>Documentación</Link></li>
-                    <li><Link href="/titulos" onClick={closeMenu}>Títulos</Link></li>
+                    <li><Link href="/estudiantes/convivencia" onClick={closeMenu}>Convivencia</Link></li>
+                    <li><Link href="/estudiantes/documentacion" onClick={closeMenu}>Documentación</Link></li>
+                    <li><Link href="/estudiantes/titulos" onClick={closeMenu}>Títulos</Link></li>
                   </ul>
                 </li>
 
@@ -252,13 +262,13 @@ export default function Header() {
                     className={styles.navLinkDropdown}
                     onClick={() => toggleDropdown('ciclo')}
                   >
-                    Ciclo 2025
+                    Ciclo Lectivo
                     <span className={`${styles.dropdownIcon} ${isDropdownOpen('ciclo') ? styles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${styles.dropdownMenu} ${isDropdownOpen('ciclo') ? styles.open : ''}`}>
-                    <li><Link href="/horarios" onClick={closeMenu}>Horarios</Link></li>
-                    <li><Link href="/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
-                    <li><Link href="/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
+                    <li><Link href="/ciclo-lectivo/horarios" onClick={closeMenu}>Horarios</Link></li>
+                    <li><Link href="/ciclo-lectivo/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
+                    <li><Link href="/ciclo-lectivo/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
                   </ul>
                 </li>
 

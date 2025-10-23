@@ -30,6 +30,8 @@ export default function GestorUsuarios() {
   const [updatingUser, setUpdatingUser] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(null)
   const [currentUserRole, setCurrentUserRole] = useState(null)
+  const [editingField, setEditingField] = useState(null) // { userId, field }
+  const [editValues, setEditValues] = useState({}) // { userId: { field: value } }
   const router = useRouter()
 
   // Estado para los filtros
@@ -106,6 +108,98 @@ export default function GestorUsuarios() {
 
   const handleUserClick = (userId) => {
     setExpandedUserId(expandedUserId === userId ? null : userId)
+    setEditingField(null) // Cerrar cualquier campo en edición al expandir/contraer
+  }
+
+  const startEditing = (userId, field, currentValue) => {
+    setEditingField({ userId, field })
+    setEditValues(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [field]: currentValue || ''
+      }
+    }))
+  }
+
+  const cancelEditing = () => {
+    setEditingField(null)
+  }
+
+  const handleEditChange = (userId, field, value) => {
+    setEditValues(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [field]: value
+      }
+    }))
+  }
+
+  const saveField = async (userId, field) => {
+    try {
+      setUpdatingUser(userId)
+      
+      const userToUpdate = users.find(user => user.id === userId)
+      const currentUser = users.find(user => user.id === currentUserId)
+      
+      // No permitir que usuarios se modifiquen a sí mismos
+      if (userId === currentUserId) {
+        toast.error('No puedes modificar tu propia información')
+        setUpdatingUser(null)
+        setEditingField(null)
+        return
+      }
+
+      // Verificar permisos
+      if (!canModifyUser(currentUserId, currentUser, userToUpdate)) {
+        toast.error('No tienes permisos para modificar este usuario')
+        setUpdatingUser(null)
+        setEditingField(null)
+        return
+      }
+
+      const newValue = editValues[userId]?.[field] || ''
+      
+      // Validaciones básicas
+      if (field === 'username' && !newValue.trim()) {
+        toast.error('El nombre de usuario no puede estar vacío')
+        setUpdatingUser(null)
+        return
+      }
+
+      if (field === 'email' && !newValue.trim()) {
+        toast.error('El email no puede estar vacío')
+        setUpdatingUser(null)
+        return
+      }
+
+      const updateData = { [field]: newValue.trim() }
+      
+      const updatePromise = userService.updateUser(userId, updateData)
+      
+      toast.promise(updatePromise, {
+        loading: 'Actualizando información...',
+        success: 'Información actualizada correctamente',
+        error: 'Error al actualizar la información'
+      })
+
+      await updatePromise
+      
+      // Actualizar el estado local
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, [field]: newValue.trim() }
+          : user
+      ))
+      
+      setEditingField(null)
+      
+    } catch (err) {
+      console.error('Error updating user field:', err)
+    } finally {
+      setUpdatingUser(null)
+    }
   }
 
   const handleRoleChange = async (userId, newRoleId) => {
@@ -127,6 +221,14 @@ export default function GestorUsuarios() {
       if (currentUser?.role?.name === 'Administrador' && 
           userToUpdate?.role?.name === 'Administrador' && 
           selectedRole?.name !== 'Administrador') {
+        toast.error('No puedes quitar el rol de Administrador a otro administrador')
+        setUpdatingUser(null)
+        return
+      }
+      
+      if (currentUser?.role?.name === 'Administrador' && 
+          userToUpdate?.role?.name === 'SuperAdministrador' && 
+          selectedRole?.name !== 'SuperAdministrador') {
         toast.error('No puedes quitar el rol de Administrador a otro administrador')
         setUpdatingUser(null)
         return
@@ -165,7 +267,6 @@ export default function GestorUsuarios() {
       
     } catch (err) {
       console.error('Error updating user role:', err)
-      // El toast de error ya se maneja en el promise
     } finally {
       setUpdatingUser(null)
     }
@@ -193,6 +294,13 @@ export default function GestorUsuarios() {
         return
       }
 
+      if (currentUser?.role?.name === 'Administrador' && 
+          userToUpdate?.role?.name === 'SuperAdministrador') {
+        toast.error('No puedes bloquear a otro Superadministrador')
+        setUpdatingUser(null)
+        return
+      }
+
       const action = block ? 'bloquear' : 'desbloquear'
       const updatePromise = userService.updateUserBlockStatus(userId, block)
       
@@ -213,7 +321,6 @@ export default function GestorUsuarios() {
       
     } catch (err) {
       console.error('Error updating user block status:', err)
-      // El toast de error ya se maneja en el promise
     } finally {
       setUpdatingUser(null)
     }
@@ -232,7 +339,8 @@ export default function GestorUsuarios() {
       modificationWarning,
       // Deshabilitar completamente si no se puede modificar
       isRoleChangeDisabled: updatingUser === user.id || roles.length === 0 || !canModify || isCurrentUser,
-      isBlockActionDisabled: updatingUser === user.id || !canModify || isCurrentUser
+      isBlockActionDisabled: updatingUser === user.id || !canModify || isCurrentUser,
+      isFieldEditingDisabled: updatingUser === user.id || !canModify || isCurrentUser
     }
   }
 
@@ -339,7 +447,8 @@ export default function GestorUsuarios() {
                 canModify, 
                 modificationWarning,
                 isRoleChangeDisabled,
-                isBlockActionDisabled 
+                isBlockActionDisabled,
+                isFieldEditingDisabled
               } = getUserModificationStatus(user)
               
               return (
@@ -386,18 +495,235 @@ export default function GestorUsuarios() {
                           </div>
                           
                           <div className={styles.detailsGrid}>
+                            {/* Username - Editable */}
+                            <div className={styles.detailItem}>
+                              <label>Usuario:</label>
+                              {editingField?.userId === user.id && editingField?.field === 'username' ? (
+                                <div className={styles.editField}>
+                                  <input
+                                    type="text"
+                                    value={editValues[user.id]?.username || user.username || ''}
+                                    onChange={(e) => handleEditChange(user.id, 'username', e.target.value)}
+                                    className={styles.editInput}
+                                    autoFocus
+                                  />
+                                  <div className={styles.editActions}>
+                                    <button
+                                      onClick={() => saveField(user.id, 'username')}
+                                      disabled={updatingUser === user.id}
+                                      className={styles.saveBtn}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className={styles.cancelBtn}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={styles.fieldWithEdit}>
+                                  <span>{user.username || 'No especificado'}</span>
+                                  {!isFieldEditingDisabled && (
+                                    <button
+                                      onClick={() => startEditing(user.id, 'username', user.username)}
+                                      className={styles.editBtn}
+                                      title="Editar usuario"
+                                    >
+                                      ✎
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Name - Editable */}
                             <div className={styles.detailItem}>
                               <label>Nombre:</label>
-                              <span>{getFieldValue(user, 'name')}</span>
+                              {editingField?.userId === user.id && editingField?.field === 'name' ? (
+                                <div className={styles.editField}>
+                                  <input
+                                    type="text"
+                                    value={editValues[user.id]?.name || user.name || ''}
+                                    onChange={(e) => handleEditChange(user.id, 'name', e.target.value)}
+                                    className={styles.editInput}
+                                    autoFocus
+                                  />
+                                  <div className={styles.editActions}>
+                                    <button
+                                      onClick={() => saveField(user.id, 'name')}
+                                      disabled={updatingUser === user.id}
+                                      className={styles.saveBtn}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className={styles.cancelBtn}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={styles.fieldWithEdit}>
+                                  <span>{user.name || 'No especificado'}</span>
+                                  {!isFieldEditingDisabled && (
+                                    <button
+                                      onClick={() => startEditing(user.id, 'name', user.name)}
+                                      className={styles.editBtn}
+                                      title="Editar nombre"
+                                    >
+                                      ✎
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
+
+                            {/* Surname - Editable */}
                             <div className={styles.detailItem}>
                               <label>Apellido:</label>
-                              <span>{getFieldValue(user, 'surname')}</span>
+                              {editingField?.userId === user.id && editingField?.field === 'surname' ? (
+                                <div className={styles.editField}>
+                                  <input
+                                    type="text"
+                                    value={editValues[user.id]?.surname || user.surname || ''}
+                                    onChange={(e) => handleEditChange(user.id, 'surname', e.target.value)}
+                                    className={styles.editInput}
+                                    autoFocus
+                                  />
+                                  <div className={styles.editActions}>
+                                    <button
+                                      onClick={() => saveField(user.id, 'surname')}
+                                      disabled={updatingUser === user.id}
+                                      className={styles.saveBtn}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className={styles.cancelBtn}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={styles.fieldWithEdit}>
+                                  <span>{user.surname || 'No especificado'}</span>
+                                  {!isFieldEditingDisabled && (
+                                    <button
+                                      onClick={() => startEditing(user.id, 'surname', user.surname)}
+                                      className={styles.editBtn}
+                                      title="Editar apellido"
+                                    >
+                                      ✎
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
+
+                            {/* Carrera - Editable */}
                             <div className={styles.detailItem}>
                               <label>Carrera:</label>
-                              <span>{getFieldValue(user, 'carrera')}</span>
+                              {editingField?.userId === user.id && editingField?.field === 'Carrera' ? (
+                                <div className={styles.editField}>
+                                  <select
+                                    value={editValues[user.id]?.Carrera || user.Carrera || ''}
+                                    onChange={(e) => handleEditChange(user.id, 'Carrera', e.target.value)}
+                                    className={styles.editInput}
+                                    autoFocus
+                                  >
+                                    <option value="">Selecciona una carrera</option>
+                                    <option value="Diseño Gráfico">Diseño Gráfico</option>
+                                    <option value="Escenografía">Escenografía</option>
+                                    <option value="Fotografía">Fotografía</option>
+                                    <option value="Ilustración">Ilustración</option>
+                                    <option value="Medios Audiovisuales">Medios Audiovisuales</option>
+                                    <option value="Profesorado">Profesorado</option>
+                                    <option value="Realizador en Artes Visuales">Realizador en Artes Visuales</option>
+                                  </select>
+                                  <div className={styles.editActions}>
+                                    <button
+                                      onClick={() => saveField(user.id, 'Carrera')}
+                                      disabled={updatingUser === user.id}
+                                      className={styles.saveBtn}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className={styles.cancelBtn}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={styles.fieldWithEdit}>
+                                  <span>{user.Carrera || 'No especificada'}</span>
+                                  {!isFieldEditingDisabled && (
+                                    <button
+                                      onClick={() => startEditing(user.id, 'Carrera', user.Carrera)}
+                                      className={styles.editBtn}
+                                      title="Editar carrera"
+                                    >
+                                      ✎
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </div>
+
+                            {/* Email - Editable */}
+                            <div className={styles.detailItem}>
+                              <label>Email:</label>
+                              {editingField?.userId === user.id && editingField?.field === 'email' ? (
+                                <div className={styles.editField}>
+                                  <input
+                                    type="email"
+                                    value={editValues[user.id]?.email || user.email || ''}
+                                    onChange={(e) => handleEditChange(user.id, 'email', e.target.value)}
+                                    className={styles.editInput}
+                                    autoFocus
+                                  />
+                                  <div className={styles.editActions}>
+                                    <button
+                                      onClick={() => saveField(user.id, 'email')}
+                                      disabled={updatingUser === user.id}
+                                      className={styles.saveBtn}
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={cancelEditing}
+                                      className={styles.cancelBtn}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={styles.fieldWithEdit}>
+                                  <span>{user.email || 'No especificado'}</span>
+                                  {!isFieldEditingDisabled && (
+                                    <button
+                                      onClick={() => startEditing(user.id, 'email', user.email)}
+                                      className={styles.editBtn}
+                                      title="Editar email"
+                                    >
+                                      ✎
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Rol (no editable directamente, usa el select de abajo) */}
                             <div className={styles.detailItem}>
                               <label>Rol Actual:</label>
                               <span className={styles.currentRole}>

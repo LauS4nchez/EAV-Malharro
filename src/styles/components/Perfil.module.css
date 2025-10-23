@@ -158,11 +158,11 @@
 }
 
 .avatarContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  text-align: center;
+  position: relative;
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
 }
 
 .avatar {
@@ -501,6 +501,7 @@
 
 .emailToggle {
   background: transparent;
+  color: #5044C4;
   border: 2px solid #5044C4;
   border-radius: 8px;
   padding: 0.4rem 0.6rem;
@@ -558,4 +559,46 @@
   border-color: #5044C4;
   box-shadow: 0 0 0 3px rgba(80, 68, 196, 0.1);
   color: #1B1B1B;
+}
+
+.avatarEditOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.avatarContainer:hover .avatarEditOverlay {
+  opacity: 1;
+}
+
+.avatarUploadLabel {
+  color: white;
+  background: #007bff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+}
+
+.avatarUploadLabel:hover {
+  background: #0056b3;
+}
+
+.avatarUploadInput {
+  display: none;
+}
+
+.avatarContainer {
+  position: relative;
+  display: inline-block;
 }

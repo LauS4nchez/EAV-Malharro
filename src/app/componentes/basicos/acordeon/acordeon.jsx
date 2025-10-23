@@ -140,7 +140,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
           // Si la variante es preguntas, texto siempre negro, sino usar textoNegro de Strapi
-          const textoColor = variant === 'preguntas' ? '#000000' : (item.textoNegro ? '#252525' : '#FFFFFF');
+          const textoColor = variant === 'preguntas' ? '#000000' : (item.textoNegro ? '#000000' : '#FFFFFF');
           const isEditingThis = editingItem === item.id;
           const titulo = item.titulo || 'Sin título';
 
@@ -155,7 +155,8 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                 onClick={() => toggle(item.id)}
               >
                 <span className={acordeonStyles.tituloContainer}>
-                  <h2 
+                  <h2
+                    style={{color: textoColor}}
                     className={acordeonStyles.tituloAcordeon}
                     title={isMobile && titulo.length > 15 && variant === 'carreras' ? titulo : ''}
                   >

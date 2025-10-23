@@ -3,8 +3,8 @@
 /* Contenedor circular negro como "nuestros-estudiantes" */
 .usinaCircularContainer {
   width: 100vw;
-  height: 818px;
   background-color: #111;
+  clip-path: ellipse(100% 50% at 50% 50%);
   padding: 4rem 0;
   margin: 2rem 0;
   position: relative;
@@ -128,6 +128,27 @@
 }
 
 .usinaLink:hover {
+  background: rgba(244, 21, 91, 1);
+  transform: scale(1.08);
+}
+
+.usinaVerMas {
+    color: #fff;
+    backdrop-filter: blur(2px);
+    background: #f4155be6;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    align-items: center;
+    text-decoration: none;
+    transition: all .3s;
+    display: block;
+    width: 134px;
+    margin: 0 auto;
+}
+
+.usinaVerMas:hover {
   background: rgba(244, 21, 91, 1);
   transform: scale(1.08);
 }
