@@ -1,17 +1,16 @@
 'use client';
 import { useState, useEffect } from "react";
-import UsinaProtegida from "./componentes/crearComponentes/usinaProtegida";
 import CircularContainer from "./componentes/basicos/acordeon/CircularContainerAcordeon";
 import Acordeon from "./componentes/basicos/acordeon/acordeon";
 import Header from "./componentes/construccion/Header";
 import Carrusel from './componentes/basicos/carrusel';
 import Agenda from './componentes/basicos/agenda';
 import Footer from "./componentes/construccion/Footer";
-import Usina from "./componentes/basicos/usina";
+import Usina from "./componentes/basicos/usina/usina";
 import { Texto } from "./componentes/basicos/texto/text";
-import Spinner from "./componentes/basicos/Spinner";
-import styles from "@/styles/components/Common.module.css";
-import textStyles from "@/styles/components/TextComponents.module.css";
+import Spinner from "./componentes/construccion/Spinner";
+import styles from "@/styles/components/Construccion/Common.module.css";
+import textStyles from "@/styles/components/Texto/TextComponents.module.css";
 
 export default function Page() {
   const [loading, setLoading] = useState(true);
@@ -70,7 +69,6 @@ export default function Page() {
 
         <div id="estudiantes">
           <Usina />
-          <UsinaProtegida />
         </div>
 
         <div className={styles.titlePreguntas}>

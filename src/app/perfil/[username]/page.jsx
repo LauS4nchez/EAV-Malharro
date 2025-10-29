@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { API_URL, API_TOKEN } from "@/app/config";
-import styles from "@/styles/components/PerfilPublico.module.css";
-import usinaStyles from "@/styles/components/Usina.module.css";
-import agendaStyles from "@/styles/components/Agenda.module.css";
-import InformacionPersonal from '@/app/componentes/login/InformacionPersonal';
+import styles from "@/styles/components/Perfil/PerfilPublico.module.css";
+import agendaStyles from "@/styles/components/Agenda/Agenda.module.css";
+import InformacionPersonal from './InformacionPersonal';
+import Footer from '@/app/componentes/construccion/Footer';
+import Header from '@/app/componentes/construccion/Header';
+import UsinaGallery from './usina/UsinaGallery';
+import CrearUsinaModal from './usina/CrearUsinaModal';
+import { Toaster } from 'react-hot-toast';
 
 export default function PerfilPublicoPage({ params }) {
-  const { username } = params;
+  const { username } = use(params);
   const [userData, setUserData] = useState(null);
   const [usinas, setUsinas] = useState([]);
   const [agendas, setAgendas] = useState([]);
@@ -16,9 +20,30 @@ export default function PerfilPublicoPage({ params }) {
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('trabajos');
-  const [usinasWithImages, setUsinasWithImages] = useState([]);
   const [agendasWithImages, setAgendasWithImages] = useState([]);
   const [imagesLoading, setImagesLoading] = useState(true);
+  const [showCrearUsinaModal, setShowCrearUsinaModal] = useState(false);
+  const [showAvatarOverlay, setShowAvatarOverlay] = useState(false);
+
+  // Funciones para manejar media
+  const getPreviewUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    
+    if (media.mime?.startsWith('image/')) {
+      return media.url;
+    }
+    
+    if (media.mime?.startsWith('video/') && media.previewUrl) {
+      return media.previewUrl;
+    }
+    
+    return media.url || '/img/placeholder.jpg';
+  };
+
+  const getMediaUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    return media.url || '/img/placeholder.jpg';
+  };
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -33,14 +58,29 @@ export default function PerfilPublicoPage({ params }) {
     const fetchData = async () => {
       try {
         // Obtener usuario logueado
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          setCurrentUser(JSON.parse(storedUser));
+        const token = localStorage.getItem('jwt');
+        if (token) {
+          try {
+            const userRes = await fetch(`${API_URL}/users/me`, {
+              headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              console.log('Usuario logueado:', userData);
+              setCurrentUser(userData);
+            }
+          } catch (err) {
+            console.error('Error al obtener usuario logueado:', err);
+          }
         }
 
-        // Buscar usuario del perfil con populate completo
+        // Obtener datos del usuario
         const usersResponse = await fetch(
-          `${API_URL}/users?filters[username][$eq]=${username}&populate[0]=role&populate[1]=avatar&populate[2]=usinas_creadas&populate[3]=agendas_creadas`,
+          `${API_URL}/users?filters[username][$eq]=${username}&populate[0]=role&populate[1]=avatar&populate[2]=usinas_creadas.media&populate[3]=agendas_creadas.imagen`,
           {
             headers: {
               'Authorization': `Bearer ${API_TOKEN}`,
@@ -52,8 +92,6 @@ export default function PerfilPublicoPage({ params }) {
         if (!usersResponse.ok) throw new Error('Error al cargar el usuario');
 
         const usersData = await usersResponse.json();
-        
-        // Strapi v5 devuelve { data: [], meta: {} }
         const users = usersData.data || usersData;
 
         if (!users || users.length === 0) throw new Error('Usuario no encontrado');
@@ -61,30 +99,48 @@ export default function PerfilPublicoPage({ params }) {
         const user = users[0];
         setUserData(user);
 
+        // Procesar usinas
         let approvedUsinas = [];
-        let approvedAgendas = [];
-
         if (user.usinas_creadas) {
-          // Primero eliminar duplicados, luego filtrar por aprobación
           const uniqueUsinas = user.usinas_creadas.filter((usina, index, self) => 
             index === self.findIndex(u => u.documentId === usina.documentId)
           );
           
-          // Ahora filtrar solo las aprobadas
           approvedUsinas = uniqueUsinas.filter(usina => {
             return usina.aprobado === 'aprobada';
           });
           
-          setUsinas(approvedUsinas);
+          // Procesar media de usinas aquí mismo
+          const usinasWithMedia = approvedUsinas.map(usina => {
+            const media = usina.media;
+            const previewUrl = getPreviewUrl(media);
+            const mediaUrl = getMediaUrl(media);
+            
+            return {
+              ...usina,
+              previewUrl,
+              mediaUrl,
+              mediaType: media?.mime?.startsWith('video/') ? 'video' : 'image',
+              mimeType: media?.mime,
+              creador: {
+                name: user.name || '',
+                surname: user.surname || '',
+                username: user.username || '',
+                carrera: user.carrera || '',
+              }
+            };
+          });
+          
+          setUsinas(usinasWithMedia);
         }
 
+        // Procesar agendas
+        let approvedAgendas = [];
         if (user.agendas_creadas) {
-          // Primero eliminar duplicados, luego filtrar por aprobación
           const uniqueAgendas = user.agendas_creadas.filter((agenda, index, self) => 
             index === self.findIndex(a => a.documentId === agenda.documentId)
           );
           
-          // Ahora filtrar solo las aprobadas
           approvedAgendas = uniqueAgendas.filter(agenda => {
             return agenda.aprobado === 'aprobada';
           });
@@ -92,8 +148,8 @@ export default function PerfilPublicoPage({ params }) {
           setAgendas(approvedAgendas);
         }
 
-        // Cargar imágenes para usinas y agendas
-        await fetchImages(approvedUsinas, approvedAgendas);
+        // Cargar imágenes para agendas
+        await fetchAgendasImages(approvedAgendas);
 
       } catch (err) {
         setError(err.message);
@@ -103,50 +159,8 @@ export default function PerfilPublicoPage({ params }) {
       }
     };
 
-    const fetchImages = async (usinas, agendas) => {
+    const fetchAgendasImages = async (agendas) => {
       try {
-        // Fetch imágenes para usinas
-        const usinasWithImagesData = await Promise.all(
-          usinas.map(async (usina) => {
-            try {
-              const response = await fetch(
-                `${API_URL}/usinas/${usina.documentId}?populate=imagen`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${API_TOKEN}`,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-              
-              if (response.ok) {
-                const usinaData = await response.json();
-                const usinaWithImage = usinaData.data || usinaData;
-                
-                // Obtener URL de la imagen
-                let imageUrl = '/placeholder.jpg';
-                const imagenField = usinaWithImage.imagen;
-                const imgData = imagenField?.data ?? imagenField;
-                const imgAttrs = imgData?.attributes ?? imgData;
-                const urlPath = imgAttrs?.url;
-                
-                if (urlPath) {
-                  imageUrl = urlPath.startsWith('http') ? urlPath : `${API_URL.replace('/api', '')}${urlPath}`;
-                }
-                
-                return {
-                  ...usina,
-                  imageUrl
-                };
-              }
-              return { ...usina, imageUrl: '/placeholder.jpg' };
-            } catch (error) {
-              return { ...usina, imageUrl: '/placeholder.jpg' };
-            }
-          })
-        );
-
-        // Fetch imágenes para agendas
         const agendasWithImagesData = await Promise.all(
           agendas.map(async (agenda) => {
             try {
@@ -164,15 +178,11 @@ export default function PerfilPublicoPage({ params }) {
                 const agendaData = await response.json();
                 const agendaWithImage = agendaData.data || agendaData;
                 
-                // Obtener URL de la imagen
                 let imageUrl = '/placeholder.jpg';
-                const imagenField = agendaWithImage.imagen;
-                const imgData = imagenField?.data ?? imagenField;
-                const imgAttrs = imgData?.attributes ?? imgData;
-                const urlPath = imgAttrs?.url;
+                const imagen = agendaWithImage.imagen;
                 
-                if (urlPath) {
-                  imageUrl = urlPath.startsWith('http') ? urlPath : `${API_URL.replace('/api', '')}${urlPath}`;
+                if (imagen?.url) {
+                  imageUrl = imagen.url;
                 }
                 
                 return {
@@ -187,17 +197,46 @@ export default function PerfilPublicoPage({ params }) {
           })
         );
 
-        setUsinasWithImages(usinasWithImagesData);
         setAgendasWithImages(agendasWithImagesData);
 
       } catch (error) {
-        setUsinasWithImages(usinas.map(u => ({ ...u, imageUrl: '/placeholder.jpg' })));
         setAgendasWithImages(agendas.map(a => ({ ...a, imageUrl: '/placeholder.jpg' })));
       }
     };
 
     fetchData();
   }, [username]);
+
+  const handleUsinaCreada = (nuevaUsina) => {
+    console.log('Nueva usina creada:', nuevaUsina);
+  };
+
+  // Función para actualizar el avatar desde InformacionPersonal
+    const handleAvatarUpdate = (newAvatarData) => {
+    setUserData(prev => ({
+      ...prev,
+      avatar: newAvatarData
+    }));
+  };
+
+  // Función para actualizar datos del usuario desde InformacionPersonal
+  const handleUserDataUpdate = (updatedData) => {
+    setUserData(prev => ({
+      ...prev,
+      ...updatedData
+    }));
+  };
+
+  const handleAvatarOverlayChange = (show) => {
+    setShowAvatarOverlay(show);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab !== 'informacion') {
+      setShowAvatarOverlay(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -240,52 +279,35 @@ export default function PerfilPublicoPage({ params }) {
   const userRole = userData.role?.type || userData.role?.name;
   const isCurrentUser = currentUser && currentUser.username === userData.username;
 
-  // Obtener publicación más reciente (ya ordenadas por fecha)
-  const latestUsina = usinasWithImages.length > 0 ? usinasWithImages[0] : null;
-  const latestAgenda = agendasWithImages.length > 0 ? agendasWithImages[0] : null;
-
-  // CORREGIDO: Usar minúsculas para coincidir con el rol real
   const showUsinas = userRole === 'estudiante' || ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
   const showAgendas = ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
 
-  // Renderizar contenido según la pestaña activa
   const renderContent = () => {
     switch (activeTab) {
       case 'trabajos':
         return (
-          <div className={usinaStyles.usinaGaleria}>
-            {usinasWithImages.length > 0 ? (
-              usinasWithImages.map((usina) => (
-                <div key={usina.id} className={usinaStyles.usinaCard}>
-                  <div className={usinaStyles.usinaImageContainer}>
-                    <img 
-                      src={usina.imageUrl} 
-                      alt={usina.nombre} 
-                      className={usinaStyles.usinaImage} 
-                    />
-                  </div>
-                  <div className={usinaStyles.usinaContenido}>
-                    <h3>{usina.nombre}</h3>
-                    <p>{usina.carrera}</p>
-                    {usina.link && (
-                      <a 
-                        href={usina.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className={usinaStyles.usinaLink}
-                      >
-                        Contactar
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className={styles.noPublicaciones}>
-                Este usuario aún no ha publicado trabajos aprobados.
-              </p>
+          <>
+            {isCurrentUser && (
+              <div className={styles.crearUsinaHeader}>
+                <h2 className={styles.sectionTitle}>Mis Trabajos</h2>
+                <button 
+                  className={styles.crearUsinaButton}
+                  onClick={() => setShowCrearUsinaModal(true)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4v16m8-8H4"/>
+                  </svg>
+                  Subir trabajo
+                </button>
+              </div>
             )}
-          </div>
+            <UsinaGallery 
+              usinas={usinas}
+              loading={imagesLoading}
+              isCurrentUser={isCurrentUser}
+              currentUserId={currentUser?.id}
+            />
+          </>
         );
 
       case 'agendas':
@@ -328,7 +350,15 @@ export default function PerfilPublicoPage({ params }) {
         );
 
       case 'informacion':
-        return <InformacionPersonal />;
+        return (
+          <InformacionPersonal 
+            userData={userData}
+            isCurrentUser={isCurrentUser}
+            onAvatarUpdate={handleAvatarUpdate}
+            onUserDataUpdate={handleUserDataUpdate}
+            onAvatarOverlayChange={handleAvatarOverlayChange}
+          />
+        );
 
       default:
         return null;
@@ -336,92 +366,109 @@ export default function PerfilPublicoPage({ params }) {
   };
 
   return (
-    <div className={styles.perfilPublicoContainer}>
-      <div className={styles.header}>
-        <button 
-          onClick={() => window.location.href = "/"}
-          className={styles.backButton}
-        >
-          ← Volver
-        </button>
-        <h1>Perfil de {userData.username}</h1>
-      </div>
-
-      <div className={styles.perfilContent}>
-        {/* Bloque izquierdo con avatar y datos */}
-        <div className={styles.leftBlock}>
-          <div className={styles.avatarContainer}>
-            {userData.avatar?.url ? (
-              <img 
-                src={userData.avatar.url} 
-                alt={`Avatar de ${userData.username}`} 
-                className={styles.avatar}
-              />
-            ) : (
-              <div className={styles.avatarPlaceholder}>
-                {userData.username?.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {(userData.name || userData.surname) && (
-            <h2 className={styles.fullName}>
-              {userData.name} {userData.surname}
-            </h2>
-          )}
-          <p className={styles.username}>@{userData.username}</p>
-          {userData.Carrera && (
-            <span className={styles.carrera}>{userData.Carrera}</span>
-          )}
-
-          {isCurrentUser && (
-            <p className={styles.sosVos}>¡Sos vos! 👋</p>
-          )}
+    <div>
+      <div className={styles.perfilPublicoContainer}>
+        <div className={`${styles.header} mb-5`}>
+          <Header variant='dark'/>
         </div>
 
-        {/* Bloque derecho: contenido según rol */}
-        <div className={styles.rightBlock}>
-          {/* Navegación con tabs */}
-          <div className={styles.navigation}>
-            {showUsinas && (
-              <button 
-                className={`${styles.navButton} ${activeTab === 'trabajos' ? styles.active : ''}`}
-                onClick={() => setActiveTab('trabajos')}
-              >
-                Trabajos ({usinasWithImages.length})
-              </button>
+        <div className={styles.perfilContent}>
+          {/* Bloque izquierdo con avatar y datos */}
+          <div className={styles.leftBlock}>
+            <div className={styles.avatarContainer}>
+              {userData.avatar?.url ? (
+                <img 
+                  src={userData.avatar.url} 
+                  alt={`Avatar de ${userData.username}`} 
+                  className={styles.avatar}
+                />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  {userData.username?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              {isCurrentUser && activeTab === 'informacion' && showAvatarOverlay && (
+                <div className={styles.avatarEditOverlay}>
+                  <label htmlFor="avatar-upload" className={styles.avatarUploadLabel}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {(userData.name || userData.surname) && (
+              <h2 className={styles.fullName}>
+                {userData.name} {userData.surname}
+              </h2>
             )}
-            {showAgendas && (
-              <button 
-                className={`${styles.navButton} ${activeTab === 'agendas' ? styles.active : ''}`}
-                onClick={() => setActiveTab('agendas')}
-              >
-                Agendas ({agendasWithImages.length})
-              </button>
+            <p className={styles.username}>@{userData.username}</p>
+            {userData.carrera && (
+              <span className={styles.carrera}>{userData.carrera}</span>
             )}
+
             {isCurrentUser && (
-              <button 
-                className={`${styles.navButton} ${activeTab === 'informacion' ? styles.active : ''}`}
-                onClick={() => setActiveTab('informacion')}
-              >
-                Información Personal
-              </button>
+              <p className={styles.sosVos}>Este es tu perfíl</p>
             )}
           </div>
 
-          {/* Contenido de la pestaña activa */}
-          {imagesLoading && activeTab !== 'informacion' ? (
-            <div className={styles.loadingContainer}>
-              <div className={styles.spinner}></div>
-              <p>Cargando contenido...</p>
+          {/* Bloque derecho: contenido según rol */}
+          <div className={styles.rightBlock}>
+            {/* Navegación con tabs */}
+            <div className={styles.navigation}>
+              {showUsinas && (
+                <button 
+                  className={`${styles.navButton} ${activeTab === 'trabajos' ? styles.active : ''}`}
+                  onClick={() => handleTabChange('trabajos')}
+                >
+                  Trabajos ({usinas.length})
+                </button>
+              )}
+              {showAgendas && (
+                <button 
+                  className={`${styles.navButton} ${activeTab === 'agendas' ? styles.active : ''}`}
+                  onClick={() => handleTabChange('agendas')}
+                >
+                  Agendas ({agendas.length})
+                </button>
+              )}
+              {isCurrentUser && (
+                <button 
+                  className={`${styles.navButton} ${activeTab === 'informacion' ? styles.active : ''}`}
+                  onClick={() => handleTabChange('informacion')}
+                >
+                  Información Personal
+                </button>
+              )}
             </div>
-          ) : (
+
+            {/* Contenido de la pestaña activa */}
             <div className={styles.tabContent}>
               {renderContent()}
             </div>
-          )}
+          </div>
         </div>
       </div>
+
+      {/* Modal para crear usina */}
+      <CrearUsinaModal
+        isOpen={showCrearUsinaModal}
+        onClose={() => setShowCrearUsinaModal(false)}
+        userId={currentUser?.id}
+        userData={userData}
+        onUsinaCreada={handleUsinaCreada}
+      />
+
+      <Footer />
+      
+      {/* Toaster para notificaciones */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+        }}
+      />
     </div>
   );
 }

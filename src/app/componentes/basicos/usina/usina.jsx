@@ -2,23 +2,38 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { API_URL, URL, API_TOKEN } from '@/app/config';
-import styles from '@/styles/components/Usina.module.css';
+import { API_URL, API_TOKEN } from '@/app/config';
+import styles from '@/styles/components/Usina/Usina.module.css';
 
 export default function Usina() {
   const [usinas, setUsinas] = useState([]);
-  const [displayUsinas, setDisplayUsinas] = useState([]); // las que se muestran
+  const [displayUsinas, setDisplayUsinas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUsina, setSelectedUsina] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const getImageUrl = (imagenField) => {
-    if (!imagenField) return '/placeholder.jpg';
-    const data = imagenField.data ?? imagenField;
-    const attrs = data?.attributes ?? data;
-    // URL original
-    if (attrs?.url) return attrs.url.startsWith('http') ? attrs.url : `${URL}${attrs.url}`;
-    return '/placeholder.jpg';
+  const getPreviewUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    
+    // Para imágenes - usar la URL original
+    if (media.mime?.startsWith('image/')) {
+      return media.url;
+    }
+    
+    // Para videos - usar el preview GIF si existe
+    if (media.mime?.startsWith('video/') && media.previewUrl) {
+      return media.previewUrl;
+    }
+    
+    // Fallback
+    return media.url || '/img/placeholder.jpg';
+  };
+
+  const getMediaUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    
+    // Para ambos casos (imágenes y videos) usar la URL original
+    return media.url || '/img/placeholder.jpg';
   };
 
   // Detecta tamaño de pantalla
@@ -53,26 +68,28 @@ export default function Usina() {
 
         const normalized = items
           .map((item) => {
-            const attrs = item.attributes ?? item;
-            if (!attrs) return null;
+            if (!item) return null;
 
-            const imageUrl = getImageUrl(attrs.imagen);
-            const creadorData = attrs.creador?.data ?? attrs.creador;
-            const creadorAttrs = creadorData?.attributes ?? creadorData ?? null;
+            const previewUrl = getPreviewUrl(item.media);
+            const mediaUrl = getMediaUrl(item.media);
+            
+            // En Strapi v5, las relaciones vienen directamente en el objeto
+            const creador = item.creador;
 
             return {
-              id: item.id ?? Math.random(),
-              titulo: attrs.titulo ?? attrs.nombre ?? 'Sin título',
-              creado: attrs.createdAt ?? attrs.publishedAt ?? null,
-              imageUrl,
-              creador: creadorAttrs
-                ? {
-                    name: creadorAttrs.name ?? '',
-                    surname: creadorAttrs.surname ?? '',
-                    username: creadorAttrs.username ?? '',
-                    carrera: creadorAttrs.Carrera ?? 'Sin carrera',
-                  }
-                : null,
+              id: item.id,
+              titulo: item.titulo || 'Sin título',
+              creado: item.createdAt || item.publishedAt || null,
+              previewUrl,
+              mediaUrl,
+              creador: creador ? {
+                name: creador.name || '',
+                surname: creador.surname || '',
+                username: creador.username || '',
+                carrera: creador.carrera || 'Sin carrera',
+              } : null,
+              mediaType: item.media?.mime?.startsWith('video/') ? 'video' : 'image',
+              mimeType: item.media?.mime
             };
           })
           .filter(Boolean);
@@ -134,12 +151,17 @@ export default function Usina() {
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' ? handleCardClick(u) : null)}
               >
-                <img src={u.imageUrl} alt={u.titulo} className={styles.usinaImage} />
+                {/* Siempre usar img para la preview - si es video, previewUrl será el GIF */}
+                <img 
+                  src={u.previewUrl} 
+                  alt={u.titulo} 
+                  className={styles.usinaImage}
+                />
               </div>
             ))}
           </div>
 
-          <Link className={styles.usinaVerMas} href="/usinas">
+          <Link className={styles.usinaVerMas} href="/galeria">
             Ver más
           </Link>
         </div>
@@ -151,7 +173,20 @@ export default function Usina() {
             <button className={styles.closeButton} onClick={closeModal}>✕</button>
 
             <div className={styles.modalImageContainer}>
-              <img src={selectedUsina.imageUrl} alt={selectedUsina.titulo} className={styles.modalImage} />
+              {selectedUsina.mediaType === 'video' ? (
+                <video 
+                  src={selectedUsina.mediaUrl} 
+                  className={styles.modalImage}
+                  controls
+                  autoPlay
+                  muted
+                  playsInline
+                >
+                  Tu navegador no soporta el elemento de video.
+                </video>
+              ) : (
+                <img src={selectedUsina.mediaUrl} alt={selectedUsina.titulo} className={styles.modalImage} />
+              )}
             </div>
 
             <div className={styles.modalInfo}>
@@ -164,7 +199,7 @@ export default function Usina() {
                 </p>
               )}
 
-              <p><strong>Carrera:</strong> {selectedUsina.creador?.carrera}</p>
+              <p><strong>Carrera:</strong> {selectedUsina.creador?.carrera || 'No especificada'}</p>
 
               {selectedUsina.creado && (
                 <p><strong>Publicado:</strong> {new Date(selectedUsina.creado).toLocaleDateString('es-AR')}</p>

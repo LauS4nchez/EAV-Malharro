@@ -5,7 +5,7 @@ import { checkUserRole } from '../../validacion/checkRole';
 import dynamic from 'next/dynamic';
 import { handleSave } from '../../validacion/handleSave';
 import { API_URL } from "@/app/config";
-import styles from "@/styles/components/TextComponents.module.css"
+import styles from "@/styles/components/Texto/TextComponents.module.css"
 
 // Importación dinámica de ReactMarkdown
 const ReactMarkdown = dynamic(() => import('react-markdown'), {

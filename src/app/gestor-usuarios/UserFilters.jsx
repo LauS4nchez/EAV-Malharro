@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import styles from '@/styles/components/UserFilters.module.css'
+import styles from '@/styles/components/Perfil/UserFilters.module.css'
 
 export default function UserFilters({ 
   filters, 

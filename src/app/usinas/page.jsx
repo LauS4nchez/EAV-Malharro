@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { API_URL, URL } from '@/app/config';
-import styles from '@/styles/components/UsinaPage.module.css';
+import styles from '@/styles/components/Usina/UsinaPage.module.css';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export default function UsinasPage() {
 
     const fetchUsinas = async () => {
       try {
-        const res = await fetch(`${API_URL}/usinas?populate=imagen`, {
+        const res = await fetch(`${API_URL}/usinas?populate=media`, {
           cache: 'no-store',
         });
 

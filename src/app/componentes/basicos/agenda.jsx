@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import styles from "@/styles/components/Agenda.module.css";
+import styles from "@/styles/components/Agenda/Agenda.module.css";
 
 const PrevArrow = ({ onClick }) => (
   <button className={`${styles.customArrow} ${styles.prevArrow}`} onClick={onClick}>

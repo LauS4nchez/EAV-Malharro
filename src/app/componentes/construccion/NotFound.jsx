@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import styles from '@/styles/components/NotFound.module.css';
+import styles from '@/styles/components/PaginaNoEncontrada/NotFound.module.css';
 
 export default function NotFound() {
   const router = useRouter();

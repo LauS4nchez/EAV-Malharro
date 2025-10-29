@@ -63,7 +63,7 @@
   cursor: pointer;
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   background: #111;
-  height: 300px; /* <-- aumenté la altura para hacerlas más alargadas */
+  height: 300px;
   display: flex;
   flex-direction: column;
 }
@@ -247,5 +247,154 @@
 
   .usinaCard {
     height: 260px; /* También más alargadas en móvil */
+  }
+}
+
+/* Estilos para la galería completa */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+}
+
+.filtrosContainer {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  padding: 0 1rem;
+}
+
+.searchBox {
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.filtrosRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.resultadosInfo {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.resultadosInfo p {
+  margin: 0;
+}
+
+/* Overlay para las cards en la galería */
+.cardOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  transform: translateY(10px);
+}
+
+.usinaCard:hover .cardOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
+}
+
+.cardCarrera {
+  font-size: 0.8rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.noResults {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.noResults p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Ajustes para la galería completa */
+.usinaGaleria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 0 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filtrosRow {
+    flex-direction: column;
+  }
+  
+  .filterSelect {
+    flex: none;
+    width: 100%;
+  }
+  
+  .usinaGaleria {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  
+  .cardOverlay {
+    padding: 0.5rem;
+  }
+  
+  .cardTitle {
+    font-size: 0.8rem;
+  }
+  
+  .cardCarrera {
+    font-size: 0.7rem;
   }
 }

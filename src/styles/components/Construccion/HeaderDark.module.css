@@ -1,0 +1,664 @@
+/* HeaderDark.module.css - Versión para fondos oscuros */
+
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: transparent;
+  padding: 0.75rem 0;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+}
+
+/* Logo + Lupa */
+.logoSearchContainer {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-primary);
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  width: 148px;
+  height: 48px;
+  justify-content: center;
+  margin-left: 24px;
+}
+
+.navbarBrand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.logoNav {
+  height: 23px;
+  width: auto;
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.lupaNav {
+  height: 24px;
+  width: auto;
+}
+
+/* Botón hamburguesa */
+.navbarToggler {
+  background-color: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 7px;
+  margin-right: 24px;
+}
+
+.navbarTogglerIcon {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: white;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbarTogglerIcon::before,
+.navbarTogglerIcon::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: white;
+  left: 0;
+  transition: all 0.3s ease;
+}
+
+.navbarTogglerIcon::before {
+  top: -6px;
+}
+
+.navbarTogglerIcon::after {
+  top: 6px;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon {
+  background: transparent;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.navbarToggler.collapsed .navbarTogglerIcon::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+/* Menú lateral móvil */
+.menuCollapse {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  height: 100vh;
+  width: 80%;
+  max-width: 350px;
+  background-color: var(--color-dark);
+  box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+  z-index: 1050;
+  padding-top: 10rem;
+  padding-right: 1rem;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(100%);
+}
+
+.menuCollapse.show {
+  transform: translateX(0);
+  right: 0;
+}
+
+.menuBox {
+  padding: 1rem;
+  height: 100%;
+  position: relative;
+}
+
+.closeMenuButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+  display: none;
+}
+
+.menuCollapse.show .closeMenuButton {
+  display: block;
+}
+
+.closeMenuButton img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Navegación */
+.navbarNav {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: right;
+}
+
+/* Items del menú */
+.navItemDropdown {
+  position: relative;
+}
+
+.navLinkDropdown {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  text-align: left;
+  transition: background-color 0.2s;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+/* Flecha del dropdown - MÓVIL (blanco) */
+.dropdownIcon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-right: 1.5px solid white; /* Blanco para móvil */
+  border-bottom: 1.5px solid white; /* Blanco para móvil */
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+}
+
+.dropdownIcon.rotate {
+  transform: rotate(225deg);
+}
+
+/* Menús desplegables móvil */
+.dropdownMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.dropdownMenu.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 0.5rem 0;
+}
+
+.dropdownMenu a {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p5-r);
+  font-weight: var(--peso-regular);
+}
+
+.dropdownMenu a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0.5rem 1rem;
+  border: none;
+}
+
+/* Enlaces simples */
+.navItem {
+  position: relative;
+}
+
+.navLink {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  border-radius: 7px;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.navLink:hover,
+.navLinkDropdown:hover {
+  color: var(--color-neutral-6);
+  transition: color 0.2s ease;
+}
+
+/* Modal de búsqueda */
+.searchModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.searchModalContent {
+  position: relative;
+  background: transparent;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+}
+
+.closeSearchButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.closeSearchButton img {
+  height: 1.5rem;
+  width: auto;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  border-radius: 18px;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #D0032E;
+}
+
+.searchInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  margin: 0 0.5rem;
+  padding: 0.5rem;
+  font-size: var(--p1-r);
+  color: var(--color-dark);
+}
+
+.searchInput::placeholder {
+  color: var(--color-neutral-6);
+}
+
+/* Overlay */
+.menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* ================= VERSIÓN DESKTOP ================= */
+@media (min-width: 992px) {
+  .navbarToggler {
+    display: none;
+  }
+
+  .menuCollapse {
+    position: static;
+    height: auto;
+    width: auto;
+    max-width: none;
+    background: transparent !important;
+    transform: none;
+    padding: 0;
+    overflow: visible;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .menuBox {
+    padding: 0;
+    height: auto;
+    justify-content: center;
+    display: flex;
+    width: fit-content;
+    background: transparent !important;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .closeMenuButton {
+    display: none !important;
+  }
+
+  .navbarNav {
+    flex-direction: row;
+    margin: 0;
+    gap: 0;
+    text-align: left;
+    background: transparent;
+    padding: 0;
+  }
+
+  .navLinkDropdown {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    color: var(--color-dark-header);
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .navLinkDropdown:hover .dropdownIcon {
+    transform: rotate(225deg);
+  }
+
+  /* DROPDOWNS DESKTOP - Flechas en negro */
+  .dropdownIcon {
+    border-right: 1.5px solid var(--color-dark-header); /* Negro para desktop */
+    border-bottom: 1.5px solid var(--color-dark-header); /* Negro para desktop */
+  }
+
+  .dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 250px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    max-height: 0;
+    opacity: 0;
+    border-radius: 7px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .dropdownMenu.open {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .navItemDropdown:hover .dropdownMenu {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .dropdownMenu a {
+    color: black;
+    padding: 0.75rem 1.5rem;
+    font-size: var(--p5-r);
+  }
+
+  .dropdownMenu a:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .navLink {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    color: var(--color-dark-header);
+    text-align: left;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .dropdownDivider {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Estilos para el item de usuario/login - BASE (móvil) */
+.navItemUser {
+  position: relative;
+}
+
+.userLink {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: white; /* Blanco para móvil */
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: var(--p1-r);
+  font-weight: var(--peso-regular);
+  border-radius: 7px;
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.userLink.loggedIn {
+  color: white; /* Blanco para móvil */
+  background: none;
+  font-weight: var(--peso-regular);
+}
+
+.userLink.loggedIn:hover {
+  color: var(--color-neutral-6);
+}
+
+.userDropdownMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+  text-align: left;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 180px;
+}
+
+.userDropdownMenu.open {
+  max-height: 500px;
+  opacity: 1;
+  margin: 0.5rem 0;
+}
+
+.userDropdownMenu a {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  font-size: var(--p5-r);
+  font-weight: var(--peso-regular);
+}
+
+.userDropdownMenu a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.logoutButton {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  cursor: pointer;
+  font-size: var(--p5-r);
+  font-family: inherit;
+}
+
+.logoutButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ================= VERSIÓN DESKTOP - USUARIO ================= */
+@media (min-width: 992px) {
+  .userLink {
+    font-size: 20px;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    justify-content: flex-start;
+    background: transparent !important;
+    border: none !important;
+    color: var(--color-dark-header) !important; /* Negro para desktop */
+  }
+
+  .userLink.loggedIn {
+    color: var(--color-dark-header) !important; /* Negro para desktop */
+  }
+
+  .userLink.loggedIn:hover {
+    color: var(--color-neutral-6) !important;
+  }
+
+  /* Flecha del usuario en desktop - negro */
+  .userLink .dropdownIcon {
+    border-right: 1.5px solid var(--color-dark-header) !important;
+    border-bottom: 1.5px solid var(--color-dark-header) !important;
+  }
+  
+  .userDropdownMenu {
+    background: white;
+    text-align: left;
+    right: 0;
+    left: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform-origin: top right;
+  }
+
+  .userDropdownMenu.open {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .navItemUser:hover .userDropdownMenu {
+    max-height: 500px;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .userDropdownMenu a {
+    color: black;
+  }
+
+  .userDropdownMenu a:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .logoutButton {
+    color: black;
+  }
+
+  .logoutButton:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Dropdown de usuario en móvil */
+@media (max-width: 991px) {
+  .navItemUser {
+    width: 100%;
+  }
+  
+  .userLink {
+    width: 100%;
+    justify-content: space-between;
+    color: white !important; /* Forzar blanco en móvil */
+  }
+
+  .userLink.loggedIn {
+    color: white !important; /* Forzar blanco en móvil */
+  }
+
+  .userLink .dropdownIcon {
+    border-right: 1.5px solid white !important; /* Forzar blanco en móvil */
+    border-bottom: 1.5px solid white !important; /* Forzar blanco en móvil */
+  }
+  
+  .userDropdownMenu {
+    position: static;
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Fondo oscuro solo para móvil */
+@media (max-width: 991px) {
+  .menuCollapse {
+    background-color: var(--color-dark);
+  }
+  
+  .menuBox {
+    background-color: var(--color-dark);
+  }
+}

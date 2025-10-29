@@ -3,18 +3,22 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import styles from '@/styles/components/Header.module.css'
+import styles from '@/styles/components/Construccion/Header.module.css'
+import darkStyles from '@/styles/components/Construccion/HeaderDark.module.css'
 import { API_URL } from '@/app/config'
 import { checkUserRole } from '../validacion/checkRole'
 import { logout } from '../login/Logout'
 
-export default function Header() {
+export default function Header({ variant = 'light' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Combinar estilos según la variante
+  const currentStyles = variant === 'dark' ? darkStyles : styles;
 
   // Verificar autenticación con Strapi
   useEffect(() => {
@@ -142,8 +146,8 @@ export default function Header() {
       if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="admin-usina">
-          <Link href="/admin/usinas" onClick={closeMenu}>
-            Administrador de Trabajos
+          <Link href="/panel-moderacion" onClick={closeMenu}>
+            Panel de Moderación
           </Link>
         </li>
       )
@@ -151,7 +155,7 @@ export default function Header() {
 
     // Agregar separador antes del logout si hay items
     if (items.length > 0) {
-      items.push(<li key="divider" className={styles.dropdownDivider}></li>)
+      items.push(<li key="divider" className={currentStyles.dropdownDivider}></li>)
     }
 
     return items
@@ -159,27 +163,27 @@ export default function Header() {
 
   return (
     <>
-      <nav className={styles.navbar}>
-        <div className={styles.container}>
+      <nav className={currentStyles.navbar}>
+        <div className={currentStyles.container}>
           {/* Logo + lupa */}
-          <div className={styles.logoLupaBox}>
-            <div className={styles.logoSearchContainer}>
-              <Link href="/" className={styles.navbarBrand} onClick={closeMenu}>
+          <div className={currentStyles.logoLupaBox}>
+            <div className={currentStyles.logoSearchContainer}>
+              <Link href="/" className={currentStyles.navbarBrand} onClick={closeMenu}>
                 <img 
                   src="/img/Iso_Malharro.svg" 
                   alt="Isotipo Malharro" 
-                  className={styles.logoNav}
+                  className={currentStyles.logoNav}
                 />
               </Link>
               <button 
                 onClick={toggleSearch}
-                className={styles.searchButton}
+                className={currentStyles.searchButton}
                 aria-label="Buscar"
               >
                 <img 
                   src="/img/Icon_Lupa.svg" 
                   alt="Buscar" 
-                  className={styles.lupaNav}
+                  className={currentStyles.lupaNav}
                 />
               </button>
             </div>
@@ -187,36 +191,36 @@ export default function Header() {
 
           {/* Botón hamburguesa */}
           <button 
-            className={`${styles.navbarToggler} ${isMenuOpen ? styles.collapsed : ''}`}
+            className={`${currentStyles.navbarToggler} ${isMenuOpen ? currentStyles.collapsed : ''}`}
             onClick={toggleMenu}
             aria-label="Toggle navigation"
           >
-            <span className={styles.navbarTogglerIcon}></span>
+            <span className={currentStyles.navbarTogglerIcon}></span>
           </button>
 
           {/* Menú lateral */}
-          <div className={`${styles.menuCollapse} ${isMenuOpen ? styles.show : ''}`}>
-            <div className={styles.menuBox}>
+          <div className={`${currentStyles.menuCollapse} ${isMenuOpen ? currentStyles.show : ''}`}>
+            <div className={currentStyles.menuBox}>
               <button 
-                className={styles.closeMenuButton}
+                className={currentStyles.closeMenuButton}
                 onClick={closeMenu}
                 aria-label="Cerrar menú"
               >
                 <img src="/img/Icon_X_Blanca.svg" alt="Cerrar menú" />
               </button>
 
-              <ul className={styles.navbarNav}>
+              <ul className={currentStyles.navbarNav}>
                 {/* Carreras Dropdown */}
-                <li className={styles.navItemDropdown}>
+                <li className={currentStyles.navItemDropdown}>
                   <button 
-                    className={styles.navLinkDropdown}
+                    className={currentStyles.navLinkDropdown}
                     onClick={() => toggleDropdown('carreras')}
                   >
                     Carreras
-                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('carreras') ? styles.rotate : ''}`}></span>
+                    <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('carreras') ? currentStyles.rotate : ''}`}></span>
                   </button>
 
-                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('carreras') ? styles.open : ''}`}>
+                  <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('carreras') ? currentStyles.open : ''}`}>
                     <li><Link href="/disenografico" onClick={closeMenu}>Diseño Gráfico</Link></li>
                     <li><Link href="/escenografia" onClick={closeMenu}>Escenografía</Link></li>
                     <li><Link href="/fotografia" onClick={closeMenu}>Fotografía</Link></li>
@@ -228,20 +232,20 @@ export default function Header() {
                 </li>
 
                 {/* Institucional Dropdown */}
-                <li className={styles.navItemDropdown}>
+                <li className={currentStyles.navItemDropdown}>
                   <button 
-                    className={styles.navLinkDropdown}
+                    className={currentStyles.navLinkDropdown}
                     onClick={() => toggleDropdown('institucional')}
                   >
                     Institucional
-                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('institucional') ? styles.rotate : ''}`}></span>
+                    <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('institucional') ? currentStyles.rotate : ''}`}></span>
                   </button>
-                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('institucional') ? styles.open : ''}`}>
+                  <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('institucional') ? currentStyles.open : ''}`}>
                     <li><Link href="/institucional/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
                     <li><Link href="/institucional/autoridades" onClick={closeMenu}>Autoridades</Link></li>
                     <li><Link href="/institucional/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
                     <li><Link href="/institucional/consejo-academico" onClick={closeMenu}>Consejo Académico</Link></li>
-                    <li className={styles.dropdownDivider}></li>
+                    <li className={currentStyles.dropdownDivider}></li>
                     <li><Link href="/institucional/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
                     <li><Link href="/institucional/docentes" onClick={closeMenu}>Docentes</Link></li>
                     <li><Link href="/#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
@@ -251,15 +255,15 @@ export default function Header() {
                 </li>
 
                 {/* Estudiantes Dropdown */}
-                <li className={styles.navItemDropdown}>
+                <li className={currentStyles.navItemDropdown}>
                   <button 
-                    className={styles.navLinkDropdown}
+                    className={currentStyles.navLinkDropdown}
                     onClick={() => toggleDropdown('estudiantes')}
                   >
                     Estudiantes
-                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('estudiantes') ? styles.rotate : ''}`}></span>
+                    <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('estudiantes') ? currentStyles.rotate : ''}`}></span>
                   </button>
-                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('estudiantes') ? styles.open : ''}`}>
+                  <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('estudiantes') ? currentStyles.open : ''}`}>
                     <li><Link href="/estudiantes/convivencia" onClick={closeMenu}>Convivencia</Link></li>
                     <li><Link href="/estudiantes/documentacion" onClick={closeMenu}>Documentación</Link></li>
                     <li><Link href="/estudiantes/titulos" onClick={closeMenu}>Títulos</Link></li>
@@ -267,15 +271,15 @@ export default function Header() {
                 </li>
 
                 {/* Ciclo 2025 Dropdown */}
-                <li className={styles.navItemDropdown}>
+                <li className={currentStyles.navItemDropdown}>
                   <button 
-                    className={styles.navLinkDropdown}
+                    className={currentStyles.navLinkDropdown}
                     onClick={() => toggleDropdown('ciclo')}
                   >
                     Ciclo Lectivo
-                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('ciclo') ? styles.rotate : ''}`}></span>
+                    <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('ciclo') ? currentStyles.rotate : ''}`}></span>
                   </button>
-                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('ciclo') ? styles.open : ''}`}>
+                  <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('ciclo') ? currentStyles.open : ''}`}>
                     <li><Link href="/ciclo-lectivo/horarios" onClick={closeMenu}>Horarios</Link></li>
                     <li><Link href="/ciclo-lectivo/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
                     <li><Link href="/ciclo-lectivo/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
@@ -283,50 +287,50 @@ export default function Header() {
                 </li>
 
                 {/* Talleres Dropdown */}
-                <li className={styles.navItemDropdown}>
+                <li className={currentStyles.navItemDropdown}>
                   <button 
-                    className={styles.navLinkDropdown}
+                    className={currentStyles.navLinkDropdown}
                     onClick={() => toggleDropdown('talleres')}
                   >
                     Talleres
-                    <span className={`${styles.dropdownIcon} ${isDropdownOpen('talleres') ? styles.rotate : ''}`}></span>
+                    <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('talleres') ? currentStyles.rotate : ''}`}></span>
                   </button>
-                  <ul className={`${styles.dropdownMenu} ${isDropdownOpen('talleres') ? styles.open : ''}`}>
+                  <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('talleres') ? currentStyles.open : ''}`}>
                     <li><Link href="/talleres/jovenes-adultos" onClick={closeMenu}>Jóvenes - Adultos</Link></li>
                     <li><Link href="/talleres/infancias-adolescentes" onClick={closeMenu}>Infancias - Adolescentes</Link></li>
                   </ul>
                 </li>
 
                 {/* Enlaces simples */}
-                <li className={styles.navItem}>
-                  <Link href="/#preguntas-frecuentes" onClick={closeMenu} className={styles.navLink}>
+                <li className={currentStyles.navItem}>
+                  <Link href="/#preguntas-frecuentes" onClick={closeMenu} className={currentStyles.navLink}>
                     Preguntas frecuentes
                   </Link>
                 </li>
-                <li className={styles.navItem}>
-                  <Link href="https://esavmamalharro-bue.infd.edu.ar/" onClick={closeMenu} className={styles.navLink}>
+                <li className={currentStyles.navItem}>
+                  <Link href="https://esavmamalharro-bue.infd.edu.ar/" onClick={closeMenu} className={currentStyles.navLink}>
                     CAMPUS
                   </Link>
                 </li>
 
                 {/* Item de Usuario/Login */}
                 {!loading && (
-                  <li className={styles.navItemUser}>
+                  <li className={currentStyles.navItemUser}>
                     {user ? (
                       <>
                         <button 
-                          className={`${styles.userLink} ${styles.loggedIn}`}
+                          className={`${currentStyles.userLink} ${currentStyles.loggedIn}`}
                           onClick={() => toggleDropdown('usuario')}
                         >
                           {user.username}
-                          <span className={`${styles.dropdownIcon} ${isDropdownOpen('usuario') ? styles.rotate : ''}`}></span>
+                          <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('usuario') ? currentStyles.rotate : ''}`}></span>
                         </button>
-                        <ul className={`${styles.userDropdownMenu} ${isDropdownOpen('usuario') ? styles.open : ''}`}>
+                        <ul className={`${currentStyles.userDropdownMenu} ${isDropdownOpen('usuario') ? currentStyles.open : ''}`}>
                           {renderUserMenuItems()}
                           <li>
                             <button 
                               onClick={logout}
-                              className={styles.logoutButton}
+                              className={currentStyles.logoutButton}
                             >
                               Cerrar Sesión
                             </button>
@@ -334,7 +338,7 @@ export default function Header() {
                         </ul>
                       </>
                     ) : (
-                      <Link href="/login" onClick={closeMenu} className={styles.userLink}>
+                      <Link href="/login" onClick={closeMenu} className={currentStyles.userLink}>
                         Iniciar Sesión
                       </Link>
                     )}
@@ -348,22 +352,22 @@ export default function Header() {
 
       {/* Modal de búsqueda */}
       {searchOpen && (
-        <div className={styles.searchModal}>
-          <div className={styles.searchModalContent}>
+        <div className={currentStyles.searchModal}>
+          <div className={currentStyles.searchModalContent}>
             <button 
-              className={styles.closeSearchButton}
+              className={currentStyles.closeSearchButton}
               onClick={toggleSearch}
               aria-label="Cerrar búsqueda"
             >
               <img src="/img/Icon_X_Magenta.svg" alt="Cerrar barra de búsqueda" />
             </button>
-            <div className={styles.searchIconContainer}>
+            <div className={currentStyles.searchIconContainer}>
               <img src="/img/Icon_LupaBarraBusqueda.svg" alt="ícono lupa" />
             </div>
-            <div className={styles.searchBar}>
+            <div className={currentStyles.searchBar}>
               <input 
                 type="text" 
-                className={styles.searchInput}
+                className={currentStyles.searchInput}
                 placeholder="Buscar..." 
                 aria-label="Buscar"
               />
@@ -374,7 +378,7 @@ export default function Header() {
 
       {/* Overlay para cerrar menú al hacer click fuera */}
       {isMenuOpen && (
-        <div className={styles.menuOverlay} onClick={closeMenu}></div>
+        <div className={currentStyles.menuOverlay} onClick={closeMenu}></div>
       )}
     </>
   )

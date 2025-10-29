@@ -6,9 +6,9 @@ import { getAcordeonByAcordeonID } from './acordeonByID';
 import { checkUserRole } from '../../validacion/checkRole';
 import { handleSave } from '../../validacion/handleSave';
 import dynamic from 'next/dynamic';
-import textStyles from "@/styles/components/TextComponents.module.css";
-import acordeonCarrerasStyles from "@/styles/components/AcordeonCarreras.module.css";
-import acordeonPreguntasStyles from "@/styles/components/AcordeonPreguntas.module.css";
+import textStyles from "@/styles/components/Texto/TextComponents.module.css";
+import acordeonCarrerasStyles from "@/styles/components/Acordeon/AcordeonCarreras.module.css";
+import acordeonPreguntasStyles from "@/styles/components/Acordeon/AcordeonPreguntas.module.css";
 
 // Importación dinámica de ReactMarkdown
 const ReactMarkdown = dynamic(() => import('react-markdown'), {

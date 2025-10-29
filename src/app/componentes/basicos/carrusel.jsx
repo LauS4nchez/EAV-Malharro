@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import styles from "@/styles/components/Carousel.module.css";
+import styles from "@/styles/components/Carrusel/Carousel.module.css";
 
 export default function Carrusel() {
   const sliderRef = useRef(null);

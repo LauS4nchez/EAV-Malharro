@@ -16,7 +16,7 @@ import {
 import { checkUserRole } from '../componentes/validacion/checkRole'
 import { applyAllFilters } from '../componentes/validacion/userFilters'
 import UserFilters from './UserFilters'
-import styles from '@/styles/components/GestorUsuarios.module.css'
+import styles from '@/styles/components/Perfil/GestorUsuarios.module.css'
 import Link from 'next/link'
 
 export default function GestorUsuarios() {

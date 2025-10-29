@@ -219,3 +219,31 @@
     font-size: 2rem;
   }
 }
+
+/* En tu Login.module.css */
+.discordButton {
+  width: 100%;
+  padding: 12px 16px;
+  background: #5865F2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.discordButton:hover:not(:disabled) {
+  background: #4752c4;
+}
+
+.discordButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

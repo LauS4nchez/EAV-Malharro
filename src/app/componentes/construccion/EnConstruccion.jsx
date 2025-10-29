@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import styles from '@/styles/components/EnConstruccion.module.css';
+import styles from '@/styles/components/PaginaNoEncontrada/EnConstruccion.module.css';
 
 export default function EnConstruccion() {
   return (

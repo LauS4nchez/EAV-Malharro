@@ -13,8 +13,10 @@
   --color-secondary: #ffef0f;
   --color-dark: #1f1f1f;
   --color-dark-bg: #171516;
+  --color-dark-header: #000000;
   --color-red: #e6342e;
   --color-neutral-6: #666666;
+  --color-neutral-hover: #5a5959;
   
   /* Tamaños de texto */
   --p1-r: 20px;

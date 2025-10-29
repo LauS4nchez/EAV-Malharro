@@ -1,5 +1,5 @@
 // src/components/basicos/CircularContainer.js
-import styles from "@/styles/components/CircularContainer.module.css";
+import styles from "@/styles/components/Acordeon/CircularContainer.module.css";
 
 export default function CircularContainer({ children, title }) {
   return (

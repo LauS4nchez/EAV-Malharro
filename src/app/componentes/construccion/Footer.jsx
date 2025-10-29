@@ -1,5 +1,5 @@
 import React from "react";
-import styles from '@/styles/components/Footer.module.css'
+import styles from '@/styles/components/Construccion/Footer.module.css'
 
 const Footer = () => {
   return (
@@ -89,22 +89,22 @@ const Footer = () => {
             <div className="col-12">
               <div className={`row g-2 ${styles.footerLinks} justify-content-left`}>
                 <div className="col-auto">
-                  <a href="#carreras" className={styles.footerLink}>Carreras</a>
+                  <a href="/#carreras" className={styles.footerLink}>Carreras</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Institucional</a>
+                  <a href="/#" className={styles.footerLink}>Institucional</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#estudiantes" className={styles.footerLink}>Estudiantes</a>
+                  <a href="/#estudiantes" className={styles.footerLink}>Estudiantes</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#agenda" className={styles.footerLink}>Agenda</a>
+                  <a href="/#agenda" className={styles.footerLink}>Agenda</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#" className={styles.footerLink}>Talleres</a>
+                  <a href="/#" className={styles.footerLink}>Talleres</a>
                 </div>
                 <div className="col-auto">
-                  <a href="#preguntas-frecuentes" className={styles.footerLink}>Preguntas frecuentes</a>
+                  <a href="/#preguntas-frecuentes" className={styles.footerLink}>Preguntas frecuentes</a>
                 </div>
                 <div className="col-auto">
                   <a href="https://esavmamalharro-bue.infd.edu.ar/" rel="noreferrer noopener" target="_blank" className={styles.footerLink}>Campus</a>

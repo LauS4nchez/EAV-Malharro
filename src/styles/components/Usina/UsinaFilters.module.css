@@ -1,0 +1,181 @@
+/* @/styles/components/Perfil/UsinaFilters.module.css */
+.filtersContainer {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.searchSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  color: #333; /* Color de texto negro */
+  background: white;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.searchInput::placeholder {
+  color: #6c757d;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+}
+
+.searchIconFallback {
+  display: none;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.resultsInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.resultsText {
+  font-size: 14px;
+  color: #333; /* Color de texto negro */
+  font-weight: 500;
+}
+
+.clearFiltersBtn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clearFiltersBtn:hover {
+  background: #5a6268;
+}
+
+.sortSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.sortLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333; /* Color de texto negro */
+  white-space: nowrap;
+}
+
+.sortButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sortBtn {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  color: #333; /* Color de texto negro */
+}
+
+.sortBtn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.sortBtn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.activeFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.activeFiltersLabel {
+  font-size: 12px;
+  color: #333; /* Color de texto negro */
+  font-weight: 500;
+}
+
+.activeFilterTag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  border: 1px solid #bbdefb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .searchSection {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchBox {
+    max-width: none;
+  }
+  
+  .resultsInfo {
+    justify-content: space-between;
+  }
+  
+  .sortSection {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .sortButtons {
+    justify-content: center;
+  }
+}
