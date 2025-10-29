@@ -1,4 +1,3 @@
-// @/app/componentes/validacion/userFilters.js
 
 // Función para normalizar texto (quitar acentos, minúsculas, etc.)
 export const normalizeText = (text) => {

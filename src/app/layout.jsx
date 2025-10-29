@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { clientIDGoogle } from "./config";
 import { Toaster } from "react-hot-toast";
+import DiscordPopupHandler from "./services/discordPopupHandler";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '@/styles/globals.css'
 
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
         <GoogleOAuthProvider clientId={clientIDGoogle}>
           {children}
           <Toaster position="top-right" />
+          <DiscordPopupHandler/>
         </GoogleOAuthProvider>
       </body>
     </html>

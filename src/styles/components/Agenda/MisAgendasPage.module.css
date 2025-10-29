@@ -1,0 +1,276 @@
+/* === CONTENEDOR PRINCIPAL === */
+.container {
+  max-width: 1100px;
+  margin: 80px auto 60px;
+  padding: 0 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #000;
+}
+
+.container * {
+  color: #000 !important; /* 🖋️ Todos los textos negros */
+}
+
+.title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 36px;
+}
+
+/* === GALERÍA DE AGENDAS (EN FILA) === */
+.usinaGaleria {
+  display: grid;
+  /* columnas de ancho fijo, se acomodan en fila y se centran */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+  gap: 24px;
+  justify-content: center;   /* centra el conjunto */
+  justify-items: center;     /* centra cada card dentro de su celda */
+  align-items: start;
+  width: 100%;
+  margin: 0 auto;
+  max-width: 1100px;
+}
+
+/* 🧩 Si solo hay una card, NO ocupa todo el ancho (mejora progresiva) */
+.usinaGaleria:has(> :first-child:last-child) {
+  max-width: 380px;
+}
+
+/* === CARD === */
+.usinaCard {
+  width: min(100%, 340px);  /* evita estirarse; tope de ancho */
+  background: #fafafa;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.usinaCard:hover {
+  transform: translateY(-3px);
+  background-color: #f2f2f2;
+}
+
+.usinaImage {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.usinaContenido {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.usinaContenido h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.usinaContenido p {
+  font-size: 15px;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* === BOTONES === */
+.usinaBotones {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btnAprobar,
+.btnModificar {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+
+.btnAprobar {
+  background-color: #e0e0e0;
+}
+
+.btnAprobar:hover {
+  background-color: #ccc;
+  transform: scale(1.02);
+}
+
+.btnModificar {
+  background-color: #000;
+  color: #fff !important;
+}
+
+.btnModificar:hover {
+  background-color: #222;
+  transform: scale(1.02);
+}
+
+/* === MODAL === */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+/* === CAJA DEL MODAL === */
+.modalBox {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+  animation: popUp 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #000 !important;
+}
+
+.modalBox * {
+  color: #000 !important;
+}
+
+@keyframes popUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.modalBox h3 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* === FORMULARIO EN MODAL === */
+.modalBox form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modalBox label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 15px;
+}
+
+.modalBox input,
+.modalBox textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background-color: #f8f8f8;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.modalBox input:focus,
+.modalBox textarea:focus {
+  border-color: #000;
+  background-color: #fff;
+}
+
+/* === BOTONES DEL MODAL === */
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modalButtons button {
+  min-width: 120px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.modalButtons .btnModificar {
+  background: #000;
+  color: #fff !important;
+}
+
+.modalButtons .btnAprobar {
+  background: #e0e0e0;
+}
+
+/* === SPINNER === */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80vh;
+}
+
+.spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #000;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingContainer p {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .usinaGaleria {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .usinaGaleria {
+    grid-template-columns: 1fr; /* en móvil va a una columna */
+    gap: 18px;
+    justify-items: center;
+  }
+
+  .usinaCard {
+    width: min(100%, 380px);
+    margin: 0 auto;
+  }
+
+  .modalBox {
+    width: 92%;
+    padding: 22px;
+  }
+}

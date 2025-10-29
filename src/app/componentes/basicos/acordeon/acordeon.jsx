@@ -1,5 +1,5 @@
 // components/Acordeon.jsx
-'use client';
+'use client'; // Este componente usa estados/efectos en el cliente
 
 import { useState, useEffect } from 'react';
 import { getAcordeonByAcordeonID } from './acordeonByID';
@@ -10,32 +10,35 @@ import textStyles from "@/styles/components/Texto/TextComponents.module.css";
 import acordeonCarrerasStyles from "@/styles/components/Acordeon/AcordeonCarreras.module.css";
 import acordeonPreguntasStyles from "@/styles/components/Acordeon/AcordeonPreguntas.module.css";
 
-// Importación dinámica de ReactMarkdown
+// Importación dinámica para evitar SSR con ReactMarkdown
 const ReactMarkdown = dynamic(() => import('react-markdown'), {
   ssr: false
 });
 
-// Mapeo de variantes a estilos
+// Mapeo de variantes → módulos de estilos
 const variantStyles = {
   carreras: acordeonCarrerasStyles,
   preguntas: acordeonPreguntasStyles,
 };
 
 export default function Acordeon({ acordeonID, variant = "carreras" }) {
+  // Token para operaciones autenticadas
   const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
 
-  const [labels, setLabels] = useState([]);
-  const [activo, setActivo] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Estado UI/datos
+  const [labels, setLabels] = useState([]);       // Ítems del acordeón
+  const [activo, setActivo] = useState(null);     // id abierto
+  const [isAdmin, setIsAdmin] = useState(false);  // permisos de edición
   const [editingItem, setEditingItem] = useState(null);
   const [editedText, setEditedText] = useState('');
   const [editedTitle, setEditedTitle] = useState('');
-  const [editedTextColor, setEditedTextColor] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [editedTextColor, setEditedTextColor] = useState(false); // switch "textoNegro"
+  const [isMobile, setIsMobile] = useState(false); // (reservado para truncar títulos en mobile)
 
-  // Obtener los estilos según la variante
+  // Selección de estilos según variante
   const acordeonStyles = variantStyles[variant] || acordeonCarrerasStyles;
 
+  // Carga inicial: rol y datos
   useEffect(() => {
     const verifyAdmin = async () => {
       const role = checkUserRole();
@@ -58,9 +61,10 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
     fetchData();
   }, [acordeonID]);
 
+  // Abre/cierra una tarjeta
   const toggle = (id) => setActivo(activo === id ? null : id);
 
-  // Flecha para carreras (chevron)
+  // Ícono de flecha para "carreras" (chevron)
   const FlechaCarreras = ({ abierto }) => (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
@@ -74,7 +78,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
     </svg>
   );
 
-  // Flecha para preguntas (plus/close)
+  // Ícono de flecha para "preguntas" (plus)
   const FlechaPreguntas = ({ abierto }) => (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
@@ -88,9 +92,13 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
     </svg>
   );
 
-  // Seleccionar el ícono según la variante
+  // Selección del componente de ícono según la variante
   const FlechaIcono = variant === 'preguntas' ? FlechaPreguntas : FlechaCarreras;
 
+  /**
+   * Persiste cambios de título/contenido/(textoNegro*) y refresca la lista.
+   * *textoNegro solo aplica a la variante "carreras".
+   */
   const saveChanges = async (id) => {
     try {
       await handleSave({
@@ -123,6 +131,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
       const updated = await getAcordeonByAcordeonID(acordeonID);
       if (updated) setLabels(updated);
 
+      // Limpia estado de edición
       setEditingItem(null);
       setEditedText('');
       setEditedTitle('');
@@ -139,7 +148,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
         {labels.map((item) => {
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
-          // Si la variante es preguntas, texto siempre negro, sino usar textoNegro de Strapi
+          // En "preguntas" el texto siempre negro; en "carreras" depende de textoNegro de Strapi
           const textoColor = variant === 'preguntas' ? '#000000' : (item.textoNegro ? '#000000' : '#FFFFFF');
           const isEditingThis = editingItem === item.id;
           const titulo = item.titulo || 'Sin título';
@@ -150,6 +159,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
               className={acordeonStyles.textoItem} 
               style={{ backgroundColor: fondo, color: textoColor }}
             >
+              {/* Header clickeable del acordeón */}
               <div 
                 className={acordeonStyles.textoHeader} 
                 onClick={() => toggle(item.id)}
@@ -168,11 +178,13 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                 </span>
               </div>
 
+              {/* Cuerpo del acordeón (colapsable) */}
               <div 
                 className={`${acordeonStyles.textoContenido} ${abierto ? acordeonStyles.textoContenidoAbierto : acordeonStyles.textoContenidoCerrado}`}
               >
                 <div className={acordeonStyles.contenidoInterno}>
                   {isEditingThis ? (
+                    // Modo edición (admins)
                     <div className={textStyles.editingContainer}>
                       <input
                         className={textStyles.textareaEditar}
@@ -186,7 +198,7 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                         onChange={(e) => setEditedText(e.target.value)}
                         placeholder="Editar contenido"
                       />
-                      {/* Solo mostrar el switch si la variante es carreras */}
+                      {/* Switch de contraste solo para "carreras" */}
                       {variant === 'carreras' && (
                         <div className={textStyles.switchContainer}>
                           <label className={textStyles.switchLabel}>
@@ -211,11 +223,12 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                       </div>
                     </div>
                   ) : (
+                    // Modo lectura
                     <>
                       <div className={acordeonStyles.contenidoTexto}>
                         <ReactMarkdown
                           components={{
-                            // Aplicar el color a todos los elementos del markdown
+                            // Fuerza color en elementos comunes del markdown
                             p: ({node, ...props}) => <p style={{color: textoColor}} {...props} />,
                             strong: ({node, ...props}) => <strong style={{color: textoColor}} {...props} />,
                             em: ({node, ...props}) => <em style={{color: textoColor}} {...props} />

@@ -22,13 +22,8 @@
   font-size: 20px;
 }
 
-.prevArrow {
-  left: 10px;
-}
-
-.nextArrow {
-  right: 10px;
-}
+.prevArrow { left: 10px; }
+.nextArrow { right: 10px; }
 
 .imagenAgenda {
   width: 350px;
@@ -58,19 +53,18 @@
 }
 
 .agendaContenido p {
-  font-size: 25px;
+  font-size: 20px;
   margin-right: 15px;
   color: white;
 }
 
-/* ESTILOS GLOBALES PARA REACT-SLICK */
+/* sombreado lateral (solo escritorio) */
 .agendaWrapper :global(.slick-slide) {
   transition: all 0.3s ease;
   opacity: 0.4;
   transform: scale(0.95);
   filter: grayscale(100%) brightness(80%);
 }
-
 .agendaWrapper :global(.slick-center) {
   opacity: 1;
   transform: scale(1);
@@ -78,6 +72,37 @@
   z-index: 2;
 }
 
+/* comportamiento canHover / noHover */
+.agendaCard.noHover .agendaContenidoHover { display: none !important; }
+.agendaCard.noHover .agendaContenido { display: flex !important; }
+.agendaCard.noHover .imagenAgenda {
+  height: 330px !important;
+  object-fit: cover;
+  transition: none !important;
+}
+.agendaCard.noHover { cursor: default; }
+
+/* hover solo en la central (desktop) */
+.agendaCard.canHover:hover .imagenAgenda {
+  height: 230px;
+  transition: all 0.3s ease;
+}
+.agendaCard.canHover:hover .agendaContenido { display: none; }
+.agendaCard.canHover .agendaContenidoHover { display: none; }
+.agendaCard.canHover:hover .agendaContenidoHover {
+  display: block;
+  width: 350px;
+  height: 250px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  background-color: #f2f2f2;
+  padding: 22px;
+}
+.agendaCard.canHover:hover .agendaContenidoHover .textoRegular,
+.agendaCard.canHover:hover .agendaContenidoHover .textoNegrita { color: black; }
+.agendaCard.canHover { cursor: pointer; }
+
+/* detalles internos */
 .fecha {
   margin-left: 20px;
   margin-right: 15px;
@@ -87,30 +112,21 @@
   padding-right: 20px;
   color: white;
 }
-
-.fecha p {
-  margin-top: 10px;
-  color: white;
-}
+.fecha p { margin-top: 10px; color: white; }
 
 .agendaCard {
   border-radius: 15px;
   box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
 }
 
-.agendaContenidoHover {
-  display: none;
-}
+.agendaContenidoHover { display: none; }
 
+/* reglas generales de hover (desktop) */
 .agendaCard:hover .imagenAgenda {
   height: 230px;
   transition: all 0.3s ease;
 }
-
-.agendaCard:hover .agendaContenido {
-  display: none;
-}
-
+.agendaCard:hover .agendaContenido { display: none; }
 .agendaCard:hover .agendaContenidoHover {
   display: block;
   width: 350px;
@@ -121,16 +137,177 @@
   background-color: #f2f2f2;
   padding: 22px;
 }
-
-.agendaCard:hover .agendaContenidoHover .textoRegular {
-  color: black;
-}
-
-.agendaCard:hover .agendaContenidoHover .textoNegrita {
-  color: black;
-}
+.agendaCard:hover .agendaContenidoHover .textoRegular { color: black; }
+.agendaCard:hover .agendaContenidoHover .textoNegrita { color: black; }
 
 .textoContenidoActividad p {
   color: black;
   font-size: 20px;
+}
+
+/* CTA Ver Calendario */
+.ctaCalendario {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+.verCalendarioBtn {
+  display: inline-block;
+  text-decoration: none;
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform .15s ease, box-shadow .15s ease, opacity .2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+.verCalendarioBtn:hover { opacity: .9; box-shadow: 0 6px 14px rgba(0,0,0,.16); }
+.verCalendarioBtn:active { transform: scale(.98); }
+
+/* Quitar animación cuando aparece el hover (sin cambiar estilos) */
+.agendaCard:hover .imagenAgenda,
+.agendaCard.canHover:hover .imagenAgenda,
+.agendaCard:hover .agendaContenidoHover,
+.agendaCard.canHover:hover .agendaContenidoHover,
+.agendaCard:hover .agendaContenido,
+.agendaCard.canHover:hover .agendaContenido {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ajustes tablet */
+@media (max-width: 900px) {
+  .agendaWrapper :global(.slick-slide),
+  .agendaWrapper :global(.slick-center) {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    filter: none !important;
+  }
+}
+@media (max-width: 600px) {
+  .verCalendarioBtn{
+    margin-top: 20px;
+  }
+}
+
+/* ajustes mobile */
+@media (max-width: 500px) {
+  .agendaWrapper {
+    max-width: 100%;
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+  .agendaContainer { padding: 6px; }
+  .customArrow {
+    font-size: 16px;
+    padding: 6px;
+    top: calc(50% - 12px);
+  }
+  .prevArrow { left: 6px; }
+  .nextArrow { right: 6px; }
+
+  .agendaCard {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transform: none !important;
+    transition: none !important;
+  }
+  .imagenAgenda {
+    width: 100%;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    transition: none !important;
+  }
+  .agendaCard.noHover .imagenAgenda {
+    width: 100%;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+  }
+
+  .agendaContenido {
+    width: 320px;
+    height: 150px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    display: flex;
+    background-color: #c7005a;
+    align-items: center;
+  }
+  .agendaContenido p { font-size: 16px; margin-right: 0; }
+
+  .fecha {
+    margin: 0 10px 0 0;
+    padding-right: 10px;
+    height: auto;
+    font-size: 18px;
+    border-right: 2px solid currentColor;
+  }
+  .fecha p { margin-top: 4px; padding: 15px; }
+
+  .agendaContenidoHover {
+    width: 100% !important;
+    height: auto !important;
+    padding: 10px 12px;
+    background: #f7f7f7;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    opacity: 1;
+    transform: none;
+    transition: none !important;
+    pointer-events: none; /* no interacción en mobile */
+  }
+
+  .agendaContenidoHover .textoRegular {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1e293b;
+  }
+  .agendaContenidoHover .textoNegrita { color: #0f172a; }
+
+  .textoContenidoActividad p {
+    font-size: 0.9rem;
+    color: #475569;
+    max-height: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    margin-top: 6px;
+    text-align: left;
+  }
+
+  .agendaCard:hover .imagenAgenda { height: auto !important; }
+
+  .agendaWrapper :global(.slick-slide),
+  .agendaWrapper :global(.slick-center) {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .agendaWrapper :global(.slick-dots) { bottom: -4px; }
+  .agendaWrapper :global(.slick-list) { padding-bottom: 28px !important; }
+}
+
+/* DESACTIVAR “tap = hover” EN DISPOSITIVOS TÁCTILES */
+@media (hover: none) {
+  .agendaCard { cursor: default; }
+  .agendaCard:hover .imagenAgenda { height: auto !important; }
+  .agendaCard:hover .agendaContenido { display: flex !important; }
+  .agendaCard:hover .agendaContenidoHover { display: none !important; }
+
+  /* también para las reglas de canHover */
+  .agendaCard.canHover:hover .agendaContenido { display: flex !important; }
+  .agendaCard.canHover:hover .agendaContenidoHover { display: none !important; }
 }

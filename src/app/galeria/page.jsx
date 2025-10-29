@@ -18,6 +18,10 @@ export default function GaleriaPage() {
   const [filterAutor, setFilterAutor] = useState('');
   const [sortBy, setSortBy] = useState('newest');
 
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const getPreviewUrl = (media) => {
     if (!media) return '/img/placeholder.jpg';
     
@@ -133,6 +137,24 @@ export default function GaleriaPage() {
       }
     });
 
+  // Lógica de paginación
+  const totalItems = filteredAndSortedUsinas.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
+  // Asegurar que la página actual sea válida cuando cambian los filtros
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  // Obtener items para la página actual
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsinas = filteredAndSortedUsinas.slice(startIndex, endIndex);
+
   const handleCardClick = (usina) => {
     setSelectedUsina(usina);
     document.body.style.overflow = 'hidden';
@@ -141,6 +163,37 @@ export default function GaleriaPage() {
   const closeModal = () => {
     setSelectedUsina(null);
     document.body.style.overflow = 'auto';
+  };
+
+  // Cambiar página
+  const goToPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Cambiar items por página
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1); // Resetear a primera página cuando cambia el tamaño
+  };
+
+  // Generar array de páginas para mostrar
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Ajustar si estamos cerca del final
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   };
 
   if (loading) {
@@ -178,11 +231,35 @@ export default function GaleriaPage() {
             resultadosCount={filteredAndSortedUsinas.length}
             totalCount={usinas.length}
             />
+
+            {/* Controles de paginación - Superior */}
+            <div className={styles.paginationControls}>
+              <div className={styles.itemsPerPage}>
+                <label htmlFor="itemsPerPage" className={styles.itemsPerPageText}>Mostrar: </label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={(e) => handleItemsPerPageChange(e.target.value)}
+                  className={styles.itemsPerPageSelect}
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className={styles.itemsPerPageText}> entradas por página</span>
+              </div>
+
+              <div className={styles.paginationInfo}>
+                Mostrando {startIndex + 1}-{Math.min(endIndex, totalItems)} de {totalItems} resultados
+              </div>
+            </div>
+
             <div>
                 {/* Galería */}
                     <div className={styles.galeriaGrid}>
-                    {filteredAndSortedUsinas.length > 0 ? (
-                        filteredAndSortedUsinas.map((usina) => (
+                    {currentUsinas.length > 0 ? (
+                        currentUsinas.map((usina) => (
                         <div
                             key={usina.id}
                             className={styles.galeriaCard}
@@ -215,6 +292,37 @@ export default function GaleriaPage() {
                         </div>
                     )}
                     </div>
+
+                    {/* Paginación - Inferior */}
+                    {totalPages > 1 && (
+                      <div className={styles.pagination}>
+                        <button
+                          className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
+                          onClick={() => goToPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Anterior
+                        </button>
+
+                        {getPageNumbers().map(page => (
+                          <button
+                            key={page}
+                            className={`${styles.pageButton} ${currentPage === page ? styles.active : ''}`}
+                            onClick={() => goToPage(page)}
+                          >
+                            {page}
+                          </button>
+                        ))}
+
+                        <button
+                          className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+                          onClick={() => goToPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Siguiente
+                        </button>
+                      </div>
+                    )}
                 </div>
             </div>
 

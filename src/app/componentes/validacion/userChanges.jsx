@@ -1,4 +1,3 @@
-// @/app/componentes/validacion/userChanges.js
 import { API_URL, API_TOKEN } from '@/app/config'
 
 const getJWT = () => {
