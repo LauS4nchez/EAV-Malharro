@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { API_URL, URL } from '@/app/config';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
-import styles from '@/styles/components/MisAgendasPage.module.css';
+import styles from '@/styles/components/Agenda/MisAgendasPage.module.css';
 
 export default function MisAgendasPage() {
   const router = useRouter();
