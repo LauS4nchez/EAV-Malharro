@@ -282,6 +282,10 @@ export default function PerfilPublicoPage({ params }) {
   const showUsinas = userRole === 'estudiante' || ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
   const showAgendas = ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
 
+  // 🔥 NUEVA LÓGICA: Calcular si hay tabs para mostrar
+  const hasTabsToShow = showUsinas || showAgendas || isCurrentUser;
+  const forceInfoTab = !hasTabsToShow && isCurrentUser;
+
   const renderContent = () => {
     switch (activeTab) {
       case 'trabajos':
@@ -439,7 +443,7 @@ export default function PerfilPublicoPage({ params }) {
                   Agendas ({agendas.length})
                 </button>
               )}
-              {isCurrentUser && (
+              {(isCurrentUser || forceInfoTab) && (
                 <button 
                   className={`${styles.navButton} ${activeTab === 'informacion' ? styles.active : ''}`}
                   onClick={() => handleTabChange('informacion')}
@@ -450,9 +454,15 @@ export default function PerfilPublicoPage({ params }) {
             </div>
 
             {/* Contenido de la pestaña activa */}
-            <div className={styles.tabContent}>
-              {renderContent()}
-            </div>
+            {!hasTabsToShow && !forceInfoTab ? (
+              <div className={styles.noContent}>
+                <p>Este perfil no tiene contenido público disponible.</p>
+              </div>
+            ) : (
+              <div className={styles.tabContent}>
+                {renderContent()}
+              </div>
+            )}
           </div>
         </div>
       </div>

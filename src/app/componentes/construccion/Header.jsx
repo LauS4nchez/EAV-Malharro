@@ -93,14 +93,15 @@ export default function Header({ variant = 'light' }) {
   const renderUserMenuItems = () => {
     const items = []
 
-    // Opción común para todos los usuarios autenticados
-    items.push(
-      <li key="profile">
-        <Link href={`/perfil/${user.username}`} onClick={closeMenu}>
-          Mi Perfil
-        </Link>
-      </li>
-    )
+      if (userRole === 'Authenticated' || userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="informacion">
+          <Link href={`/perfil/${user.username}#informacion`} onClick={closeMenu}>
+            Información Personal
+          </Link>
+        </li>
+      )
+    }
 
     // Opciones específicas según el rol
     if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
