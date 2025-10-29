@@ -358,7 +358,7 @@
 }
 
 /* ================= VERSIÓN DESKTOP ================= */
-@media (min-width: 992px) {
+@media (min-width: 1500px) {
   .navbarToggler {
     display: none;
   }
@@ -631,3 +631,4 @@
     background-color: var(--color-dark);
   }
 }
+

@@ -399,7 +399,7 @@ export default function CalendarioPage() {
 
   return (
     <div>
-      <Header />
+      <Header  variant='dark'/>
       <div className={styles.container}>
         {/* Avisos globales */}
         {notice && (

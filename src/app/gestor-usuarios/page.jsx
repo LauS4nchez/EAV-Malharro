@@ -18,6 +18,8 @@ import { applyAllFilters } from '../componentes/validacion/userFilters'
 import UserFilters from './UserFilters'
 import styles from '@/styles/components/Perfil/GestorUsuarios.module.css'
 import Link from 'next/link'
+import Header from '../componentes/construccion/Header'
+import Footer from '../componentes/construccion/Footer'
 
 export default function GestorUsuarios() {
   const [users, setUsers] = useState([])
@@ -401,466 +403,468 @@ export default function GestorUsuarios() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <Link href="/" className={styles.backButton}>
-            ← Volver al Inicio
-          </Link>
-          <span className={styles.currentRoleInfo}>
-            Rol actual: {getRoleDisplayName(currentUserRole)}
-          </span>
+    <div>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div className={styles.headerTop}>
+            <Header variant='dark'/>
+            <span className={`${styles.currentRoleInfo} mt-5`}>
+              Rol actual: {getRoleDisplayName(currentUserRole)}
+            </span>
+          </div>
+          <h1>Gestor de Usuarios</h1>
+          <p className={styles.subtitle}>
+            Total de usuarios: {users.length} | Mostrando: {filteredUsers.length}
+          </p>
         </div>
-        <h1>Gestor de Usuarios</h1>
-        <p className={styles.subtitle}>
-          Total de usuarios: {users.length} | Mostrando: {filteredUsers.length}
-        </p>
-      </div>
 
-      {/* Componente de filtros */}
-      <UserFilters
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        availableRoles={roles}
-        totalUsers={users.length}
-        filteredCount={filteredUsers.length}
-      />
+        {/* Componente de filtros */}
+        <UserFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          availableRoles={roles}
+          totalUsers={users.length}
+          filteredCount={filteredUsers.length}
+        />
 
-      <div className={styles.tableContainer}>
-        <table className={styles.usersTable}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Usuario</th>
-              <th>Email</th>
-              <th className={styles.roleHeader}>Rol</th>
-              <th>Confirmado</th>
-              <th>Bloqueado</th>
-              <th>Creado</th>
-              <th>Actualizado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentUsers.map((user) => {
-              const { 
-                isCurrentUser, 
-                canModify, 
-                modificationWarning,
-                isRoleChangeDisabled,
-                isBlockActionDisabled,
-                isFieldEditingDisabled
-              } = getUserModificationStatus(user)
-              
-              return (
-                <React.Fragment key={user.id}>
-                  <tr 
-                    className={`${styles.userRow} ${expandedUserId === user.id ? styles.expanded : ''}`}
-                    onClick={() => handleUserClick(user.id)}
-                  >
-                    <td className={styles.idCell}>{user.id}</td>
-                    <td className={styles.usernameCell}>
-                      {user.username}
-                      {isCurrentUser && <span className={styles.youBadge}>Vos</span>}
-                    </td>
-                    <td className={styles.emailCell}>{user.email}</td>
-                    <td className={styles.roleCell}>
-                      <span className={`${styles.roleBadge} ${styles[user.role?.name || 'Public']}`}>
-                        {getRoleDisplayName(user.role?.name || 'Autenticado')}
-                      </span>
-                    </td>
-                    <td className={styles.confirmedCell}>
-                      <span className={user.confirmed ? styles.confirmed : styles.notConfirmed}>
-                        {user.confirmed ? 'Sí' : 'No'}
-                      </span>
-                    </td>
-                    <td className={styles.blockedCell}>
-                      <span className={user.blocked ? styles.blocked : styles.notBlocked}>
-                        {user.blocked ? 'Sí' : 'No'}
-                      </span>
-                    </td>
-                    <td className={styles.dateCell}>{formatDate(user.createdAt)}</td>
-                    <td className={styles.dateCell}>{formatDate(user.updatedAt)}</td>
-                  </tr>
-                  
-                  {/* Panel expandible */}
-                  {expandedUserId === user.id && (
-                    <tr className={styles.expandedRow}>
-                      <td colSpan="8" className={styles.expandedContent}>
-                        <div className={styles.userDetails}>
-                          <div className={styles.detailsHeader}>
-                            <h3>Detalles del Usuario - {user.username}</h3>
-                            {isCurrentUser && (
-                              <span className={styles.youIndicator}>¡Este sos vos!</span>
+        <div className={styles.tableContainer}>
+          <table className={styles.usersTable}>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th className={styles.roleHeader}>Rol</th>
+                <th>Confirmado</th>
+                <th>Bloqueado</th>
+                <th>Creado</th>
+                <th>Actualizado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentUsers.map((user) => {
+                const { 
+                  isCurrentUser, 
+                  canModify, 
+                  modificationWarning,
+                  isRoleChangeDisabled,
+                  isBlockActionDisabled,
+                  isFieldEditingDisabled
+                } = getUserModificationStatus(user)
+                
+                return (
+                  <React.Fragment key={user.id}>
+                    <tr 
+                      className={`${styles.userRow} ${expandedUserId === user.id ? styles.expanded : ''}`}
+                      onClick={() => handleUserClick(user.id)}
+                    >
+                      <td className={styles.idCell}>{user.id}</td>
+                      <td className={styles.usernameCell}>
+                        {user.username}
+                        {isCurrentUser && <span className={styles.youBadge}>Vos</span>}
+                      </td>
+                      <td className={styles.emailCell}>{user.email}</td>
+                      <td className={styles.roleCell}>
+                        <span className={`${styles.roleBadge} ${styles[user.role?.name || 'Public']}`}>
+                          {getRoleDisplayName(user.role?.name || 'Autenticado')}
+                        </span>
+                      </td>
+                      <td className={styles.confirmedCell}>
+                        <span className={user.confirmed ? styles.confirmed : styles.notConfirmed}>
+                          {user.confirmed ? 'Sí' : 'No'}
+                        </span>
+                      </td>
+                      <td className={styles.blockedCell}>
+                        <span className={user.blocked ? styles.blocked : styles.notBlocked}>
+                          {user.blocked ? 'Sí' : 'No'}
+                        </span>
+                      </td>
+                      <td className={styles.dateCell}>{formatDate(user.createdAt)}</td>
+                      <td className={styles.dateCell}>{formatDate(user.updatedAt)}</td>
+                    </tr>
+                    
+                    {/* Panel expandible */}
+                    {expandedUserId === user.id && (
+                      <tr className={styles.expandedRow}>
+                        <td colSpan="8" className={styles.expandedContent}>
+                          <div className={styles.userDetails}>
+                            <div className={styles.detailsHeader}>
+                              <h3>Detalles del Usuario - {user.username}</h3>
+                              {isCurrentUser && (
+                                <span className={styles.youIndicator}>¡Este sos vos!</span>
+                              )}
+                            </div>
+                            
+                            <div className={styles.detailsGrid}>
+                              {/* Username - Editable */}
+                              <div className={styles.detailItem}>
+                                <label>Usuario:</label>
+                                {editingField?.userId === user.id && editingField?.field === 'username' ? (
+                                  <div className={styles.editField}>
+                                    <input
+                                      type="text"
+                                      value={editValues[user.id]?.username || user.username || ''}
+                                      onChange={(e) => handleEditChange(user.id, 'username', e.target.value)}
+                                      className={styles.editInput}
+                                      autoFocus
+                                    />
+                                    <div className={styles.editActions}>
+                                      <button
+                                        onClick={() => saveField(user.id, 'username')}
+                                        disabled={updatingUser === user.id}
+                                        className={styles.saveBtn}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={cancelEditing}
+                                        className={styles.cancelBtn}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={styles.fieldWithEdit}>
+                                    <span>{user.username || 'No especificado'}</span>
+                                    {!isFieldEditingDisabled && (
+                                      <button
+                                        onClick={() => startEditing(user.id, 'username', user.username)}
+                                        className={styles.editBtn}
+                                        title="Editar usuario"
+                                      >
+                                        ✎
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Name - Editable */}
+                              <div className={styles.detailItem}>
+                                <label>Nombre:</label>
+                                {editingField?.userId === user.id && editingField?.field === 'name' ? (
+                                  <div className={styles.editField}>
+                                    <input
+                                      type="text"
+                                      value={editValues[user.id]?.name || user.name || ''}
+                                      onChange={(e) => handleEditChange(user.id, 'name', e.target.value)}
+                                      className={styles.editInput}
+                                      autoFocus
+                                    />
+                                    <div className={styles.editActions}>
+                                      <button
+                                        onClick={() => saveField(user.id, 'name')}
+                                        disabled={updatingUser === user.id}
+                                        className={styles.saveBtn}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={cancelEditing}
+                                        className={styles.cancelBtn}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={styles.fieldWithEdit}>
+                                    <span>{user.name || 'No especificado'}</span>
+                                    {!isFieldEditingDisabled && (
+                                      <button
+                                        onClick={() => startEditing(user.id, 'name', user.name)}
+                                        className={styles.editBtn}
+                                        title="Editar nombre"
+                                      >
+                                        ✎
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Surname - Editable */}
+                              <div className={styles.detailItem}>
+                                <label>Apellido:</label>
+                                {editingField?.userId === user.id && editingField?.field === 'surname' ? (
+                                  <div className={styles.editField}>
+                                    <input
+                                      type="text"
+                                      value={editValues[user.id]?.surname || user.surname || ''}
+                                      onChange={(e) => handleEditChange(user.id, 'surname', e.target.value)}
+                                      className={styles.editInput}
+                                      autoFocus
+                                    />
+                                    <div className={styles.editActions}>
+                                      <button
+                                        onClick={() => saveField(user.id, 'surname')}
+                                        disabled={updatingUser === user.id}
+                                        className={styles.saveBtn}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={cancelEditing}
+                                        className={styles.cancelBtn}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={styles.fieldWithEdit}>
+                                    <span>{user.surname || 'No especificado'}</span>
+                                    {!isFieldEditingDisabled && (
+                                      <button
+                                        onClick={() => startEditing(user.id, 'surname', user.surname)}
+                                        className={styles.editBtn}
+                                        title="Editar apellido"
+                                      >
+                                        ✎
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Carrera - Editable */}
+                              <div className={styles.detailItem}>
+                                <label>Carrera:</label>
+                                {editingField?.userId === user.id && editingField?.field === 'Carrera' ? (
+                                  <div className={styles.editField}>
+                                    <select
+                                      value={editValues[user.id]?.Carrera || user.Carrera || ''}
+                                      onChange={(e) => handleEditChange(user.id, 'Carrera', e.target.value)}
+                                      className={styles.editInput}
+                                      autoFocus
+                                    >
+                                      <option value="">Selecciona una carrera</option>
+                                      <option value="Diseño Gráfico">Diseño Gráfico</option>
+                                      <option value="Escenografía">Escenografía</option>
+                                      <option value="Fotografía">Fotografía</option>
+                                      <option value="Ilustración">Ilustración</option>
+                                      <option value="Medios Audiovisuales">Medios Audiovisuales</option>
+                                      <option value="Profesorado">Profesorado</option>
+                                      <option value="Realizador en Artes Visuales">Realizador en Artes Visuales</option>
+                                    </select>
+                                    <div className={styles.editActions}>
+                                      <button
+                                        onClick={() => saveField(user.id, 'Carrera')}
+                                        disabled={updatingUser === user.id}
+                                        className={styles.saveBtn}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={cancelEditing}
+                                        className={styles.cancelBtn}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={styles.fieldWithEdit}>
+                                    <span>{user.Carrera || 'No especificada'}</span>
+                                    {!isFieldEditingDisabled && (
+                                      <button
+                                        onClick={() => startEditing(user.id, 'Carrera', user.Carrera)}
+                                        className={styles.editBtn}
+                                        title="Editar carrera"
+                                      >
+                                        ✎
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Email - Editable */}
+                              <div className={styles.detailItem}>
+                                <label>Email:</label>
+                                {editingField?.userId === user.id && editingField?.field === 'email' ? (
+                                  <div className={styles.editField}>
+                                    <input
+                                      type="email"
+                                      value={editValues[user.id]?.email || user.email || ''}
+                                      onChange={(e) => handleEditChange(user.id, 'email', e.target.value)}
+                                      className={styles.editInput}
+                                      autoFocus
+                                    />
+                                    <div className={styles.editActions}>
+                                      <button
+                                        onClick={() => saveField(user.id, 'email')}
+                                        disabled={updatingUser === user.id}
+                                        className={styles.saveBtn}
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={cancelEditing}
+                                        className={styles.cancelBtn}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className={styles.fieldWithEdit}>
+                                    <span>{user.email || 'No especificado'}</span>
+                                    {!isFieldEditingDisabled && (
+                                      <button
+                                        onClick={() => startEditing(user.id, 'email', user.email)}
+                                        className={styles.editBtn}
+                                        title="Editar email"
+                                      >
+                                        ✎
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Rol (no editable directamente, usa el select de abajo) */}
+                              <div className={styles.detailItem}>
+                                <label>Rol Actual:</label>
+                                <span className={styles.currentRole}>
+                                  {getRoleDisplayName(user.role?.name || 'Autenticado')}
+                                </span>
+                              </div>
+                            </div>
+
+                            {modificationWarning && (
+                              <div className={styles.modificationWarning}>
+                                {modificationWarning}
+                              </div>
+                            )}
+
+                            <div className={styles.actions}>
+                              <div className={styles.actionGroup}>
+                                <label>Cambiar Rol:</label>
+                                <select 
+                                  value={user.role?.id || ''}
+                                  onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                  disabled={isRoleChangeDisabled}
+                                  className={styles.roleSelect}
+                                >
+                                  <option value="">Seleccionar rol...</option>
+                                  {roles.map((role) => (
+                                    <option key={role.id} value={role.id}>
+                                      {getRoleDisplayName(role.name)}
+                                    </option>
+                                  ))}
+                                </select>
+                                {isRoleChangeDisabled && !updatingUser && (
+                                  <span className={styles.disabledReason}>
+                                    {isCurrentUser 
+                                      ? "No puedes modificar tu propio rol" 
+                                      : !canModify 
+                                        ? "No tienes permisos para modificar este usuario"
+                                        : "No disponible"
+                                    }
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className={styles.actionGroup}>
+                                <label>Estado:</label>
+                                <div className={styles.blockButtons}>
+                                  <button
+                                    onClick={() => handleBlockUser(user.id, true)}
+                                    disabled={user.blocked || isBlockActionDisabled}
+                                    className={`${styles.blockBtn} ${user.blocked || isBlockActionDisabled ? styles.disabled : ''}`}
+                                  >
+                                    Bloquear
+                                  </button>
+                                  <button
+                                    onClick={() => handleBlockUser(user.id, false)}
+                                    disabled={!user.blocked || isBlockActionDisabled}
+                                    className={`${styles.unblockBtn} ${!user.blocked || isBlockActionDisabled ? styles.disabled : ''}`}
+                                  >
+                                    Desbloquear
+                                  </button>
+                                </div>
+                                {isBlockActionDisabled && !updatingUser && (
+                                  <span className={styles.disabledReason}>
+                                    {isCurrentUser 
+                                      ? "No puedes bloquear tu propia cuenta" 
+                                      : !canModify 
+                                        ? "No tienes permisos para bloquear este usuario"
+                                        : "No disponible"
+                                    }
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {updatingUser === user.id && (
+                              <div className={styles.updating}>
+                                Actualizando...
+                              </div>
                             )}
                           </div>
-                          
-                          <div className={styles.detailsGrid}>
-                            {/* Username - Editable */}
-                            <div className={styles.detailItem}>
-                              <label>Usuario:</label>
-                              {editingField?.userId === user.id && editingField?.field === 'username' ? (
-                                <div className={styles.editField}>
-                                  <input
-                                    type="text"
-                                    value={editValues[user.id]?.username || user.username || ''}
-                                    onChange={(e) => handleEditChange(user.id, 'username', e.target.value)}
-                                    className={styles.editInput}
-                                    autoFocus
-                                  />
-                                  <div className={styles.editActions}>
-                                    <button
-                                      onClick={() => saveField(user.id, 'username')}
-                                      disabled={updatingUser === user.id}
-                                      className={styles.saveBtn}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={cancelEditing}
-                                      className={styles.cancelBtn}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.fieldWithEdit}>
-                                  <span>{user.username || 'No especificado'}</span>
-                                  {!isFieldEditingDisabled && (
-                                    <button
-                                      onClick={() => startEditing(user.id, 'username', user.username)}
-                                      className={styles.editBtn}
-                                      title="Editar usuario"
-                                    >
-                                      ✎
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
 
-                            {/* Name - Editable */}
-                            <div className={styles.detailItem}>
-                              <label>Nombre:</label>
-                              {editingField?.userId === user.id && editingField?.field === 'name' ? (
-                                <div className={styles.editField}>
-                                  <input
-                                    type="text"
-                                    value={editValues[user.id]?.name || user.name || ''}
-                                    onChange={(e) => handleEditChange(user.id, 'name', e.target.value)}
-                                    className={styles.editInput}
-                                    autoFocus
-                                  />
-                                  <div className={styles.editActions}>
-                                    <button
-                                      onClick={() => saveField(user.id, 'name')}
-                                      disabled={updatingUser === user.id}
-                                      className={styles.saveBtn}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={cancelEditing}
-                                      className={styles.cancelBtn}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.fieldWithEdit}>
-                                  <span>{user.name || 'No especificado'}</span>
-                                  {!isFieldEditingDisabled && (
-                                    <button
-                                      onClick={() => startEditing(user.id, 'name', user.name)}
-                                      className={styles.editBtn}
-                                      title="Editar nombre"
-                                    >
-                                      ✎
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+        {/* Paginación y controles */}
+        <div className={styles.paginationContainer}>
+          <div className={styles.itemsPerPage}>
+            <span className={styles.paginationText}>Mostrar </span>
+            <select 
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(e.target.value)}
+              className={styles.pageSelect}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className={styles.paginationText}> entradas por página</span>
+          </div>
 
-                            {/* Surname - Editable */}
-                            <div className={styles.detailItem}>
-                              <label>Apellido:</label>
-                              {editingField?.userId === user.id && editingField?.field === 'surname' ? (
-                                <div className={styles.editField}>
-                                  <input
-                                    type="text"
-                                    value={editValues[user.id]?.surname || user.surname || ''}
-                                    onChange={(e) => handleEditChange(user.id, 'surname', e.target.value)}
-                                    className={styles.editInput}
-                                    autoFocus
-                                  />
-                                  <div className={styles.editActions}>
-                                    <button
-                                      onClick={() => saveField(user.id, 'surname')}
-                                      disabled={updatingUser === user.id}
-                                      className={styles.saveBtn}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={cancelEditing}
-                                      className={styles.cancelBtn}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.fieldWithEdit}>
-                                  <span>{user.surname || 'No especificado'}</span>
-                                  {!isFieldEditingDisabled && (
-                                    <button
-                                      onClick={() => startEditing(user.id, 'surname', user.surname)}
-                                      className={styles.editBtn}
-                                      title="Editar apellido"
-                                    >
-                                      ✎
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+          <div className={styles.pagination}>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={styles.pageButton}
+            >
+              ‹
+            </button>
+            
+            <span className={styles.pageInfo}>
+              Página {currentPage} de {totalPages}
+            </span>
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={styles.pageButton}
+            >
+              ›
+            </button>
+          </div>
+        </div>
 
-                            {/* Carrera - Editable */}
-                            <div className={styles.detailItem}>
-                              <label>Carrera:</label>
-                              {editingField?.userId === user.id && editingField?.field === 'Carrera' ? (
-                                <div className={styles.editField}>
-                                  <select
-                                    value={editValues[user.id]?.Carrera || user.Carrera || ''}
-                                    onChange={(e) => handleEditChange(user.id, 'Carrera', e.target.value)}
-                                    className={styles.editInput}
-                                    autoFocus
-                                  >
-                                    <option value="">Selecciona una carrera</option>
-                                    <option value="Diseño Gráfico">Diseño Gráfico</option>
-                                    <option value="Escenografía">Escenografía</option>
-                                    <option value="Fotografía">Fotografía</option>
-                                    <option value="Ilustración">Ilustración</option>
-                                    <option value="Medios Audiovisuales">Medios Audiovisuales</option>
-                                    <option value="Profesorado">Profesorado</option>
-                                    <option value="Realizador en Artes Visuales">Realizador en Artes Visuales</option>
-                                  </select>
-                                  <div className={styles.editActions}>
-                                    <button
-                                      onClick={() => saveField(user.id, 'Carrera')}
-                                      disabled={updatingUser === user.id}
-                                      className={styles.saveBtn}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={cancelEditing}
-                                      className={styles.cancelBtn}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.fieldWithEdit}>
-                                  <span>{user.Carrera || 'No especificada'}</span>
-                                  {!isFieldEditingDisabled && (
-                                    <button
-                                      onClick={() => startEditing(user.id, 'Carrera', user.Carrera)}
-                                      className={styles.editBtn}
-                                      title="Editar carrera"
-                                    >
-                                      ✎
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Email - Editable */}
-                            <div className={styles.detailItem}>
-                              <label>Email:</label>
-                              {editingField?.userId === user.id && editingField?.field === 'email' ? (
-                                <div className={styles.editField}>
-                                  <input
-                                    type="email"
-                                    value={editValues[user.id]?.email || user.email || ''}
-                                    onChange={(e) => handleEditChange(user.id, 'email', e.target.value)}
-                                    className={styles.editInput}
-                                    autoFocus
-                                  />
-                                  <div className={styles.editActions}>
-                                    <button
-                                      onClick={() => saveField(user.id, 'email')}
-                                      disabled={updatingUser === user.id}
-                                      className={styles.saveBtn}
-                                    >
-                                      ✓
-                                    </button>
-                                    <button
-                                      onClick={cancelEditing}
-                                      className={styles.cancelBtn}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className={styles.fieldWithEdit}>
-                                  <span>{user.email || 'No especificado'}</span>
-                                  {!isFieldEditingDisabled && (
-                                    <button
-                                      onClick={() => startEditing(user.id, 'email', user.email)}
-                                      className={styles.editBtn}
-                                      title="Editar email"
-                                    >
-                                      ✎
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Rol (no editable directamente, usa el select de abajo) */}
-                            <div className={styles.detailItem}>
-                              <label>Rol Actual:</label>
-                              <span className={styles.currentRole}>
-                                {getRoleDisplayName(user.role?.name || 'Autenticado')}
-                              </span>
-                            </div>
-                          </div>
-
-                          {modificationWarning && (
-                            <div className={styles.modificationWarning}>
-                              {modificationWarning}
-                            </div>
-                          )}
-
-                          <div className={styles.actions}>
-                            <div className={styles.actionGroup}>
-                              <label>Cambiar Rol:</label>
-                              <select 
-                                value={user.role?.id || ''}
-                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                disabled={isRoleChangeDisabled}
-                                className={styles.roleSelect}
-                              >
-                                <option value="">Seleccionar rol...</option>
-                                {roles.map((role) => (
-                                  <option key={role.id} value={role.id}>
-                                    {getRoleDisplayName(role.name)}
-                                  </option>
-                                ))}
-                              </select>
-                              {isRoleChangeDisabled && !updatingUser && (
-                                <span className={styles.disabledReason}>
-                                  {isCurrentUser 
-                                    ? "No puedes modificar tu propio rol" 
-                                    : !canModify 
-                                      ? "No tienes permisos para modificar este usuario"
-                                      : "No disponible"
-                                  }
-                                </span>
-                              )}
-                            </div>
-
-                            <div className={styles.actionGroup}>
-                              <label>Estado:</label>
-                              <div className={styles.blockButtons}>
-                                <button
-                                  onClick={() => handleBlockUser(user.id, true)}
-                                  disabled={user.blocked || isBlockActionDisabled}
-                                  className={`${styles.blockBtn} ${user.blocked || isBlockActionDisabled ? styles.disabled : ''}`}
-                                >
-                                  Bloquear
-                                </button>
-                                <button
-                                  onClick={() => handleBlockUser(user.id, false)}
-                                  disabled={!user.blocked || isBlockActionDisabled}
-                                  className={`${styles.unblockBtn} ${!user.blocked || isBlockActionDisabled ? styles.disabled : ''}`}
-                                >
-                                  Desbloquear
-                                </button>
-                              </div>
-                              {isBlockActionDisabled && !updatingUser && (
-                                <span className={styles.disabledReason}>
-                                  {isCurrentUser 
-                                    ? "No puedes bloquear tu propia cuenta" 
-                                    : !canModify 
-                                      ? "No tienes permisos para bloquear este usuario"
-                                      : "No disponible"
-                                  }
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {updatingUser === user.id && (
-                            <div className={styles.updating}>
-                              Actualizando...
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              )
-            })}
-          </tbody>
-        </table>
+        {filteredUsers.length === 0 && (
+          <div className={styles.empty}>
+            <p>No se encontraron usuarios{users.length > 0 ? ' con los filtros aplicados' : ''}</p>
+            <Link href="/" className={styles.backButton}>
+              Volver al Inicio
+            </Link>
+          </div>
+        )}
       </div>
-
-      {/* Paginación y controles */}
-      <div className={styles.paginationContainer}>
-        <div className={styles.itemsPerPage}>
-          <span className={styles.paginationText}>Mostrar </span>
-          <select 
-            value={itemsPerPage}
-            onChange={(e) => handleItemsPerPageChange(e.target.value)}
-            className={styles.pageSelect}
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-          <span className={styles.paginationText}> entradas por página</span>
-        </div>
-
-        <div className={styles.pagination}>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={styles.pageButton}
-          >
-            ‹
-          </button>
-          
-          <span className={styles.pageInfo}>
-            Página {currentPage} de {totalPages}
-          </span>
-          
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={styles.pageButton}
-          >
-            ›
-          </button>
-        </div>
-      </div>
-
-      {filteredUsers.length === 0 && (
-        <div className={styles.empty}>
-          <p>No se encontraron usuarios{users.length > 0 ? ' con los filtros aplicados' : ''}</p>
-          <Link href="/" className={styles.backButton}>
-            Volver al Inicio
-          </Link>
-        </div>
-      )}
+      <Footer/>
     </div>
+    
   )
 }
