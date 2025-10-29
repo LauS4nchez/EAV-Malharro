@@ -13,6 +13,7 @@ export default function AdminUsinasPage() {
   const [tab, setTab] = useState('pendientes');
   const [selectedImage, setSelectedImage] = useState(null);
   const [modal, setModal] = useState({ open: false, action: '', usina: null });
+  const [jwt, setJwt] = useState(null); // 🔹 Estado para JWT
   
   // 🔹 Estado para paginación
   const [pagination, setPagination] = useState({
@@ -21,7 +22,10 @@ export default function AdminUsinasPage() {
     total: 0
   });
 
-  const jwt = localStorage.getItem('jwt');
+  // 🔹 Obtener JWT solo en el cliente
+  useEffect(() => {
+    setJwt(localStorage.getItem('jwt'));
+  }, []);
 
   // 🔹 Cargar usinas con la nueva estructura
   useEffect(() => {
@@ -82,22 +86,6 @@ export default function AdminUsinasPage() {
 
     fetchUsinas();
   }, []);
-
-  // 🔹 Filtrar usinas según tab
-  const usinasFiltradas = usinas.filter((u) =>
-    tab === 'pendientes'
-      ? u.aprobado === 'pendiente'
-      : tab === 'aprobadas'
-      ? u.aprobado === 'aprobada'
-      : u.aprobado === 'rechazada'
-  );
-
-  // 🔹 Calcular datos de paginación
-  const totalUsinas = usinasFiltradas.length;
-  const totalPages = Math.ceil(totalUsinas / pagination.pageSize);
-  const startIndex = (pagination.page - 1) * pagination.pageSize;
-  const endIndex = startIndex + pagination.pageSize;
-  const usinasPaginated = usinasFiltradas.slice(startIndex, endIndex);
 
   // 🔹 Actualizar estado
   const actualizarEstado = async (usina, nuevoEstado) => {
@@ -189,6 +177,22 @@ export default function AdminUsinasPage() {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, [tab]);
 
+  // 🔹 Filtrar usinas según tab
+  const usinasFiltradas = usinas.filter((u) =>
+    tab === 'pendientes'
+      ? u.aprobado === 'pendiente'
+      : tab === 'aprobadas'
+      ? u.aprobado === 'aprobada'
+      : u.aprobado === 'rechazada'
+  );
+
+  // 🔹 Calcular datos de paginación
+  const totalUsinas = usinasFiltradas.length;
+  const totalPages = Math.ceil(totalUsinas / pagination.pageSize);
+  const startIndex = (pagination.page - 1) * pagination.pageSize;
+  const endIndex = startIndex + pagination.pageSize;
+  const usinasPaginated = usinasFiltradas.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -200,7 +204,7 @@ export default function AdminUsinasPage() {
 
   return (
     <div>
-      <Header  variant='dark'/>
+      <Header variant='dark'/>
       <div className={styles.adminContainer}>
         <div className={`${styles.adminContent} mt-5`}>
           <h1 className={styles.adminTitle}>Panel de Moderación</h1>
