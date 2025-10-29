@@ -1,15 +1,8 @@
 /* src/styles/components/Usina.module.css */
 
 .usinaCircularContainer {
-  width: 100vw;
   background-color: #111;
   padding: 5rem 0;
-  margin: 2rem 0;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
 }
 
 .usinaContent {

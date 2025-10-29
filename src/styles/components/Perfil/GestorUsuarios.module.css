@@ -92,10 +92,8 @@
 }
 
 .usersTable td {
-  padding: 1rem 0.75rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-  white-space: nowrap;
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
 }
 
 .userRow {

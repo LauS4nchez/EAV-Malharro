@@ -459,7 +459,7 @@ export default function GestorUsuarios() {
                       onClick={() => handleUserClick(user.id)}
                     >
                       <td className={styles.idCell}>{user.id}</td>
-                      <td className={styles.usernameCell}>
+                      <td className={`${styles.usernameCell} mb-1`}>
                         {user.username}
                         {isCurrentUser && <span className={styles.youBadge}>Vos</span>}
                       </td>

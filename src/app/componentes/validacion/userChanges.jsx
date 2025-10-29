@@ -156,5 +156,27 @@ export const userService = {
     }
 
     return await response.json()
+  },
+
+  // ✅ Nueva función: Actualizar datos generales de usuario (nombre, apellido, carrera, email, etc.)
+  async updateUser(userId, data) {
+    const jwt = getJWT()
+    if (!jwt) throw new Error("Token JWT no encontrado")
+
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt}`
+      },
+      body: JSON.stringify(data)
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error?.message || 'Error al actualizar el usuario')
+    }
+
+    return await response.json()
   }
 }

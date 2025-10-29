@@ -1,18 +1,9 @@
 /* src/styles/components/CircularContainer.module.css */
 
 .circularContainer {
-  width: 100vw;
   background-color: #1f1f1f;
-  clip-path: ellipse(150% 50% at 50% 50%);
-  padding: 4rem 0 5rem 0;
-  margin: 2rem 0;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  z-index: 1;
-  overflow: visible;
+  padding: 4rem 0 5rem;
+  margin-bottom: 25px;
 }
 
 .content {

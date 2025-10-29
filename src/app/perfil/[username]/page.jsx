@@ -312,35 +312,41 @@ export default function PerfilPublicoPage({ params }) {
 
       case 'agendas':
         return (
-          <div className={agendaStyles.agendaContainer}>
+          <div className={styles.agendasGridContainer}>
             {agendasWithImages.length > 0 ? (
-              agendasWithImages.map((agenda) => (
-                <div key={agenda.id} className={agendaStyles.agendaCard}>
-                  {agenda.imageUrl && (
-                    <img
-                      src={agenda.imageUrl}
-                      alt="Imagen del evento"
-                      className={agendaStyles.imagenAgenda}
-                    />
-                  )}
-                  <div className={agendaStyles.agendaContenido}>
-                    <div className={agendaStyles.fecha}>
-                      <p>{new Date(agenda.fecha).toLocaleDateString()}</p>
+              <div className={styles.agendasGrid}>
+                {agendasWithImages.map((agenda) => (
+                  <div key={agenda.id} className={styles.agendaCard}>
+                    {agenda.imageUrl && (
+                      <img
+                        src={agenda.imageUrl}
+                        alt="Imagen del evento"
+                        className={styles.imagenAgenda}
+                      />
+                    )}
+                    
+                    {/* Vista compacta (siempre visible) */}
+                    <div className={styles.agendaContenido}>
+                      <div className={styles.fecha}>
+                        <p>{new Date(agenda.fecha).toLocaleDateString("es-AR")}</p>
+                      </div>
+                      <p className={styles.textoRegular}>
+                        {agenda.tituloActividad}
+                      </p>
                     </div>
-                    <p className={agendaStyles.textoRegular}>
-                      {agenda.tituloActividad}
-                    </p>
-                  </div>
-                  <div className={agendaStyles.agendaContenidoHover}>
-                    <p className={agendaStyles.textoRegular}>
-                      {agenda.tituloActividad}
-                    </p>
-                    <div className={agendaStyles.textoContenidoActividad}>
-                      <p>{agenda.contenidoActividad}</p>
+
+                    {/* Overlay con detalle (aparece en hover) */}
+                    <div className={styles.agendaContenidoHover}>
+                      <p className={styles.textoRegular}>
+                        {agenda.tituloActividad}
+                      </p>
+                      <div className={styles.textoContenidoActividad}>
+                        <p>{agenda.contenidoActividad}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <p className={styles.noPublicaciones}>
                 Este usuario aún no ha publicado agendas aprobadas.
