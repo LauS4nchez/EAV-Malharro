@@ -72,7 +72,7 @@ export default function Page() {
         </div>
 
         <div className={styles.titlePreguntas}>
-          <h2 id="preguntas-frecuentes">Preguntas Frecuentes</h2>
+          <h2 id="preguntas-frecuentes" className="mt-5">Preguntas Frecuentes</h2>
         </div>
         <div className={styles.preguntasSection}>
           <Acordeon acordeonID="preguntas" variant="preguntas"/>
