@@ -35,7 +35,7 @@ export default function AdminUsinasPage() {
           headers: {
             'Authorization': `Bearer ${API_TOKEN}`,
             'Content-Type': 'application/json',
-          }
+          },
         });
         const json = await res.json();
         const items = Array.isArray(json?.data) ? json.data : [];
@@ -203,7 +203,7 @@ export default function AdminUsinasPage() {
   }
 
   return (
-    <div>
+    <div className={styles.bodyPanel}>
       <Header variant='dark'/>
       <div className={styles.adminContainer}>
         <div className={`${styles.adminContent} mt-5`}>

@@ -226,8 +226,6 @@ export default function MisAgendasPage() {
           tituloActividad: editData.tituloActividad.trim(),
           contenidoActividad: editData.contenidoActividad.trim(),
           fecha: editData.fecha, // YYYY-MM-DD
-          tipoEvento: 'general',
-          etiquetas: 'ninguna',
           ...(imagenId && { imagen: { set: [{ id: imagenId }] } }),
         },
       };
@@ -298,7 +296,7 @@ export default function MisAgendasPage() {
 
   return (
     <div>
-      <Header />
+      <Header variant='dark'/>
       <div className={styles.container}>
         {/* Botón volver */}
         <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 16 }}>

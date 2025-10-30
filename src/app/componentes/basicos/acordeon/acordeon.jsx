@@ -1,14 +1,14 @@
 // components/Acordeon.jsx
-'use client'; // Este componente usa estados/efectos en el cliente
+'use client';
 
 import { useState, useEffect } from 'react';
 import { getAcordeonByAcordeonID } from './acordeonByID';
 import { checkUserRole } from '../../validacion/checkRole';
 import { handleSave } from '../../validacion/handleSave';
 import dynamic from 'next/dynamic';
-import textStyles from "@/styles/components/Texto/TextComponents.module.css";
-import acordeonCarrerasStyles from "@/styles/components/Acordeon/AcordeonCarreras.module.css";
-import acordeonPreguntasStyles from "@/styles/components/Acordeon/AcordeonPreguntas.module.css";
+import textStyles from '@/styles/components/Texto/TextComponents.module.css';
+import acordeonCarrerasStyles from '@/styles/components/Acordeon/AcordeonCarreras.module.css';
+import acordeonPreguntasStyles from '@/styles/components/Acordeon/AcordeonPreguntas.module.css';
 
 // Importación dinámica para evitar SSR con ReactMarkdown
 const ReactMarkdown = dynamic(() => import('react-markdown'), {
@@ -21,28 +21,41 @@ const variantStyles = {
   preguntas: acordeonPreguntasStyles,
 };
 
-export default function Acordeon({ acordeonID, variant = "carreras" }) {
-  // Token para operaciones autenticadas
-  const jwt = typeof window !== "undefined" ? localStorage.getItem("jwt") : null;
+export default function Acordeon({ acordeonID, variant = 'carreras' }) {
+  const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
 
   // Estado UI/datos
-  const [labels, setLabels] = useState([]);       // Ítems del acordeón
-  const [activo, setActivo] = useState(null);     // id abierto
-  const [isAdmin, setIsAdmin] = useState(false);  // permisos de edición
+  const [labels, setLabels] = useState([]);
+  const [activo, setActivo] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [editedText, setEditedText] = useState('');
   const [editedTitle, setEditedTitle] = useState('');
-  const [editedTextColor, setEditedTextColor] = useState(false); // switch "textoNegro"
-  const [isMobile, setIsMobile] = useState(false); // (reservado para truncar títulos en mobile)
+  const [editedTextColor, setEditedTextColor] = useState(false); // para textoNegro
+  const [isMobile, setIsMobile] = useState(false);
+
+  // nuevos estados de validación
+  const [validationErrors, setValidationErrors] = useState({});
+  const [saving, setSaving] = useState(false);
 
   // Selección de estilos según variante
   const acordeonStyles = variantStyles[variant] || acordeonCarrerasStyles;
+
+  useEffect(() => {
+    // detectar mobile (opcional)
+    if (typeof window !== 'undefined') {
+      const handleResize = () => setIsMobile(window.innerWidth < 768);
+      handleResize();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   // Carga inicial: rol y datos
   useEffect(() => {
     const verifyAdmin = async () => {
       const role = checkUserRole();
-      if (role === "Administrador" || role === 'SuperAdministrador') setIsAdmin(true);
+      if (role === 'Administrador' || role === 'SuperAdministrador') setIsAdmin(true);
     };
 
     verifyAdmin();
@@ -61,84 +74,155 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
     fetchData();
   }, [acordeonID]);
 
-  // Abre/cierra una tarjeta
   const toggle = (id) => setActivo(activo === id ? null : id);
 
-  // Ícono de flecha para "carreras" (chevron)
   const FlechaCarreras = ({ abierto }) => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      strokeWidth={1.5} 
-      stroke="currentColor" 
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
+      strokeWidth={1.5}
+      stroke='currentColor'
       className={`${acordeonStyles.flechaIcono} ${abierto ? acordeonStyles.flechaAbierta : ''}`}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+      <path strokeLinecap='round' strokeLinejoin='round' d='m4.5 15.75 7.5-7.5 7.5 7.5' />
     </svg>
   );
 
-  // Ícono de flecha para "preguntas" (plus)
   const FlechaPreguntas = ({ abierto }) => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      strokeWidth={1.5} 
-      stroke="currentColor" 
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
+      strokeWidth={1.5}
+      stroke='currentColor'
       className={`${acordeonStyles.flechaIcono} ${abierto ? acordeonStyles.flechaAbierta : ''}`}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
     </svg>
   );
 
-  // Selección del componente de ícono según la variante
   const FlechaIcono = variant === 'preguntas' ? FlechaPreguntas : FlechaCarreras;
 
-  /**
-   * Persiste cambios de título/contenido/(textoNegro*) y refresca la lista.
-   * *textoNegro solo aplica a la variante "carreras".
-   */
+  // ==== VALIDACIÓN INTELIGENTE ====
+  const validateFields = (originalItem) => {
+    const errors = {};
+
+    const tituloTrim = editedTitle.trim();
+    const contenidoTrim = editedText.trim();
+
+    if (!tituloTrim) {
+      errors.titulo = 'El título es obligatorio.';
+    } else if (tituloTrim.length < 3) {
+      errors.titulo = 'El título debe tener al menos 3 caracteres.';
+    }
+
+    if (!contenidoTrim) {
+      errors.contenido = 'El contenido no puede estar vacío.';
+    } else if (contenidoTrim.length < 5) {
+      errors.contenido = 'El contenido es demasiado corto, agregá un poco más.';
+    }
+
+    // en carreras, textoNegro siempre boolean
+    if (variant === 'carreras') {
+      // aunque el usuario toque o no el switch, lo forzamos a boolean
+      if (typeof editedTextColor !== 'boolean') {
+        errors.textoNegro = 'Ocurrió un problema con el color del texto. Volvé a marcar la opción.';
+      }
+    }
+
+    // evitar guardar si no cambió nada
+    const noTitleChange = originalItem && originalItem.titulo === tituloTrim;
+    const noContentChange = originalItem && (originalItem.contenido || '') === contenidoTrim;
+    const noTextColorChange =
+      variant !== 'carreras' ||
+      (originalItem && Boolean(originalItem.textoNegro) === Boolean(editedTextColor));
+
+    if (noTitleChange && noContentChange && noTextColorChange) {
+      errors.sinCambios = 'No hay cambios para guardar.';
+    }
+
+    return errors;
+  };
+
   const saveChanges = async (id) => {
+    if (!jwt) {
+      // si no hay token, no intentamos guardar
+      setValidationErrors({
+        auth: 'No tenés sesión activa para guardar cambios.'
+      });
+      return;
+    }
+
+    const originalItem =
+      labels.find((l) => l.documentId === id) ||
+      labels.find((l) => l.id === id) ||
+      null;
+
+    const errors = validateFields(originalItem);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
+    setSaving(true);
+
     try {
-      await handleSave({
-        objetoAEditar: "texto",
-        idObjeto: id,
-        nuevoContenido: editedText,
-        jwt,
-        campoAModificar: "contenido",
-      });
+      const tituloTrim = editedTitle.trim();
+      const contenidoTrim = editedText.trim();
+      const mustSendTextColor = variant === 'carreras';
 
-      await handleSave({
-        objetoAEditar: "texto",
-        idObjeto: id,
-        nuevoContenido: editedTitle,
-        jwt,
-        campoAModificar: "titulo",
-      });
-
-      // Solo guardar textoNegro si la variante es carreras
-      if (variant === "carreras") {
+      // guardamos SOLO lo que cambió
+      if (!originalItem || originalItem.contenido !== contenidoTrim) {
         await handleSave({
-          objetoAEditar: "texto",
+          objetoAEditar: 'texto',
           idObjeto: id,
-          nuevoContenido: Boolean(editedTextColor),
+          nuevoContenido: contenidoTrim,
           jwt,
-          campoAModificar: "textoNegro",
+          campoAModificar: 'contenido',
         });
+      }
+
+      if (!originalItem || originalItem.titulo !== tituloTrim) {
+        await handleSave({
+          objetoAEditar: 'texto',
+          idObjeto: id,
+          nuevoContenido: tituloTrim,
+          jwt,
+          campoAModificar: 'titulo',
+        });
+      }
+
+      if (mustSendTextColor) {
+        const boolToSend = Boolean(editedTextColor); // 🔒 nunca null
+        if (!originalItem || Boolean(originalItem.textoNegro) !== boolToSend) {
+          await handleSave({
+            objetoAEditar: 'texto',
+            idObjeto: id,
+            nuevoContenido: boolToSend,
+            jwt,
+            campoAModificar: 'textoNegro',
+          });
+        }
       }
 
       const updated = await getAcordeonByAcordeonID(acordeonID);
       if (updated) setLabels(updated);
 
-      // Limpia estado de edición
+      // Reset
       setEditingItem(null);
       setEditedText('');
       setEditedTitle('');
       setEditedTextColor(false);
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
-      alert("Hubo un error al guardar los cambios del acordeón");
+      console.error('Error al guardar los cambios del acordeón:', error);
+      // no usamos alert porque ya me dijiste en otros componentes que no lo querés
+      setValidationErrors({
+        general: 'No se pudieron guardar los cambios. Revisá la consola.'
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -148,29 +232,29 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
         {labels.map((item) => {
           const abierto = activo === item.id;
           const fondo = item.color || '#ffffff';
-          // En "preguntas" el texto siempre negro; en "carreras" depende de textoNegro de Strapi
-          const textoColor = variant === 'preguntas' ? '#000000' : (item.textoNegro ? '#000000' : '#FFFFFF');
+          const textoColor =
+            variant === 'preguntas' ? '#000000' : item.textoNegro ? '#000000' : '#FFFFFF';
           const isEditingThis = editingItem === item.id;
           const titulo = item.titulo || 'Sin título';
 
           return (
-            <div 
-              key={item.id} 
-              className={acordeonStyles.textoItem} 
+            <div
+              key={item.id}
+              className={acordeonStyles.textoItem}
               style={{ backgroundColor: fondo, color: textoColor }}
             >
-              {/* Header clickeable del acordeón */}
-              <div 
-                className={acordeonStyles.textoHeader} 
+              {/* Header clickeable */}
+              <div
+                className={acordeonStyles.textoHeader}
                 onClick={() => toggle(item.id)}
               >
                 <span className={acordeonStyles.tituloContainer}>
                   <h2
-                    style={{color: textoColor}}
+                    style={{ color: textoColor }}
                     className={acordeonStyles.tituloAcordeon}
                     title={isMobile && titulo.length > 15 && variant === 'carreras' ? titulo : ''}
                   >
-                    {isEditingThis ? titulo : titulo}
+                    {titulo}
                   </h2>
                 </span>
                 <span className={acordeonStyles.botonTexto}>
@@ -178,60 +262,94 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                 </span>
               </div>
 
-              {/* Cuerpo del acordeón (colapsable) */}
-              <div 
-                className={`${acordeonStyles.textoContenido} ${abierto ? acordeonStyles.textoContenidoAbierto : acordeonStyles.textoContenidoCerrado}`}
+              {/* Cuerpo colapsable */}
+              <div
+                className={`${acordeonStyles.textoContenido} ${
+                  abierto
+                    ? acordeonStyles.textoContenidoAbierto
+                    : acordeonStyles.textoContenidoCerrado
+                }`}
               >
                 <div className={acordeonStyles.contenidoInterno}>
                   {isEditingThis ? (
-                    // Modo edición (admins)
                     <div className={textStyles.editingContainer}>
                       <input
                         className={textStyles.textareaEditar}
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
-                        placeholder="Editar título"
+                        placeholder='Editar título'
                       />
+                      {validationErrors.titulo && (
+                        <p className={textStyles.errorTexto}>{validationErrors.titulo}</p>
+                      )}
+
                       <textarea
                         className={textStyles.textareaEditar}
                         value={editedText}
                         onChange={(e) => setEditedText(e.target.value)}
-                        placeholder="Editar contenido"
+                        placeholder='Editar contenido'
                       />
-                      {/* Switch de contraste solo para "carreras" */}
+                      {validationErrors.contenido && (
+                        <p className={textStyles.errorTexto}>{validationErrors.contenido}</p>
+                      )}
+
                       {variant === 'carreras' && (
                         <div className={textStyles.switchContainer}>
                           <label className={textStyles.switchLabel}>
                             <span>Texto negro</span>
                             <input
-                              type="checkbox"
-                              checked={editedTextColor}
+                              type='checkbox'
+                              checked={!!editedTextColor}
                               onChange={(e) => setEditedTextColor(e.target.checked)}
                               className={textStyles.switchInput}
                             />
                             <span className={textStyles.switchSlider}></span>
                           </label>
+                          {validationErrors.textoNegro && (
+                            <p className={textStyles.errorTexto}>{validationErrors.textoNegro}</p>
+                          )}
                         </div>
                       )}
+
+                      {validationErrors.sinCambios && (
+                        <p className={textStyles.errorTexto}>{validationErrors.sinCambios}</p>
+                      )}
+                      {validationErrors.auth && (
+                        <p className={textStyles.errorTexto}>{validationErrors.auth}</p>
+                      )}
+                      {validationErrors.general && (
+                        <p className={textStyles.errorTexto}>{validationErrors.general}</p>
+                      )}
+
                       <div className={textStyles.buttonGroup}>
-                        <button onClick={() => saveChanges(item.documentId)} className={textStyles.btnAccion}>
-                          Guardar
+                        <button
+                          onClick={() => saveChanges(item.documentId)}
+                          className={textStyles.btnAccion}
+                          disabled={saving}
+                        >
+                          {saving ? 'Guardando...' : 'Guardar'}
                         </button>
-                        <button onClick={() => setEditingItem(null)} className={textStyles.btnAccion}>
+                        <button
+                          onClick={() => {
+                            setEditingItem(null);
+                            setValidationErrors({});
+                          }}
+                          className={textStyles.btnAccion}
+                        >
                           Cancelar
                         </button>
                       </div>
                     </div>
                   ) : (
-                    // Modo lectura
                     <>
                       <div className={acordeonStyles.contenidoTexto}>
                         <ReactMarkdown
                           components={{
-                            // Fuerza color en elementos comunes del markdown
-                            p: ({node, ...props}) => <p style={{color: textoColor}} {...props} />,
-                            strong: ({node, ...props}) => <strong style={{color: textoColor}} {...props} />,
-                            em: ({node, ...props}) => <em style={{color: textoColor}} {...props} />
+                            p: ({ node, ...props }) => <p style={{ color: textoColor }} {...props} />,
+                            strong: ({ node, ...props }) => (
+                              <strong style={{ color: textoColor }} {...props} />
+                            ),
+                            em: ({ node, ...props }) => <em style={{ color: textoColor }} {...props} />,
                           }}
                         >
                           {item.contenido || 'Sin contenido'}
@@ -240,11 +358,11 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
 
                       <div className={textStyles.botonesFila}>
                         {variant === 'carreras' && (
-                          <button 
+                          <button
                             className={acordeonStyles.saberMasBtn}
-                            style={{ 
+                            style={{
                               color: textoColor,
-                              borderColor: textoColor 
+                              borderColor: textoColor,
                             }}
                           >
                             Saber más
@@ -255,12 +373,15 @@ export default function Acordeon({ acordeonID, variant = "carreras" }) {
                             className={textStyles.btnAccion}
                             onClick={() => {
                               setEditingItem(item.id);
-                              setEditedText(item.contenido);
-                              setEditedTitle(item.titulo);
-                              // Solo cargar textoNegro si la variante es carreras
+                              setEditedText(item.contenido || '');
+                              setEditedTitle(item.titulo || '');
                               if (variant === 'carreras') {
+                                // 🔒 importante: siempre forzamos a boolean
                                 setEditedTextColor(Boolean(item.textoNegro));
+                              } else {
+                                setEditedTextColor(false);
                               }
+                              setValidationErrors({});
                             }}
                           >
                             Editar

@@ -194,15 +194,15 @@ export default function Usina() {
 
               {selectedUsina.creador && (
                 <p>
-                  <strong>Creador:</strong> {selectedUsina.creador.name} {selectedUsina.creador.surname}{' '}
+                  <b>Creador:</b> {selectedUsina.creador.name} {selectedUsina.creador.surname}{' '}
                   <span className={styles.username}>@{selectedUsina.creador.username}</span>
                 </p>
               )}
 
-              <p><strong>Carrera:</strong> {selectedUsina.creador?.carrera || 'No especificada'}</p>
+              <p><b>Carrera:</b> {selectedUsina.creador?.carrera || 'No especificada'}</p>
 
               {selectedUsina.creado && (
-                <p><strong>Publicado:</strong> {new Date(selectedUsina.creado).toLocaleDateString('es-AR')}</p>
+                <p><b>Publicado:</b> {new Date(selectedUsina.creado).toLocaleDateString('es-AR')}</p>
               )}
 
               {selectedUsina.creador?.username && (

@@ -376,7 +376,7 @@ export default function PerfilPublicoPage({ params }) {
   };
 
   return (
-    <div>
+    <div className={styles.bodyPerfil}>
       <div className={styles.perfilPublicoContainer}>
         <div className={`${styles.header} mb-5`}>
           <Header variant='dark'/>

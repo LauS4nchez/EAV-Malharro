@@ -257,8 +257,6 @@ export default function CalendarioPage() {
             fecha: agendaForm.fecha,
             creador: userId,
             imagen: imagenId,
-            tipoEvento: 'general',
-            etiquetas: 'ninguna',
           },
         }),
       });
@@ -432,7 +430,7 @@ export default function CalendarioPage() {
                 className={styles.navButton}
                 onClick={() => router.push('/mis-agendas')}
               >
-                👁️ Ver mis agendas
+                Ver mis agendas
               </button>
             </>
           )}

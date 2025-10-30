@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { API_URL, API_TOKEN } from "@/app/config";
-import styles from "@/styles/components/Perfil/PerfilPublico.module.css";
+import { API_URL, API_TOKEN } from '@/app/config';
+import styles from '@/styles/components/Perfil/PerfilPublico.module.css';
 import toast from 'react-hot-toast';
 
-export default function InformacionPersonal({ userData, isCurrentUser, onAvatarUpdate, onUserDataUpdate, onAvatarOverlayChange }) {
+export default function InformacionPersonal({
+  userData,
+  isCurrentUser,
+  onAvatarUpdate,
+  onUserDataUpdate,
+  onAvatarOverlayChange,
+}) {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [saveLoading, setSaveLoading] = useState(false);
@@ -13,6 +19,17 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
   const [successMessage, setSuccessMessage] = useState('');
   const [showEmail, setShowEmail] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const CARRERAS_VALIDAS = [
+    'Diseño Gráfico',
+    'Escenografía',
+    'Fotografía',
+    'Ilustración',
+    'Medios Audiovisuales',
+    'Profesorado',
+    'Realizador en Artes Visuales',
+  ];
 
   // Inicializar formData cuando userData cambia
   useEffect(() => {
@@ -22,54 +39,110 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
         surname: userData?.surname || '',
         carrera: userData?.carrera || '',
       });
+      setFieldErrors({});
     }
   }, [userData]);
 
   // Función para censurar el email - siempre 5 asteriscos
   const getCensoredEmail = (email) => {
     if (!email) return 'No especificado';
-    
+
     const [username, domain] = email.split('@');
     if (!username || !domain) return email;
-    
+
     const visiblePart = username.substring(0, 3);
     return `${visiblePart}*****@${domain}`;
   };
 
+  // Validación inteligente
+  const validarFormulario = (data) => {
+    const errors = {};
+
+    const limpiar = (v) => (typeof v === 'string' ? v.trim() : v);
+
+    const name = limpiar(data.name);
+    const surname = limpiar(data.surname);
+    const carrera = limpiar(data.carrera);
+
+    // Nombre
+    if (!name) {
+      errors.name = 'El nombre es obligatorio';
+    } else if (name.length < 2) {
+      errors.name = 'El nombre debe tener al menos 2 caracteres';
+    } else if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(name)) {
+      errors.name = 'El nombre solo puede tener letras y espacios';
+    }
+
+    // Apellido
+    if (!surname) {
+      errors.surname = 'El apellido es obligatorio';
+    } else if (surname.length < 2) {
+      errors.surname = 'El apellido debe tener al menos 2 caracteres';
+    } else if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(surname)) {
+      errors.surname = 'El apellido solo puede tener letras y espacios';
+    }
+
+    // Carrera (opcional, pero si elige, que sea una de la lista)
+    if (carrera && !CARRERAS_VALIDAS.includes(carrera)) {
+      errors.carrera = 'Seleccioná una carrera válida';
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors,
+    };
+  };
+
   const handleEdit = () => {
     setEditing(true);
-    onAvatarOverlayChange(true); // ✅ Usar la función pasada como prop
+    onAvatarOverlayChange && onAvatarOverlayChange(true);
     setSuccessMessage('');
     setError('');
   };
 
   const handleCancel = () => {
     setEditing(false);
-    onAvatarOverlayChange(false); // ✅ Usar la función pasada como prop
+    onAvatarOverlayChange && onAvatarOverlayChange(false);
     setFormData({
       name: userData?.name || '',
       surname: userData?.surname || '',
       carrera: userData?.carrera || '',
     });
+    setFieldErrors({});
     setError('');
   };
 
   const handleSave = async () => {
+    const { isValid, errors } = validarFormulario(formData);
+    if (!isValid) {
+      setFieldErrors(errors);
+      setError('Revisá los campos marcados.');
+      toast.error('Revisá los campos marcados.');
+      return;
+    }
+
     try {
       setSaveLoading(true);
       setError('');
-      const jwt = localStorage.getItem("jwt");
-      
+      setFieldErrors({});
+
+      const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+      if (!jwt) {
+        setError('No se encontró la sesión del usuario. Volvé a iniciar sesión.');
+        toast.error('No se encontró la sesión del usuario.');
+        return;
+      }
+
       const updateData = {
-        name: formData.name,
-        surname: formData.surname,
-        carrera: formData.carrera,
+        name: formData.name.trim(),
+        surname: formData.surname.trim(),
+        carrera: formData.carrera?.trim() || '',
       };
 
       const response = await fetch(`${API_URL}/users/me`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${jwt}`,
+          Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updateData),
@@ -86,22 +159,21 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
         throw new Error(`Error ${response.status}: ${errorDetails}`);
       }
 
-      const result = await response.json();
-      
       // Actualizar datos en el componente padre
-      onUserDataUpdate(updateData);
-      
+      onUserDataUpdate && onUserDataUpdate(updateData);
+
       setEditing(false);
-      onAvatarOverlayChange(false); // ✅ Ocultar overlay al guardar
+      onAvatarOverlayChange && onAvatarOverlayChange(false);
       setSuccessMessage('Perfil actualizado correctamente');
-      
+      toast.success('Perfil actualizado correctamente');
+
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
-      
     } catch (err) {
       setError(err.message);
       console.error('Error updating user data:', err);
+      toast.error('No se pudo actualizar el perfil');
     } finally {
       setSaveLoading(false);
     }
@@ -114,25 +186,33 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
     // Validar que sea una imagen
     if (!file.type.startsWith('image/')) {
       setError('Por favor, selecciona un archivo de imagen válido');
+      toast.error('Archivo no válido');
       return;
     }
 
     // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('La imagen debe ser menor a 5MB');
+      toast.error('La imagen debe ser menor a 5MB');
       return;
     }
 
     try {
       setAvatarUploading(true);
       setError('');
-      const jwt = localStorage.getItem("jwt");
+      const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+
+      if (!jwt) {
+        setError('No se encontró la sesión del usuario. Volvé a iniciar sesión.');
+        toast.error('No se encontró la sesión del usuario.');
+        return;
+      }
 
       // 1. Primero obtenemos el ID del usuario actual
       const meResponse = await fetch(`${API_URL}/users/me`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${jwt}`,
+          Authorization: `Bearer ${jwt}`,
           'Content-Type': 'application/json',
         },
       });
@@ -145,15 +225,15 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
       const userId = meData.id;
 
       // 2. Subir la imagen usando el API Token
-      const formData = new FormData();
-      formData.append('files', file);
+      const fd = new FormData();
+      fd.append('files', file);
 
       const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${API_TOKEN}`,
         },
-        body: formData,
+        body: fd,
       });
 
       if (!uploadResponse.ok) {
@@ -167,11 +247,11 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
       const updateResponse = await fetch(`${API_URL}/users/${userId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          avatar: avatarId
+          avatar: avatarId,
         }),
       });
 
@@ -179,13 +259,11 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
         throw new Error('Error al actualizar el avatar del usuario');
       }
 
-      const updateData = await updateResponse.json();
-
       // 4. Obtener los datos actualizados del usuario con el avatar
       const userResponse = await fetch(`${API_URL}/users/${userId}?populate=avatar`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${API_TOKEN}`,
+          Authorization: `Bearer ${API_TOKEN}`,
           'Content-Type': 'application/json',
         },
       });
@@ -198,27 +276,36 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
       const updatedUserData = userDataResponse.data || userDataResponse;
 
       // 5. Actualizar el estado en el componente padre
-      onAvatarUpdate(updatedUserData.avatar);
-      
+      onAvatarUpdate && onAvatarUpdate(updatedUserData.avatar);
+
       setSuccessMessage('Avatar actualizado correctamente');
-      
+      toast.success('Avatar actualizado correctamente');
+
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
-
     } catch (err) {
       setError(err.message);
       console.error('Error updating avatar:', err);
+      toast.error('No se pudo actualizar el avatar');
     } finally {
       setAvatarUploading(false);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
+
+    // limpiar error de ese campo cuando el user escribe
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const nuevo = { ...prev };
+      delete nuevo[field];
+      return nuevo;
+    });
   };
 
   const toggleEmailVisibility = () => {
@@ -240,26 +327,23 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
       <div className={styles.infoHeader}>
         <h2 className={styles.infoTitle}>Información Personal</h2>
         {isCurrentUser && !editing && (
-          <button 
-            onClick={handleEdit}
-            className={styles.editInfoButton}
-          >
+          <button onClick={handleEdit} className={styles.editInfoButton}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
             </svg>
             Editar
           </button>
         )}
         {isCurrentUser && editing && (
           <div className={styles.editActions}>
-            <button 
+            <button
               onClick={handleSave}
               className={styles.saveInfoButton}
               disabled={saveLoading}
             >
               {saveLoading ? 'Guardando...' : 'Guardar'}
             </button>
-            <button 
+            <button
               onClick={handleCancel}
               className={styles.cancelInfoButton}
               disabled={saveLoading}
@@ -302,7 +386,7 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
                 </span>
               </div>
               {isCurrentUser && (
-                <button 
+                <button
                   type="button"
                   onClick={toggleEmailVisibility}
                   className={styles.emailToggle}
@@ -319,15 +403,20 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
           <div className={styles.infoItem}>
             <label className={styles.infoLabel}>Nombre</label>
             {editing ? (
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                className={styles.editInput}
-                placeholder="Ingresa tu nombre"
-                disabled={saveLoading}
-                maxLength={20}
-              />
+              <>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className={`${styles.editInput} ${fieldErrors.name ? styles.inputError : ''}`}
+                  placeholder="Ingresa tu nombre"
+                  disabled={saveLoading}
+                  maxLength={20}
+                />
+                {fieldErrors.name && (
+                  <p className={styles.fieldErrorText}>{fieldErrors.name}</p>
+                )}
+              </>
             ) : (
               <div className={styles.infoValue}>
                 <span className={styles.infoText}>{userData.name || 'No especificado'}</span>
@@ -338,15 +427,20 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
           <div className={styles.infoItem}>
             <label className={styles.infoLabel}>Apellido</label>
             {editing ? (
-              <input
-                type="text"
-                value={formData.surname}
-                onChange={(e) => handleInputChange('surname', e.target.value)}
-                className={styles.editInput}
-                placeholder="Ingresa tu apellido"
-                disabled={saveLoading}
-                maxLength={30}
-              />
+              <>
+                <input
+                  type="text"
+                  value={formData.surname}
+                  onChange={(e) => handleInputChange('surname', e.target.value)}
+                  className={`${styles.editInput} ${fieldErrors.surname ? styles.inputError : ''}`}
+                  placeholder="Ingresa tu apellido"
+                  disabled={saveLoading}
+                  maxLength={30}
+                />
+                {fieldErrors.surname && (
+                  <p className={styles.fieldErrorText}>{fieldErrors.surname}</p>
+                )}
+              </>
             ) : (
               <div className={styles.infoValue}>
                 <span className={styles.infoText}>{userData.surname || 'No especificado'}</span>
@@ -357,21 +451,26 @@ export default function InformacionPersonal({ userData, isCurrentUser, onAvatarU
           <div className={styles.infoItem}>
             <label className={styles.infoLabel}>Carrera</label>
             {editing ? (
-              <select
-                value={formData.carrera}
-                onChange={(e) => handleInputChange('carrera', e.target.value)}
-                className={styles.editInput}
-                disabled={saveLoading}
-              >
-                <option value="">Selecciona una carrera</option>
-                <option value="Diseño Gráfico">Diseño Gráfico</option>
-                <option value="Escenografía">Escenografía</option>
-                <option value="Fotografía">Fotografía</option>
-                <option value="Ilustración">Ilustración</option>
-                <option value="Medios Audiovisuales">Medios Audiovisuales</option>
-                <option value="Profesorado">Profesorado</option>
-                <option value="Realizador en Artes Visuales">Realizador en Artes Visuales</option>
-              </select>
+              <>
+                <select
+                  value={formData.carrera}
+                  onChange={(e) => handleInputChange('carrera', e.target.value)}
+                  className={`${styles.editInput} ${fieldErrors.carrera ? styles.inputError : ''}`}
+                  disabled={saveLoading}
+                >
+                  <option className={styles.options} value="">
+                    Selecciona una carrera
+                  </option>
+                  {CARRERAS_VALIDAS.map((c) => (
+                    <option key={c} className={styles.options} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.carrera && (
+                  <p className={styles.fieldErrorText}>{fieldErrors.carrera}</p>
+                )}
+              </>
             ) : (
               <div className={styles.infoValue}>
                 <span className={styles.infoText}>{userData.carrera || 'No especificada'}</span>

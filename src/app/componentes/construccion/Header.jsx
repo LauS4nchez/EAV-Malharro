@@ -11,7 +11,6 @@ import { logout } from '../login/Logout'
 
 export default function Header({ variant = 'light' }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -77,10 +76,6 @@ export default function Header({ variant = 'light' }) {
     setOpenDropdown(null)
   }
 
-  const toggleSearch = () => {
-    setSearchOpen(!searchOpen)
-  }
-
   const toggleDropdown = (dropdownName) => {
     setOpenDropdown(openDropdown === dropdownName ? null : dropdownName)
   }
@@ -124,16 +119,6 @@ export default function Header({ variant = 'light' }) {
       )
     }
 
-    if (userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
-      items.push(
-        <li key="informacion">
-          <Link href={`/perfil/${user.username}#informacion`} onClick={closeMenu}>
-            Información Personal
-          </Link>
-        </li>
-      )
-    }
-
     if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="gestor-usuarios">
@@ -144,7 +129,7 @@ export default function Header({ variant = 'light' }) {
       )
     }
 
-      if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="admin-usina">
           <Link href="/panel-moderacion" onClick={closeMenu}>
@@ -176,17 +161,6 @@ export default function Header({ variant = 'light' }) {
                   className={currentStyles.logoNav}
                 />
               </Link>
-              <button 
-                onClick={toggleSearch}
-                className={currentStyles.searchButton}
-                aria-label="Buscar"
-              >
-                <img 
-                  src="/img/Icon_Lupa.svg" 
-                  alt="Buscar" 
-                  className={currentStyles.lupaNav}
-                />
-              </button>
             </div>
           </div>
 
@@ -222,13 +196,13 @@ export default function Header({ variant = 'light' }) {
                   </button>
 
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('carreras') ? currentStyles.open : ''}`}>
-                    <li><Link href="/disenografico" onClick={closeMenu}>Diseño Gráfico</Link></li>
-                    <li><Link href="/escenografia" onClick={closeMenu}>Escenografía</Link></li>
-                    <li><Link href="/fotografia" onClick={closeMenu}>Fotografía</Link></li>
-                    <li><Link href="/ilustracion" onClick={closeMenu}>Ilustración</Link></li>
-                    <li><Link href="/mediosav" onClick={closeMenu}>Medios Audiovisuales</Link></li>
-                    <li><Link href="/profesorado" onClick={closeMenu}>Profesorado</Link></li>
-                    <li><Link href="/realizador" onClick={closeMenu}>Realizador</Link></li>
+                    <li><Link href="/paginas-informativas/disenografico" onClick={closeMenu}>Diseño Gráfico</Link></li>
+                    <li><Link href="/paginas-informativas/escenografia" onClick={closeMenu}>Escenografía</Link></li>
+                    <li><Link href="/paginas-informativas/fotografia" onClick={closeMenu}>Fotografía</Link></li>
+                    <li><Link href="/paginas-informativas/ilustracion" onClick={closeMenu}>Ilustración</Link></li>
+                    <li><Link href="/paginas-informativas/mediosav" onClick={closeMenu}>Medios Audiovisuales</Link></li>
+                    <li><Link href="/paginas-informativas/profesorado" onClick={closeMenu}>Profesorado</Link></li>
+                    <li><Link href="/paginas-informativas/realizador" onClick={closeMenu}>Realizador</Link></li>
                   </ul>
                 </li>
 
@@ -242,16 +216,16 @@ export default function Header({ variant = 'light' }) {
                     <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('institucional') ? currentStyles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('institucional') ? currentStyles.open : ''}`}>
-                    <li><Link href="/institucional/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
-                    <li><Link href="/institucional/autoridades" onClick={closeMenu}>Autoridades</Link></li>
-                    <li><Link href="/institucional/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
-                    <li><Link href="/institucional/consejo-academico" onClick={closeMenu}>Consejo Académico</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/acerca-de-malharro" onClick={closeMenu}>Acerca de Malharro</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/autoridades" onClick={closeMenu}>Autoridades</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/biblioteca" onClick={closeMenu}>Biblioteca</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/consejo-academico" onClick={closeMenu}>Consejo Académico</Link></li>
                     <li className={currentStyles.dropdownDivider}></li>
-                    <li><Link href="/institucional/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
-                    <li><Link href="/institucional/docentes" onClick={closeMenu}>Docentes</Link></li>
-                    <li><Link href="/#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
-                    <li><Link href="/institucional/pasantias" onClick={closeMenu}>Pasantías</Link></li>
-                    <li><Link href="/institucional/planimetria" onClick={closeMenu}>Planimetría</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/cooperadora" onClick={closeMenu}>Cooperadora</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/docentes" onClick={closeMenu}>Docentes</Link></li>
+                    <li><Link href="/paginas-informativas/#estudiantes" onClick={closeMenu}>Nuestros Estudiantes</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/pasantias" onClick={closeMenu}>Pasantías</Link></li>
+                    <li><Link href="/paginas-informativas/institucional/planimetria" onClick={closeMenu}>Planimetría</Link></li>
                   </ul>
                 </li>
 
@@ -265,9 +239,9 @@ export default function Header({ variant = 'light' }) {
                     <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('estudiantes') ? currentStyles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('estudiantes') ? currentStyles.open : ''}`}>
-                    <li><Link href="/estudiantes/convivencia" onClick={closeMenu}>Convivencia</Link></li>
-                    <li><Link href="/estudiantes/documentacion" onClick={closeMenu}>Documentación</Link></li>
-                    <li><Link href="/estudiantes/titulos" onClick={closeMenu}>Títulos</Link></li>
+                    <li><Link href="/paginas-informativas/estudiantes/convivencia" onClick={closeMenu}>Convivencia</Link></li>
+                    <li><Link href="/paginas-informativas/estudiantes/documentacion" onClick={closeMenu}>Documentación</Link></li>
+                    <li><Link href="/paginas-informativas/estudiantes/titulos" onClick={closeMenu}>Títulos</Link></li>
                   </ul>
                 </li>
 
@@ -281,9 +255,9 @@ export default function Header({ variant = 'light' }) {
                     <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('ciclo') ? currentStyles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('ciclo') ? currentStyles.open : ''}`}>
-                    <li><Link href="/ciclo-lectivo/horarios" onClick={closeMenu}>Horarios</Link></li>
-                    <li><Link href="/ciclo-lectivo/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
-                    <li><Link href="/ciclo-lectivo/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
+                    <li><Link href="/paginas-informativas/ciclo-lectivo/horarios" onClick={closeMenu}>Horarios</Link></li>
+                    <li><Link href="/paginas-informativas/ciclo-lectivo/licencias-docentes" onClick={closeMenu}>Licencias docentes</Link></li>
+                    <li><Link href="/paginas-informativas/ciclo-lectivo/mesas-de-examen" onClick={closeMenu}>Mesas de examen</Link></li>
                   </ul>
                 </li>
 
@@ -297,8 +271,8 @@ export default function Header({ variant = 'light' }) {
                     <span className={`${currentStyles.dropdownIcon} ${isDropdownOpen('talleres') ? currentStyles.rotate : ''}`}></span>
                   </button>
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('talleres') ? currentStyles.open : ''}`}>
-                    <li><Link href="/talleres/jovenes-adultos" onClick={closeMenu}>Jóvenes - Adultos</Link></li>
-                    <li><Link href="/talleres/infancias-adolescentes" onClick={closeMenu}>Infancias - Adolescentes</Link></li>
+                    <li><Link href="/paginas-informativas/talleres/jovenes-adultos" onClick={closeMenu}>Jóvenes - Adultos</Link></li>
+                    <li><Link href="/paginas-informativas/talleres/infancias-adolescentes" onClick={closeMenu}>Infancias - Adolescentes</Link></li>
                   </ul>
                 </li>
 
@@ -350,32 +324,6 @@ export default function Header({ variant = 'light' }) {
           </div>
         </div>
       </nav>
-
-      {/* Modal de búsqueda */}
-      {searchOpen && (
-        <div className={currentStyles.searchModal}>
-          <div className={currentStyles.searchModalContent}>
-            <button 
-              className={currentStyles.closeSearchButton}
-              onClick={toggleSearch}
-              aria-label="Cerrar búsqueda"
-            >
-              <img src="/img/Icon_X_Magenta.svg" alt="Cerrar barra de búsqueda" />
-            </button>
-            <div className={currentStyles.searchIconContainer}>
-              <img src="/img/Icon_LupaBarraBusqueda.svg" alt="ícono lupa" />
-            </div>
-            <div className={currentStyles.searchBar}>
-              <input 
-                type="text" 
-                className={currentStyles.searchInput}
-                placeholder="Buscar..." 
-                aria-label="Buscar"
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Overlay para cerrar menú al hacer click fuera */}
       {isMenuOpen && (

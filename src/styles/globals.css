@@ -41,6 +41,13 @@ h1, h2, h3, h4, p {
   color: inherit;
 }
 
+b, strong{
+  color: #000000;
+}
+
+select option{
+  color: #000000;
+}
 /* Estilos para react-hot-toast */
 .Toastify__toast {
   border-radius: 8px !important;
@@ -61,4 +68,15 @@ h1, h2, h3, h4, p {
 
 .Toastify__toast-body {
   font-family: inherit !important;
+}
+
+#__next {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* El contenido principal ocupa el espacio disponible */
+main {
+  flex: 1 0 auto;
 }
