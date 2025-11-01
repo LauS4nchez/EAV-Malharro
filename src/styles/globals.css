@@ -6,6 +6,11 @@
   color: white;
 }
 
+html {
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 :root {
   --font-inter: 'Inter', sans-serif;
   --color-primary: #c5005a;
