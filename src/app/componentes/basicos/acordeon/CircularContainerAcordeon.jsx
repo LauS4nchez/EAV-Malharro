@@ -5,7 +5,7 @@ export default function CircularContainer({ children, title }) {
     <div className={styles.circularContainer}>
       <div className={styles.content}>
         {title && (
-          <div className={styles.title}>
+          <div className={`${styles.title} mb-3`}>
             <h2>{title}</h2>
           </div>
         )}

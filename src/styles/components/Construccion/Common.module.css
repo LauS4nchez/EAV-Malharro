@@ -6,23 +6,30 @@
   background-color: #1f1f1f;
   text-align: center;
   align-items: center;
-  padding-top: 20px;
+  padding-top: clamp(1rem, 3vw, 1.25rem);
 }
 
 .titleAgenda {
   text-align: center;
   align-items: center;
   color: black;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
+}
+
+.titleAgenda h2 {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 600;
+  margin: 0;
 }
 
 .agenda {
   /* Sección agenda */
-  margin-top: 2rem;
+  margin-top: clamp(1.5rem, 4vw, 2rem);
 }
 
 .usina {
   /* Sección usina */
-  margin-top: 2rem;
+  margin-top: clamp(1.5rem, 4vw, 2rem);
 }
 
 .carruselContainer {
@@ -35,15 +42,70 @@
 .agendaSection {
   position: relative;
   z-index: 3;
+  padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
 .preguntasSection {
   background-color: white;
-  margin-bottom: 50px;
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+  padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
 .titlePreguntas {
   text-align: center;
   align-items: center;
   color: black;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
+  padding: 0 clamp(1rem, 3vw, 2rem);
+}
+
+.titlePreguntas h2 {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Media Queries para móviles */
+@media (max-width: 768px) {
+  .agendaSection,
+  .preguntasSection,
+  .titlePreguntas {
+    padding: 0 clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .titleAgenda h2,
+  .titlePreguntas h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .agendaSection,
+  .preguntasSection,
+  .titlePreguntas {
+    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .titleAgenda,
+  .titlePreguntas {
+    margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .titleAgenda h2,
+  .titlePreguntas h2 {
+    font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .agendaSection,
+  .preguntasSection,
+  .titlePreguntas {
+    padding: 0 0.5rem;
+  }
+  
+  .titleAgenda h2,
+  .titlePreguntas h2 {
+    font-size: 1.5rem;
+  }
 }

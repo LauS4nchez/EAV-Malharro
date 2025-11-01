@@ -1,8 +1,10 @@
+/* src/styles/components/Agenda/Agenda.module.css */
+
 .agendaWrapper {
-  max-width: 1500px;
+  max-width: min(1500px, 95vw);
   margin: 0 auto;
   position: relative;
-  padding: 0 40px;
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
   box-sizing: border-box;
 }
 
@@ -15,22 +17,32 @@
   background: #c7005a;
   border: none;
   border-radius: 50%;
-  padding: 0.5rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem);
   color: white;
   z-index: 10;
   cursor: pointer;
-  font-size: 20px;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  width: clamp(2.5rem, 6vw, 3rem);
+  height: clamp(2.5rem, 6vw, 3rem);
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.prevArrow { left: 10px; }
-.nextArrow { right: 10px; }
+.customArrow:hover {
+  background: #a00048;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prevArrow { left: clamp(0.5rem, 1.5vw, 0.75rem); }
+.nextArrow { right: clamp(0.5rem, 1.5vw, 0.75rem); }
 
 .imagenAgenda {
-  width: 350px;
-  height: 330px;
+  width: 100%;
+  height: clamp(200px, 40vw, 330px);
   object-fit: cover;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  border-top-left-radius: clamp(0.75rem, 2vw, 1rem);
+  border-top-right-radius: clamp(0.75rem, 2vw, 1rem);
 }
 
 .agendaContainer {
@@ -38,24 +50,26 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 1rem;
+  padding: clamp(0.5rem, 1.5vw, 1rem);
   box-sizing: border-box;
 }
 
 .agendaContenido {
-  width: 350px;
-  height: 150px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  width: 100%;
+  height: clamp(120px, 25vw, 150px);
+  border-bottom-left-radius: clamp(0.75rem, 2vw, 1rem);
+  border-bottom-right-radius: clamp(0.75rem, 2vw, 1rem);
   display: flex;
   background-color: #c7005a;
   align-items: center;
+  padding: 0 clamp(0.5rem, 1.5vw, 1rem);
 }
 
 .agendaContenido p {
-  font-size: 20px;
-  margin-right: 15px;
+  font-size: clamp(0.9rem, 2.5vw, 1.25rem);
+  margin-right: clamp(0.5rem, 1.5vw, 1rem);
   color: white;
+  line-height: 1.4;
 }
 
 /* sombreado lateral (solo escritorio) */
@@ -76,7 +90,7 @@
 .agendaCard.noHover .agendaContenidoHover { display: none !important; }
 .agendaCard.noHover .agendaContenido { display: flex !important; }
 .agendaCard.noHover .imagenAgenda {
-  height: 330px !important;
+  height: clamp(200px, 40vw, 330px) !important;
   object-fit: cover;
   transition: none !important;
 }
@@ -84,19 +98,19 @@
 
 /* hover solo en la central (desktop) */
 .agendaCard.canHover:hover .imagenAgenda {
-  height: 230px;
+  height: clamp(150px, 30vw, 230px);
   transition: all 0.3s ease;
 }
 .agendaCard.canHover:hover .agendaContenido { display: none; }
 .agendaCard.canHover .agendaContenidoHover { display: none; }
 .agendaCard.canHover:hover .agendaContenidoHover {
   display: block;
-  width: 350px;
-  height: 250px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  width: 100%;
+  height: clamp(180px, 35vw, 250px);
+  border-bottom-left-radius: clamp(0.75rem, 2vw, 1rem);
+  border-bottom-right-radius: clamp(0.75rem, 2vw, 1rem);
   background-color: #f2f2f2;
-  padding: 22px;
+  padding: clamp(1rem, 2vw, 1.5rem);
 }
 .agendaCard.canHover:hover .agendaContenidoHover .textoRegular,
 .agendaCard.canHover:hover .agendaContenidoHover .textoNegrita { color: black; }
@@ -104,52 +118,62 @@
 
 /* detalles internos */
 .fecha {
-  margin-left: 20px;
-  margin-right: 15px;
-  font-size: 30px;
-  border-right: solid 3px;
-  height: 80px;
-  padding-right: 20px;
+  margin-left: clamp(0.5rem, 1.5vw, 1.25rem);
+  margin-right: clamp(0.5rem, 1.5vw, 1rem);
+  font-size: clamp(1.1rem, 3vw, 1.9rem);
+  border-right: solid clamp(2px, 0.5vw, 3px);
+  height: clamp(60px, 15vw, 80px);
+  padding-right: clamp(0.5rem, 1.5vw, 1.25rem);
   color: white;
+  display: flex;
+  align-items: center;
 }
-.fecha p { margin-top: 10px; color: white; }
+.fecha p { 
+  margin-top: 0; 
+  color: white; 
+  font-weight: 600;
+}
 
 .agendaCard {
-  border-radius: 15px;
-  box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.75);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  box-shadow: 0px clamp(2px, 0.5vw, 3px) clamp(3px, 1vw, 5px) 0px rgba(0,0,0,0.75);
+  width: 100%;
+  max-width: clamp(280px, 60vw, 350px);
+  margin: 0 auto;
 }
 
 .agendaContenidoHover { display: none; }
 
 /* reglas generales de hover (desktop) */
 .agendaCard:hover .imagenAgenda {
-  height: 230px;
+  height: clamp(150px, 30vw, 230px);
   transition: all 0.3s ease;
 }
 .agendaCard:hover .agendaContenido { display: none; }
 .agendaCard:hover .agendaContenidoHover {
   display: block;
-  width: 350px;
-  height: 250px;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
+  width: 100%;
+  height: clamp(180px, 35vw, 250px);
+  border-bottom-left-radius: clamp(0.75rem, 2vw, 1rem);
   transition: all 0.3s ease;
   background-color: #f2f2f2;
-  padding: 22px;
+  padding: clamp(1rem, 2vw, 1.5rem);
 }
 .agendaCard:hover .agendaContenidoHover .textoRegular { color: black; }
 .agendaCard:hover .agendaContenidoHover .textoNegrita { color: black; }
 
 .textoContenidoActividad p {
   color: black;
-  font-size: 20px;
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  line-height: 1.4;
+  margin-top: clamp(0.5rem, 1.5vw, 0.75rem);
 }
 
 /* CTA Ver Calendario */
 .ctaCalendario {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: clamp(1rem, 3vw, 1.5rem);
 }
 .verCalendarioBtn {
   display: inline-block;
@@ -157,15 +181,45 @@
   background: #111;
   color: #fff;
   border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
+  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   font-weight: 600;
   line-height: 1;
   transition: transform .15s ease, box-shadow .15s ease, opacity .2s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(6px, 1.5vw, 10px) rgba(0,0,0,.12);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
 }
-.verCalendarioBtn:hover { opacity: .9; box-shadow: 0 6px 14px rgba(0,0,0,.16); }
+.verCalendarioBtn:hover { 
+  opacity: .9; 
+  box-shadow: 0 clamp(3px, 1vw, 6px) clamp(8px, 2vw, 14px) rgba(0,0,0,.16);
+  transform: translateY(-2px);
+}
 .verCalendarioBtn:active { transform: scale(.98); }
+
+/* Loading states */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  color: #666;
+}
+
+.spinner {
+  width: clamp(2rem, 5vw, 3rem);
+  height: clamp(2rem, 5vw, 3rem);
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #c7005a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 /* Quitar animación cuando aparece el hover (sin cambiar estilos) */
 .agendaCard:hover .imagenAgenda,
@@ -186,47 +240,65 @@
     transform: scale(1) !important;
     filter: none !important;
   }
-}
-@media (max-width: 600px) {
-  .verCalendarioBtn{
-    margin-top: 20px;
+  
+  .agendaWrapper {
+    padding: 0 clamp(0.75rem, 2vw, 1rem);
   }
 }
 
 /* ajustes mobile */
-@media (max-width: 500px) {
+@media (max-width: 768px) {
+  .agendaWrapper {
+    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .customArrow {
+    display: none !important;
+  }
+  
+  .agendaCard {
+    max-width: clamp(250px, 80vw, 320px);
+  }
+}
+
+@media (max-width: 600px) {
+  .verCalendarioBtn {
+    margin-top: clamp(1rem, 3vw, 1.25rem);
+  }
+  
+  .agendaWrapper {
+    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+}
+
+@media (max-width: 480px) {
   .agendaWrapper {
     max-width: 100%;
-    margin: 16px auto;
-    padding: 0 12px;
+    margin: clamp(0.75rem, 2vw, 1rem) auto;
+    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
   }
-  .agendaContainer { padding: 6px; }
-  .customArrow {
-    font-size: 16px;
-    padding: 6px;
-    top: calc(50% - 12px);
+  
+  .agendaContainer { 
+    padding: clamp(0.25rem, 1vw, 0.5rem); 
   }
-  .prevArrow { left: 6px; }
-  .nextArrow { right: 6px; }
-
+  
   .agendaCard {
     width: 100%;
-    max-width: 320px;
+    max-width: 100%;
     margin: 0 auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-    transform: none !important;
-    transition: none !important;
+    border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(4px, 1vw, 10px) rgba(0,0,0,0.06);
   }
+  
   .imagenAgenda {
     width: 100%;
     height: auto !important;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    transition: none !important;
+    border-top-left-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    border-top-right-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   }
+  
   .agendaCard.noHover .imagenAgenda {
     width: 100%;
     height: auto !important;
@@ -234,56 +306,63 @@
   }
 
   .agendaContenido {
-    width: 320px;
-    height: 150px;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-    display: flex;
-    background-color: #c7005a;
-    align-items: center;
+    width: 100%;
+    height: clamp(100px, 20vw, 120px);
+    border-bottom-left-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    border-bottom-right-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
   }
-  .agendaContenido p { font-size: 16px; margin-right: 0; }
+  
+  .agendaContenido p { 
+    font-size: clamp(0.8rem, 2vw, 0.9rem); 
+    margin-right: 0; 
+  }
 
   .fecha {
-    margin: 0 10px 0 0;
-    padding-right: 10px;
+    margin: 0 clamp(0.25rem, 1vw, 0.5rem) 0 0;
+    padding-right: clamp(0.25rem, 1vw, 0.5rem);
     height: auto;
-    font-size: 18px;
-    border-right: 2px solid currentColor;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    border-right: clamp(1px, 0.3vw, 2px) solid currentColor;
   }
-  .fecha p { margin-top: 4px; padding: 15px; }
+  
+  .fecha p { 
+    margin-top: 0; 
+    padding: clamp(0.5rem, 1.5vw, 0.75rem); 
+  }
 
   .agendaContenidoHover {
     width: 100% !important;
     height: auto !important;
-    padding: 10px 12px;
+    padding: clamp(0.75rem, 2vw, 1rem) clamp(0.5rem, 1.5vw, 0.75rem);
     background: #f7f7f7;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+    border-bottom-right-radius: clamp(0.5rem, 1.5vw, 0.75rem);
     opacity: 1;
     transform: none;
     transition: none !important;
-    pointer-events: none; /* no interacción en mobile */
+    pointer-events: none;
   }
 
   .agendaContenidoHover .textoRegular {
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: clamp(0.25rem, 1vw, 0.5rem);
     color: #1e293b;
   }
+  
   .agendaContenidoHover .textoNegrita { color: #0f172a; }
 
   .textoContenidoActividad p {
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
     color: #475569;
-    max-height: 64px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    margin-top: 6px;
+    max-height: none;
+    overflow: visible;
+    text-overflow: unset;
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    margin-top: clamp(0.25rem, 1vw, 0.5rem);
     text-align: left;
   }
 
@@ -296,11 +375,16 @@
     filter: none !important;
   }
 
-  .agendaWrapper :global(.slick-dots) { bottom: -4px; }
-  .agendaWrapper :global(.slick-list) { padding-bottom: 28px !important; }
+  .agendaWrapper :global(.slick-dots) { 
+    bottom: clamp(-2px, -0.5vw, -4px); 
+  }
+  
+  .agendaWrapper :global(.slick-list) { 
+    padding-bottom: clamp(1rem, 3vw, 1.75rem) !important; 
+  }
 }
 
-/* DESACTIVAR “tap = hover” EN DISPOSITIVOS TÁCTILES */
+/* DESACTIVAR "tap = hover" EN DISPOSITIVOS TÁCTILES */
 @media (hover: none) {
   .agendaCard { cursor: default; }
   .agendaCard:hover .imagenAgenda { height: auto !important; }
@@ -310,4 +394,27 @@
   /* también para las reglas de canHover */
   .agendaCard.canHover:hover .agendaContenido { display: flex !important; }
   .agendaCard.canHover:hover .agendaContenidoHover { display: none !important; }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 380px) {
+  .agendaWrapper {
+    padding: 0 0.5rem;
+  }
+  
+  .agendaContenido {
+    height: 90px;
+  }
+  
+  .fecha {
+    font-size: 0.9rem;
+  }
+  
+  .fecha p {
+    padding: 0.5rem;
+  }
+  
+  .agendaContenido p {
+    font-size: 0.8rem;
+  }
 }

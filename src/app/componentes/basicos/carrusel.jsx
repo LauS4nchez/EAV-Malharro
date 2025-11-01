@@ -12,11 +12,11 @@ import styles from "@/styles/components/Carrusel/Carousel.module.css";
 export default function Carrusel() {
   const sliderRef = useRef(null);
   const [imagenesCarrusel, setImagenesCarrusel] = useState([]);
-  const [title, setTitle] = useState(''); // ← Mantenemos el estado del título
+  const [title, setTitle] = useState('');
 
-  // Configuración del carrusel con flechas personalizadas
+  // Configuración responsive del carrusel
   const settings = {
-    dots: false,
+    dots: true, // ← ACTIVAMOS LOS DOTS
     infinite: true,
     speed: 300,
     slidesToShow: 1,
@@ -24,21 +24,30 @@ export default function Carrusel() {
     arrows: true,
     autoplay: false,
     fade: false,
-    adaptiveHeight: true,
+    adaptiveHeight: false,
     swipe: true,
-    touchThreshold: 100,
+    touchThreshold: 50,
+    swipeToSlide: true,
     nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />
+    prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 480, // En móviles pequeños
+        settings: {
+          arrows: false, // ← OCULTAMOS FLECHAS
+          dots: true     // ← MANTENEMOS DOTS VISIBLES
+        }
+      }
+    ]
   };
 
-  // Carga las imágenes del carrusel
   useEffect(() => {
     fetch(`${API_URL}/carrusels?populate=carrusel`)
       .then(res => res.json())
       .then(data => {
         const item = data.data?.[0];
         if (item) {
-          setTitle(item.title); // ← Seteamos el título global
+          setTitle(item.title);
           setImagenesCarrusel(item.carrusel ?? []);
         }
       })
@@ -58,9 +67,9 @@ export default function Carrusel() {
                   backgroundImage: `linear-gradient(rgba(120, 51, 51, 0.5), rgba(0, 0, 0, 0.5)), url(${url})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
                 }}
               >
-                {/* Título global - aparece en todas las imágenes */}
                 {title && (
                   <div className={styles.titulo}>
                     <ReactMarkdown>{title}</ReactMarkdown>
@@ -75,15 +84,23 @@ export default function Carrusel() {
   );
 }
 
-// Componentes de flechas
+// Componentes de flechas (se ocultarán en móviles)
 const PrevArrow = ({ onClick }) => (
-  <button className="slick-prev" onClick={onClick}>
+  <button 
+    className="slick-prev" 
+    onClick={onClick}
+    aria-label="Imagen anterior"
+  >
     <FaArrowLeft color="white" size={20} />
   </button>
 );
 
 const NextArrow = ({ onClick }) => (
-  <button className="slick-next" onClick={onClick}>
+  <button 
+    className="slick-next" 
+    onClick={onClick}
+    aria-label="Siguiente imagen"
+  >
     <FaArrowRight color="white" size={20} />
   </button>
 );

@@ -357,17 +357,6 @@ export default function Acordeon({ acordeonID, variant = 'carreras' }) {
                       </div>
 
                       <div className={textStyles.botonesFila}>
-                        {variant === 'carreras' && (
-                          <button
-                            className={acordeonStyles.saberMasBtn}
-                            style={{
-                              color: textoColor,
-                              borderColor: textoColor,
-                            }}
-                          >
-                            Saber más
-                          </button>
-                        )}
                         {isAdmin && (
                           <button
                             className={textStyles.btnAccion}
@@ -376,7 +365,6 @@ export default function Acordeon({ acordeonID, variant = 'carreras' }) {
                               setEditedText(item.contenido || '');
                               setEditedTitle(item.titulo || '');
                               if (variant === 'carreras') {
-                                // 🔒 importante: siempre forzamos a boolean
                                 setEditedTextColor(Boolean(item.textoNegro));
                               } else {
                                 setEditedTextColor(false);

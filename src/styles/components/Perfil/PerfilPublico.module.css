@@ -1,3 +1,4 @@
+/* src/styles/components/Perfil/PerfilPublico.module.css */
 
 .bodyPerfil{
   background: linear-gradient(135deg, #f5f7fa, #dfe9f3);
@@ -10,7 +11,7 @@
   flex-direction: column;
   background: linear-gradient(135deg, #f5f7fa, #dfe9f3);
   color: #000;
-  padding: 30px 20px;
+  padding: clamp(1rem, 3vw, 2rem) clamp(0.75rem, 2vw, 1.25rem);
   box-sizing: border-box;
 }
 
@@ -18,19 +19,20 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 40px;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .backButton {
   background: #e4e4e4;
   border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1.25rem);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   cursor: pointer;
   color: #000;
   font-weight: 600;
   transition: all 0.2s ease;
+  font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .backButton:hover {
@@ -38,7 +40,7 @@
 }
 
 .header h1 {
-  font-size: 1.8rem;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
   font-weight: 700;
 }
 
@@ -47,26 +49,24 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 30px; /* Reducir gap */
+  gap: clamp(1rem, 3vw, 2rem);
   width: 100%;
-  max-width: 1400px; /* Limitar ancho máximo */
-  margin: 0 auto; /* Centrar en pantallas grandes */
+  max-width: min(1400px, 95vw);
+  margin: 0 auto;
 }
-
 
 /* BLOQUE IZQUIERDO (AVATAR Y DATOS) */
 .leftBlock {
-  /* ELIMINAR: position: sticky; top: 40px; */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   background: #fff;
-  border-radius: 20px;
-  padding: 25px 20px; /* Reducir padding */
-  box-shadow: 0 4px 25px rgba(0,0,0,0.1);
-  width: 300px; /* Reducir ancho */
-  min-width: 250px;
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1rem, 3vw, 1.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(1rem, 3vw, 1.75rem) rgba(0,0,0,0.1);
+  width: clamp(250px, 30vw, 320px);
+  min-width: min(250px, 90vw);
 }
 
 .avatarContainer {
@@ -75,8 +75,8 @@
   aspect-ratio: 1/1;
   border-radius: 50%;
   overflow: hidden;
-  margin-bottom: 25px;
-  border: 4px solid var(--color-primary);
+  margin-bottom: clamp(1rem, 3vw, 1.75rem);
+  border: clamp(3px, 0.8vw, 4px) solid var(--color-primary);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -94,7 +94,7 @@
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
-  font-size: 4rem;
+  font-size: clamp(2rem, 8vw, 4rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,55 +102,61 @@
 }
 
 .fullName {
-  font-size: 1.6rem;
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem);
   font-weight: 700;
   color: #000;
   margin: 0;
+  line-height: 1.2;
 }
 
 .username {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   color: #555;
-  margin: 8px 0 0 0;
+  margin: clamp(0.25rem, 1vw, 0.5rem) 0 0 0;
 }
 
 .carrera {
   background: #eef2ff;
   color: #003366;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.95rem;
-  margin-top: 12px;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  margin-top: clamp(0.5rem, 1.5vw, 0.9rem);
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* BLOQUE DERECHO (TRABAJOS / AGENDAS) */
 .rightBlock {
   flex: 1;
-  min-width: 0; /* Importante para flexbox */
+  min-width: 0;
   background: #fff;
-  border-radius: 20px;
-  padding: 30px 25px; /* Reducir padding */
-  box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 2.5vw, 1.75rem);
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(1rem, 3vw, 1.75rem) rgba(0,0,0,0.1);
 }
 
 /* NAVEGACIÓN */
 .navigation {
   display: flex;
-  gap: 15px;
-  border-bottom: 2px solid #e4e4e4;
-  margin-bottom: 25px;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  border-bottom: clamp(1px, 0.3vw, 2px) solid #e4e4e4;
+  margin-bottom: clamp(1rem, 3vw, 1.75rem);
+  flex-wrap: wrap;
 }
 
 .navButton {
   background: none;
   border: none;
-  padding: 14px 28px;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.75rem);
   cursor: pointer;
-  border-bottom: 3px solid transparent;
+  border-bottom: clamp(2px, 0.5vw, 3px) solid transparent;
   color: #555;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .navButton.active {
@@ -165,53 +171,54 @@
 /* TARJETAS DE TRABAJOS / AGENDAS */
 .trabajosGrid, .agendasGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(240px, 30vw, 280px), 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
 }
 
 .trabajoCard, .agendaCard {
   background: #f8f9fa;
-  padding: 20px;
-  border-radius: 14px;
-  border-left: 4px solid #007bff;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  border-left: clamp(3px, 0.8vw, 4px) solid #007bff;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   color: #000;
 }
 
 .trabajoCard:hover, .agendaCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+  box-shadow: 0 clamp(3px, 1vw, 5px) clamp(0.75rem, 2.5vw, 1.25rem) rgba(0,0,0,0.15);
 }
 
 .trabajoCard h4, .agendaCard h4 {
-  margin: 0 0 8px 0;
+  margin: 0 0 clamp(0.4rem, 1vw, 0.5rem) 0;
   color: #000;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  line-height: 1.3;
 }
 
 .trabajoImagen {
   width: 100%;
-  height: 180px;
+  height: clamp(140px, 25vw, 180px);
   object-fit: cover;
-  border-radius: 10px;
-  margin-top: 10px;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-top: clamp(0.5rem, 1.5vw, 0.75rem);
 }
 
 /* ESTADOS */
 .loadingContainer, .errorContainer {
   text-align: center;
-  padding: 80px 20px;
+  padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 3vw, 1.25rem);
   color: #000;
 }
 
 .spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border: clamp(3px, 0.8vw, 4px) solid #f3f3f3;
+  border-top: clamp(3px, 0.8vw, 4px) solid #007bff;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: clamp(2.5rem, 6vw, 3rem);
+  height: clamp(2.5rem, 6vw, 3rem);
   animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  margin: 0 auto clamp(1rem, 3vw, 1.25rem);
 }
 
 @keyframes spin {
@@ -219,244 +226,58 @@
   100% { transform: rotate(360deg); }
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .perfilContent {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .leftBlock {
-    width: 90%;
-    max-width: 400px;
-    align-items: center;
-  }
-
-  .fullName, .username, .carrera {
-    text-align: center;
-  }
-
-  .rightBlock {
-    width: 100%;
-  }
-}
-
-@media (max-width: 600px) {
-  .avatarContainer {
-    border-width: 3px;
-  }
-
-  .avatarPlaceholder {
-    font-size: 2.5rem;
-  }
-
-  .fullName {
-    font-size: 1.3rem;
-  }
-
-  .navButton {
-    padding: 10px 14px;
-    font-size: 0.9rem;
-  }
-}
-
 .sosVos {
-  margin-top: 15px;
+  margin-top: clamp(0.75rem, 2vw, 1rem);
   font-weight: 600;
   color: var(--color-primary);
   background: #e8f0ff;
-  padding: 6px 12px;
-  border-radius: 10px;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  text-align: center;
+  width: 100%;
 }
 
 .sectionTitle {
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
   color: #000;
 }
 
 .noPublicaciones {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
   color: #555;
-  padding: 20px;
+  padding: clamp(1rem, 3vw, 1.5rem);
   text-align: center;
   background: #f9f9f9;
-  border-radius: 10px;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   border: 1px dashed #ccc;
 }
 
-/* Estilos para el modo edición */
-.editingCard {
-  border: 2px solid #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-}
-
-/* Overlay para la imagen */
-.imageOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  opacity: 1; /* Siempre visible cuando está activo */
-  transition: opacity 0.3s ease;
-}
-
-.imageOverlay:hover {
-  opacity: 1;
-}
-
-.editImageButton {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-  transition: all 0.2s ease;
-}
-
-
-.editImageButton:hover {
-  background: white;
-  transform: scale(1.05);
-}
-
-/* Textarea para edición */
-.editTextarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 2px solid var(--color-primary);
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 1.2rem;
-  font-weight: 600;
-  resize: vertical;
-  min-height: 60px;
-  background: white;
-  color: #000;
-  margin-bottom: 15px;
-}
-
-.editTextarea:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-}
-
-/* Botones de edición */
-.editButtons {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.editButton {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.editButton:hover {
-  background: #0056b3;
-  transform: translateY(-2px);
-}
-
-.editActionButtons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.saveButton {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  flex: 1;
-}
-
-.saveButton:hover:not(:disabled) {
-  background: #218838;
-  transform: translateY(-2px);
-}
-
-.saveButton:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.cancelButton {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  flex: 1;
-}
-
-.cancelButton:hover:not(:disabled) {
-  background: #c82333;
-  transform: translateY(-2px);
-}
-
-.cancelButton:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.imageWrapper {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-  height: 100%;
-}
-
+/* Botón crear usina */
 .crearUsinaHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: clamp(1rem, 3vw, 1.75rem);
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .crearUsinaButton {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: clamp(0.4rem, 1vw, 0.5rem);
   background: #007bff;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .crearUsinaButton:hover {
@@ -464,37 +285,43 @@
   transform: translateY(-1px);
 }
 
+.plusIcon {
+  width: clamp(1.25rem, 3vw, 1.5rem);
+}
+
 /* Controles de paginación */
 .paginationControls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 15px 20px;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem);
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  box-shadow: 0 clamp(1px, 0.3vw, 2px) clamp(0.5rem, 1.5vw, 0.75rem) rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .pageSizeSelector {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   color: #666;
 }
 
 .pageSizeSelect {
-  padding: 6px 10px;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);
   border: 1px solid #e1e5e9;
-  border-radius: 6px;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
   background: white;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   color: #333;
 }
 
 .paginationInfo {
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   color: #666;
   font-weight: 500;
 }
@@ -504,20 +331,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 30px;
-  padding: 20px;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  flex-wrap: wrap;
 }
 
 .paginationBtn {
-  padding: 8px 16px;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
   border: 1px solid #e1e5e9;
   background: white;
-  border-radius: 6px;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
-  min-width: 40px;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  min-width: clamp(2rem, 5vw, 2.5rem);
   color: #333;
 }
 
@@ -542,263 +370,79 @@
 
 .paginationNumbers {
   display: flex;
-  gap: 5px;
+  gap: clamp(0.25rem, 1vw, 0.5rem);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .paginationEllipsis {
-  padding: 0 8px;
+  padding: 0 clamp(0.4rem, 1vw, 0.5rem);
   color: #999;
 }
 
-.textSizeSelector {
-  color: #000;
-}
-
-/* Responsive para paginación */
-@media (max-width: 768px) {
-  .paginationControls {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .pagination {
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-  
-  .paginationBtn {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-    min-width: 35px;
-  }
+/* Botones de acción */
+.actionButtons {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-top: clamp(0.75rem, 2vw, 1rem);
+  flex-wrap: wrap;
 }
 
 .deleteButton {
   background-color: #dc3545;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  transition: all 0.2s ease;
 }
 
 .deleteButton:hover:not(:disabled) {
   background-color: #c82333;
-}
-
-.deleteButton:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-/* Modal de Confirmación de Eliminación */
-.confirmModalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-  backdrop-filter: blur(5px);
-}
-
-.confirmModalContent {
-  background: white;
-  border-radius: 12px;
-  padding: 0;
-  max-width: 450px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalAppear 0.2s ease-out;
-}
-
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.confirmModalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px 0;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 16px;
-}
-
-.confirmModalHeader h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.confirmCloseButton {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #6b7280;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.confirmCloseButton:hover {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.confirmModalBody {
-  padding: 24px;
-  text-align: center;
-}
-
-.warningIcon {
-  font-size: 3rem;
-  margin-bottom: 16px;
-}
-
-.confirmModalBody p {
-  margin: 8px 0;
-  color: #374151;
-  line-height: 1.5;
-}
-
-.warningText {
-  color: #dc2626 !important;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.confirmModalActions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding: 16px 24px 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.cancelConfirmButton {
-  padding: 10px 20px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #374151;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.cancelConfirmButton:hover:not(:disabled) {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.confirmDeleteButton {
-  padding: 10px 20px;
-  border: none;
-  background: #dc2626;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.confirmDeleteButton:hover:not(:disabled) {
-  background: #b91c1c;
-}
-
-.cancelConfirmButton:disabled,
-.confirmDeleteButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Botones de acción en el modal principal */
-.actionButtons {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.deleteButton {
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.deleteButton:hover:not(:disabled) {
-  background-color: #b91c1c;
   transform: translateY(-1px);
 }
 
 .deleteButton:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
-  transform: none;
-}
-
-.confirmationTitulo {
-  color: rgb(150, 0, 0);
 }
 
 /* Estilos para InformacionPersonal */
 .informacionPersonal {
-  padding: 2rem;
-  max-width: 800px;
+  padding: clamp(1rem, 3vw, 2rem);
+  max-width: min(800px, 95vw);
 }
 
 .infoHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
+  padding-bottom: clamp(0.75rem, 2vw, 1rem);
   border-bottom: 1px solid #e5e5e5;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .infoTitle {
-  font-size: 1.5rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
   font-weight: 600;
-  color: #000000; /* Negro específico */
+  color: #000000;
   margin: 0;
 }
 
 .editInfoButton {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
   background: #007bff;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -809,18 +453,22 @@
 
 .editActions {
   display: flex;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.saveInfoButton, .cancelInfoButton {
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  border: none;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .saveInfoButton {
-  padding: 0.5rem 1rem;
   background: #28a745;
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .saveInfoButton:hover:not(:disabled) {
@@ -833,14 +481,8 @@
 }
 
 .cancelInfoButton {
-  padding: 0.5rem 1rem;
   background: #6c757d;
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .cancelInfoButton:hover:not(:disabled) {
@@ -850,52 +492,52 @@
 /* Grid de dos columnas */
 .infoGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
 }
 
 .infoColumn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
 }
 
 .infoItem {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
 }
 
 .infoLabel {
   font-weight: 600;
-  color: #000000; /* Negro específico */
-  font-size: 0.9rem;
+  color: #000000;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .infoValue {
-  padding: 0.75rem;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem);
   background: #f8f9fa;
-  border-radius: 6px;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
   border: 1px solid #e9ecef;
-  min-height: 44px;
+  min-height: clamp(2.5rem, 6vw, 3rem);
   display: flex;
   align-items: center;
 }
 
 .infoText {
-  color: #000000; /* Negro específico */
-  font-size: 1rem;
+  color: #000000;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
 .editInput {
-  padding: 0.75rem;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem);
   border: 1px solid #007bff;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
   background: white;
-  color: #000000; /* Negro específico */
+  color: #000000;
   transition: border-color 0.2s;
 }
 
@@ -908,16 +550,17 @@
 .emailContainer {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  flex-wrap: wrap;
 }
 
 .emailToggle {
-  padding: 0.25rem 0.75rem;
+  padding: clamp(0.2rem, 0.8vw, 0.4rem) clamp(0.5rem, 1.5vw, 0.75rem);
   background: #6c757d;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+  font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   cursor: pointer;
   transition: background-color 0.2s;
   white-space: nowrap;
@@ -927,33 +570,36 @@
   background: #545b62;
 }
 
-.successMessage {
-  padding: 1rem;
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+.successMessage, .errorMessage {
+  padding: clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
 }
 
-.successText {
-  color: #155724; /* Verde oscuro para contraste */
-  margin: 0;
+.successMessage {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
 }
 
 .errorMessage {
-  padding: 1rem;
   background: #f8d7da;
   border: 1px solid #f5c6cb;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+}
+
+.successText, .errorText {
+  margin: 0;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+}
+
+.successText {
+  color: #155724;
 }
 
 .errorText {
-  color: #721c24; /* Rojo oscuro para contraste */
-  margin: 0;
+  color: #721c24;
 }
 
-/* Estilos para el overlay de edición de avatar en el perfil */
+/* Estilos para el overlay de edición de avatar */
 .avatarEditOverlay {
   position: absolute;
   top: 0;
@@ -961,19 +607,18 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%; /* Círculo perfecto */
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 1;
   transition: opacity 0.2s;
-    border-radius: 50%;
 }
 
 .avatarUploadLabel {
   color: white;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: clamp(0.3rem, 1vw, 0.5rem);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transition: background-color 0.2s;
@@ -990,83 +635,6 @@
   display: none;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .infoGrid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .informacionPersonal {
-    padding: 1rem;
-  }
-  
-  .emailContainer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-.plusIcon {
-  width: 25px;
-}
-
-@media (max-width: 1200px) {
-  .perfilContent {
-    gap: 25px;
-  }
-  
-  .leftBlock {
-    width: 280px;
-    min-width: 230px;
-  }
-}
-
-@media (max-width: 1024px) {
-  .perfilContent {
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-  }
-
-  .leftBlock {
-    width: 100%;
-    max-width: 500px;
-    align-items: center;
-    text-align: center;
-  }
-
-  .rightBlock {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .perfilPublicoContainer {
-    padding: 20px 15px;
-  }
-  
-  .leftBlock, .rightBlock {
-    padding: 20px;
-  }
-  
-  .perfilContent {
-    gap: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .perfilPublicoContainer {
-    padding: 15px 10px;
-  }
-  
-  .leftBlock, .rightBlock {
-    padding: 15px;
-    border-radius: 15px;
-  }
-}
-
 /* Contenedor principal de agendas */
 .agendasGridContainer {
   width: 100%;
@@ -1075,8 +643,8 @@
 /* Grid de agendas */
 .agendasGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 35vw, 350px), 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
   width: 100%;
 }
 
@@ -1084,30 +652,30 @@
 .agendaCard {
   position: relative;
   background: #fff;
-  border-radius: 12px;
+  border-radius: clamp(0.75rem, 2vw, 1rem);
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(0.75rem, 2.5vw, 1.25rem) rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 300px;
+  min-height: clamp(250px, 40vw, 300px);
 }
 
 .agendaCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 clamp(4px, 1vw, 8px) clamp(1rem, 3vw, 1.75rem) rgba(0, 0, 0, 0.15);
 }
 
 /* Imagen de la agenda */
 .imagenAgenda {
   width: 100%;
-  height: 200px;
+  height: clamp(160px, 25vw, 200px);
   object-fit: cover;
   display: block;
 }
 
 /* Contenido principal (siempre visible) */
 .agendaContenido {
-  padding: 20px;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
   position: relative;
   z-index: 2;
   background: #fff;
@@ -1116,11 +684,11 @@
 .fecha {
   background: #007bff;
   color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
   display: inline-block;
-  margin-bottom: 12px;
-  font-size: 0.85rem;
+  margin-bottom: clamp(0.5rem, 1.5vw, 0.9rem);
+  font-size: clamp(0.75rem, 2vw, 0.85rem);
   font-weight: 600;
 }
 
@@ -1132,7 +700,7 @@
 .textoRegular {
   color: #000;
   margin: 0;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1149,7 +717,7 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 25px;
+  padding: clamp(1rem, 3vw, 1.75rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1164,17 +732,17 @@
 
 .agendaContenidoHover .textoRegular {
   color: white;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2.8vw, 1.1rem);
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
   -webkit-line-clamp: 3;
 }
 
 .textoContenidoActividad {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2.2vw, 0.9rem);
   line-height: 1.5;
-  max-height: 120px;
+  max-height: clamp(80px, 20vw, 120px);
   overflow: hidden;
 }
 
@@ -1187,59 +755,186 @@
   color: #000;
 }
 
+.noContent {
+  text-align: center;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 3vw, 1.25rem);
+  color: #666;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  background: #f8f9fa;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-top: clamp(1rem, 3vw, 1.5rem);
+}
 
+/* RESPONSIVE BREAKPOINTS */
+@media (max-width: 1024px) {
+  .perfilContent {
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 2rem);
+  }
 
-/* Responsive para agendas */
-@media (max-width: 1200px) {
+  .leftBlock {
+    width: 100%;
+    max-width: min(500px, 95vw);
+    align-items: center;
+    text-align: center;
+  }
+
+  .rightBlock {
+    width: 100%;
+  }
+  
   .agendasGrid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(250px, 40vw, 300px), 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .perfilPublicoContainer {
+    padding: clamp(1rem, 2.5vw, 1.25rem) clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .leftBlock, .rightBlock {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    border-radius: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .perfilContent {
+    gap: clamp(1rem, 2.5vw, 1.25rem);
+  }
+  
+  .navigation {
+    justify-content: center;
+  }
+  
+  .navButton {
+    padding: clamp(0.6rem, 1.8vw, 0.8rem) clamp(0.75rem, 2vw, 1rem);
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+  }
+  
   .agendasGrid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(220px, 45vw, 280px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
   
   .agendaCard {
-    min-height: 250px;
+    min-height: clamp(200px, 35vw, 250px);
   }
   
   .imagenAgenda {
-    height: 160px;
+    height: clamp(120px, 20vw, 160px);
   }
   
   .agendaContenido {
-    padding: 15px;
+    padding: clamp(0.75rem, 2vw, 1rem);
   }
   
   .agendaContenidoHover {
-    padding: 20px;
+    padding: clamp(0.75rem, 2vw, 1rem);
   }
 }
 
 @media (max-width: 480px) {
+  .perfilPublicoContainer {
+    padding: clamp(0.75rem, 2vw, 1rem) clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .leftBlock, .rightBlock {
+    padding: clamp(0.75rem, 2vw, 1rem);
+    border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .avatarContainer {
+    border-width: clamp(2px, 0.6vw, 3px);
+  }
+  
+  .avatarPlaceholder {
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+  }
+  
+  .fullName {
+    font-size: clamp(1.1rem, 4vw, 1.3rem);
+  }
+  
+  .navButton {
+    padding: clamp(0.5rem, 1.5vw, 0.6rem) clamp(0.6rem, 1.8vw, 0.8rem);
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+  }
+  
   .agendasGrid {
     grid-template-columns: 1fr;
   }
   
   .agendaCard {
-    min-height: 220px;
+    min-height: clamp(180px, 30vw, 220px);
   }
   
   .imagenAgenda {
-    height: 140px;
+    height: clamp(100px, 18vw, 140px);
+  }
+  
+  .crearUsinaHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .paginationControls {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .pagination {
+    gap: clamp(0.25rem, 1vw, 0.5rem);
+  }
+  
+  .paginationBtn {
+    padding: clamp(0.4rem, 1.2vw, 0.5rem) clamp(0.5rem, 1.5vw, 0.6rem);
+    font-size: clamp(0.75rem, 2.2vw, 0.8rem);
+    min-width: clamp(1.75rem, 4.5vw, 2.25rem);
   }
 }
 
-.noContent {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-  font-size: 1.1rem;
-  background: #f8f9fa;
-  border-radius: 10px;
-  margin-top: 20px;
+@media (max-width: 380px) {
+  .perfilPublicoContainer {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .leftBlock, .rightBlock {
+    padding: 0.75rem;
+  }
+  
+  .fullName {
+    font-size: 1.1rem;
+  }
+  
+  .username {
+    font-size: 0.85rem;
+  }
+  
+  .carrera {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+  }
+  
+  .navButton {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .trabajosGrid, .agendasGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .trabajoCard, .agendaCard {
+    padding: 0.75rem;
+  }
+  
+  .trabajoCard h4, .agendaCard h4 {
+    font-size: 1rem;
+  }
+}
+
+.textSizeSelector {
+  color: #000;
 }

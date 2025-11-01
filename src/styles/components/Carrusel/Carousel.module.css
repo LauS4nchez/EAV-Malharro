@@ -15,25 +15,40 @@
 
 .titulo {
   text-align: center;
-  font-size: 88px;
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
   padding-top: 213px;
   color: white;
   position: absolute;
   width: 100%;
   z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 213px 20px 0;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ESTILOS GLOBALES PARA LAS FLECHAS */
 .carruselContainer :global(.slick-prev),
 .carruselContainer :global(.slick-next) {
   z-index: 3;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   background: #c7005a !important;
   border-radius: 50%;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.carruselContainer :global(.slick-prev):hover,
+.carruselContainer :global(.slick-next):hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .carruselContainer :global(.slick-prev):before,
@@ -42,9 +57,114 @@
 }
 
 .carruselContainer :global(.slick-prev) {
-  left: 25px !important;
+  left: 15px !important;
 }
 
 .carruselContainer :global(.slick-next) {
-  right: 25px !important;
+  right: 15px !important;
+}
+
+/* ESTILOS PARA LOS DOTS (PUNTOS INDICADORES) */
+.carruselContainer :global(.slick-dots) {
+  bottom: 20px !important;
+  z-index: 3;
+}
+
+.carruselContainer :global(.slick-dots li) {
+  margin: 0 4px;
+}
+
+.carruselContainer :global(.slick-dots li button:before) {
+  font-size: 12px;
+  color: white;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.carruselContainer :global(.slick-dots li.slick-active button:before) {
+  color: #c7005a;
+  opacity: 1;
+  font-size: 14px;
+}
+
+/* Media Queries para dispositivos móviles */
+@media (max-width: 768px) {
+  .carruselContainer {
+    height: 550px;
+  }
+  
+  .carruselImg {
+    height: 550px;
+  }
+  
+  .titulo {
+    padding-top: 150px;
+  }
+  
+  .carruselContainer :global(.slick-prev),
+  .carruselContainer :global(.slick-next) {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .carruselContainer :global(.slick-prev) {
+    left: 10px !important;
+  }
+  
+  .carruselContainer :global(.slick-next) {
+    right: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carruselContainer {
+    height: 450px;
+  }
+  
+  .carruselImg {
+    height: 450px;
+  }
+  
+  .titulo {
+    padding-top: 120px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* OCULTAMOS FLECHAS EN MÓVILES PEQUEÑOS */
+  .carruselContainer :global(.slick-prev),
+  .carruselContainer :global(.slick-next) {
+    display: none !important;
+  }
+  
+  /* AJUSTAMOS DOTS PARA MÓVIL */
+  .carruselContainer :global(.slick-dots) {
+    bottom: 15px !important;
+  }
+  
+  .carruselContainer :global(.slick-dots li button:before) {
+    font-size: 10px;
+  }
+  
+  .carruselContainer :global(.slick-dots li.slick-active button:before) {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .carruselContainer {
+    height: 400px;
+  }
+  
+  .carruselImg {
+    height: 400px;
+  }
+  
+  .titulo {
+    padding-top: 100px;
+  }
+  
+  .carruselContainer :global(.slick-dots) {
+    bottom: 10px !important;
+  }
 }

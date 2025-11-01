@@ -1,41 +1,42 @@
 /* app/gestor-usuarios/GestorUsuarios.module.css */
 .container {
-  max-width: 1200px;
+  max-width: min(1200px, 95vw);
   margin: 0 auto;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   color: #333;
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
 }
 
 .headerTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .header h1 {
   color: #333;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: clamp(0.25rem, 1vw, 0.5rem);
   text-align: left;
+  line-height: 1.2;
 }
 
 .subtitle {
   color: #666;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   text-align: left;
 }
 
 .loading, .error, .empty {
   text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
+  padding: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   color: #333;
 }
 
@@ -50,16 +51,17 @@
 .backButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.5rem);
   background-color: var(--color-primary);
   color: #ffffff;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
   font-weight: 500;
   transition: background-color 0.2s;
   border: 1px solid #ddd;
   white-space: nowrap;
+  font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .backButton:hover {
@@ -68,32 +70,34 @@
 
 .tableContainer {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  box-shadow: 0 clamp(1px, 0.3vw, 2px) clamp(0.5rem, 1.5vw, 0.75rem) rgba(0, 0, 0, 0.1);
   overflow-x: auto;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
   -webkit-overflow-scrolling: touch;
 }
 
 .usersTable {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: min(900px, 100vw);
 }
 
 .usersTable th {
   background-color: #f5f5f5;
-  padding: 1rem 0.75rem;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(0.5rem, 1.5vw, 0.75rem);
   text-align: left;
   font-weight: 600;
   color: #333;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: clamp(1px, 0.3vw, 2px) solid #e0e0e0;
   white-space: nowrap;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .usersTable td {
   vertical-align: middle;
-  padding: 0.75rem 1rem;
+  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .userRow {
@@ -107,7 +111,7 @@
 
 .userRow.expanded {
   background-color: #e3f2fd;
-  border-left: 3px solid #1976d2;
+  border-left: clamp(2px, 0.5vw, 3px) solid #1976d2;
 }
 
 .expandedRow {
@@ -120,7 +124,7 @@
 }
 
 .userDetails {
-  padding: 1.5rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
   background: white;
   animation: slideDown 0.3s ease-out;
   color: #333;
@@ -138,30 +142,30 @@
 }
 
 .detailsHeader {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  padding-bottom: clamp(0.75rem, 2vw, 1rem);
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .detailsHeader h3 {
   color: #333;
   margin: 0;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 3vw, 1.2rem);
   flex: 1;
-  min-width: 200px;
+  min-width: min(200px, 100%);
 }
 
 .youIndicator {
   background-color: #ffeb3b;
   color: #333;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  padding: clamp(0.2rem, 0.8vw, 0.4rem) clamp(0.5rem, 1.5vw, 0.75rem);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -169,42 +173,47 @@
 .youBadge {
   background-color: #1976d2;
   color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: 10px;
-  font-size: 0.7rem;
+  padding: clamp(0.15rem, 0.6vw, 0.3rem) clamp(0.4rem, 1.2vw, 0.6rem);
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  font-size: clamp(0.6rem, 1.5vw, 0.7rem);
   font-weight: 600;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0.5rem;
+  margin-left: clamp(0.3rem, 1vw, 0.5rem);
 }
 
 .detailsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .detailItem {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  min-height: clamp(2.5rem, 6vw, 3rem);
+  align-items: flex-start;
 }
 
 .detailItem label {
   font-weight: 600;
   color: #666;
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .detailItem span {
   color: #333;
-  padding: 0.5rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem);
   background: #f5f5f5;
-  border-radius: 4px;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   word-break: break-word;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .currentRole {
@@ -214,7 +223,7 @@
 
 .actions {
   display: flex;
-  gap: 2rem;
+  gap: clamp(1rem, 3vw, 2rem);
   flex-wrap: wrap;
   align-items: flex-start;
 }
@@ -222,49 +231,47 @@
 .actionGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  /* REMOVED: min-width: 200px; */
-  width: auto; /* Cambiado de 100% a auto */
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  width: auto;
+  min-width: min(200px, 100%);
 }
 
 .actionGroup label {
   font-weight: 600;
   color: #666;
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .roleSelect {
-  padding: 0.5rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem);
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   background: white;
   color: #333;
-  /* REMOVED: min-width: 150px; */
-  width: auto; /* Cambiado de 100% a auto */
-  min-width: 200px; /* Ancho mínimo pero no forzado al 100% */
-  max-width: 300px; /* Ancho máximo para que no crezca demasiado */
+  width: auto;
+  min-width: min(200px, 100%);
+  max-width: min(300px, 100%);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .blockButtons {
   display: flex;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
   flex-wrap: wrap;
-  /* REMOVED: width: 100%; */
-  width: auto; /* Cambiado de 100% a auto */
+  width: auto;
 }
 
 .blockBtn, .unblockBtn {
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
   border: none;
-  border-radius: 4px;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
   transition: background-color 0.2s;
   font-weight: 500;
   white-space: nowrap;
-  /* REMOVED: flex: 1; */
-  width: auto; /* Ancho automático en lugar de flex:1 */
-  min-width: 100px; /* Ancho mínimo consistente */
+  width: auto;
+  min-width: min(100px, 100%);
 }
 
 .blockBtn {
@@ -293,24 +300,25 @@
 .updating {
   color: #666;
   font-style: italic;
-  margin-top: 1rem;
+  margin-top: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .paginationContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: clamp(0.75rem, 2vw, 1rem) 0;
   border-top: 1px solid #e0e0e0;
   color: #333;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .itemsPerPage {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
   flex-wrap: wrap;
 }
 
@@ -318,35 +326,38 @@
   color: #666;
   font-weight: 400;
   white-space: nowrap;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .pageSelect {
-  padding: 0.25rem 0.5rem;
+  padding: clamp(0.2rem, 0.8vw, 0.4rem) clamp(0.4rem, 1.2vw, 0.6rem);
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   background: white;
   color: #333;
   font-weight: 400;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .pagination {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
   flex-wrap: wrap;
 }
 
 .pageButton {
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
   border: 1px solid #ddd;
   background: white;
-  border-radius: 4px;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
   cursor: pointer;
   transition: background-color 0.2s;
   color: #333;
   font-weight: 400;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: clamp(2.5rem, 6vw, 3rem);
+  min-height: clamp(2.5rem, 6vw, 3rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .pageButton:hover:not(:disabled) {
@@ -362,13 +373,14 @@
   color: #666;
   font-weight: 400;
   white-space: nowrap;
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .idCell {
   font-family: monospace;
   color: #666;
-  font-size: 0.9rem;
-  min-width: 60px;
+  font-size: clamp(0.85rem, 2vw, 0.95rem); /* Aumentado */
+  min-width: clamp(3rem, 8vw, 4rem);
 }
 
 .usernameCell {
@@ -376,28 +388,30 @@
   color: #333;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 120px;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
+  min-width: min(120px, 15vw);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .emailCell {
   color: #1976d2;
-  min-width: 180px;
+  min-width: min(180px, 25vw);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .roleCell {
   text-align: center;
-  min-width: 120px;
+  min-width: min(120px, 18vw);
 }
 
 .roleBadge {
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  padding: clamp(0.3rem, 0.8vw, 0.4rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  font-size: clamp(0.8rem, 1.8vw, 0.9rem); /* Aumentado */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  min-width: 100px;
+  min-width: min(100px, 15vw);
   display: inline-block;
   text-align: center;
   white-space: nowrap;
@@ -435,7 +449,8 @@
 
 .confirmedCell, .blockedCell {
   text-align: center;
-  min-width: 100px;
+  min-width: min(100px, 15vw);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
 }
 
 .confirmed {
@@ -459,17 +474,18 @@
 }
 
 .dateCell {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem); /* Aumentado */
   color: #666;
-  min-width: 120px;
+  min-width: min(120px, 20vw);
 }
 
-/* ESTILOS MEJORADOS PARA EDICIÓN */
+/* ESTILOS MEJORADOS PARA EDICIÓN - SVG AL LADO */
 .fieldWithEdit {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
   width: 100%;
+  flex-wrap: nowrap;
 }
 
 .editBtn {
@@ -477,13 +493,17 @@
   border: none;
   color: #666;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem);
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
   transition: all 0.2s ease;
   flex-shrink: 0;
-  min-width: 32px;
-  min-height: 32px;
+  min-width: clamp(2rem, 5vw, 2.5rem);
+  min-height: clamp(2rem, 5vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 2; /* SVG al final (derecha) */
 }
 
 .editBtn:hover {
@@ -494,21 +514,23 @@
 .editField {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
   width: 100%;
-  max-width: 400px; /* Limitar el ancho máximo */
+  max-width: min(400px, 100%);
+  flex-wrap: nowrap;
 }
 
 .editInput {
-  padding: 0.75rem;
+  padding: clamp(0.6rem, 1.5vw, 0.75rem);
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
   flex: 1;
   color: #333 !important;
   background: white !important;
   min-width: 0;
-  max-width: 300px; /* Limitar el ancho de los inputs */
+  max-width: min(300px, 100%);
+  order: 1; /* Input primero */
 }
 
 .editInput:focus {
@@ -516,28 +538,24 @@
   border-color: #007bff;
 }
 
-/* Estilo específico para selects en edición */
-.editInput[type="select"] {
-  max-width: 300px;
-}
-
 .editActions {
   display: flex;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
   flex-shrink: 0;
+  order: 3; /* Botones de acción al final */
 }
 
 .saveBtn, .cancelBtn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem);
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
   transition: all 0.2s ease;
   flex-shrink: 0;
-  min-width: 32px;
-  min-height: 32px;
+  min-width: clamp(2rem, 5vw, 2.5rem);
+  min-height: clamp(2rem, 5vw, 2.5rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,18 +581,12 @@
   color: white;
 }
 
-.detailItem {
-  min-height: 3rem;
-  display: flex;
-  align-items: center;
-}
-
 .currentRoleInfo {
   background: #e3f2fd;
   color: #1976d2;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
   font-weight: 500;
   white-space: nowrap;
 }
@@ -582,22 +594,22 @@
 .modificationWarning {
   background-color: #ffebee;
   color: #c62828;
-  padding: 0.75rem;
-  border-radius: 6px;
-  border-left: 4px solid #c62828;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  padding: clamp(0.6rem, 1.5vw, 0.75rem);
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  border-left: clamp(3px, 0.8vw, 4px) solid #c62828;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2.2vw, 1rem); /* Aumentado */
   font-weight: 500;
-  max-width: 600px; /* Limitar el ancho del warning */
+  max-width: min(600px, 100%);
 }
 
 .disabledReason {
   color: #d32f2f;
-  font-size: 0.8rem;
+  font-size: clamp(0.8rem, 1.8vw, 0.9rem); /* Aumentado */
   font-style: italic;
-  margin-top: 0.25rem;
+  margin-top: clamp(0.2rem, 0.8vw, 0.4rem);
   display: block;
-  max-width: 300px; /* Limitar el ancho */
+  max-width: min(300px, 100%);
 }
 
 .roleSelect:disabled {
@@ -606,39 +618,62 @@
   background-color: #f9f9f9;
 }
 
-/* RESPONSIVE DESIGN MEJORADO - SIN ELEMENTOS QUE OCUPEN EL 100% */
+.tableContainer {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.tableContainer::-webkit-scrollbar {
+  height: clamp(0.5rem, 1.5vw, 0.75rem);
+}
+
+.tableContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: clamp(0.3rem, 0.8vw, 0.4rem);
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* RESPONSIVE DESIGN MEJORADO */
 @media (max-width: 1024px) {
   .container {
-    padding: 1.5rem;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
   }
   
   .usersTable {
-    min-width: 850px;
+    min-width: min(850px, 100vw);
   }
   
   .editField {
-    max-width: 350px;
+    max-width: min(350px, 100%);
   }
   
   .editInput {
-    max-width: 250px;
+    max-width: min(250px, 100%);
   }
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: clamp(0.75rem, 2vw, 1rem);
     overflow-x: hidden;
   }
 
   .header h1 {
-    font-size: 2rem;
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
   }
 
   .headerTop {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
 
   .currentRoleInfo {
@@ -647,25 +682,25 @@
   }
 
   .tableContainer {
-    margin: 0 -1rem;
-    width: calc(100% + 2rem);
+    margin: 0 clamp(-0.75rem, -2vw, -1rem);
+    width: calc(100% + clamp(1.5rem, 4vw, 2rem));
     border-radius: 0;
   }
 
   .usersTable {
-    min-width: 900px;
+    min-width: min(900px, 100vw);
   }
 
   .usersTable th,
   .usersTable td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.4rem, 1.2vw, 0.6rem);
+    font-size: clamp(0.85rem, 2vw, 0.95rem); /* Aumentado */
   }
 
   .paginationContainer {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
 
   .itemsPerPage {
@@ -674,39 +709,39 @@
 
   .actions {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: clamp(1rem, 2.5vw, 1.5rem);
     align-items: flex-start;
   }
 
   .actionGroup {
-    width: auto; /* Cambiado de 100% a auto */
+    width: auto;
   }
 
   .detailsGrid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: clamp(1rem, 2.5vw, 1.5rem);
   }
 
   .detailsHeader {
     flex-direction: column;
-    gap: 1rem;
+    gap: clamp(0.75rem, 2vw, 1rem);
     align-items: flex-start;
   }
 
   .userDetails {
-    padding: 1rem;
+    padding: clamp(0.75rem, 2vw, 1rem);
   }
 
-  /* MEJORAS EN EDICIÓN PARA MÓVIL - SIN ELEMENTOS AL 100% */
+  /* MEJORAS EN EDICIÓN PARA MÓVIL */
   .editField {
-    flex-direction: row; /* Mantener en fila en móvil */
+    flex-direction: row;
     align-items: center;
-    gap: 0.75rem;
+    gap: clamp(0.5rem, 1.5vw, 0.75rem);
     max-width: 100%;
   }
 
   .editInput {
-    max-width: 200px; /* Más pequeño en móvil */
+    max-width: min(200px, 100%);
     flex: 1;
   }
 
@@ -717,7 +752,7 @@
   .fieldWithEdit {
     flex-direction: row;
     align-items: center;
-    gap: 0.75rem;
+    gap: clamp(0.5rem, 1.5vw, 0.75rem);
   }
 
   .editBtn {
@@ -725,133 +760,137 @@
   }
 
   .roleSelect {
-    width: auto; /* Cambiado de 100% a auto */
-    min-width: 200px;
-    max-width: 250px;
+    width: auto;
+    min-width: min(200px, 100%);
+    max-width: min(250px, 100%);
   }
 
   .blockButtons {
-    width: auto; /* Cambiado de 100% a auto */
+    width: auto;
     justify-content: flex-start;
   }
 
   .blockBtn, .unblockBtn {
-    width: auto; /* Cambiado de flex:1 a auto */
-    min-width: 90px; /* Un poco más pequeño en móvil */
+    width: auto;
+    min-width: min(90px, 100%);
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 0.75rem;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
   }
 
   .header h1 {
-    font-size: 1.75rem;
+    font-size: clamp(1.1rem, 4vw, 1.5rem);
   }
 
   .subtitle {
-    font-size: 1rem;
+    font-size: clamp(0.85rem, 2.2vw, 0.95rem);
   }
 
   .usersTable {
-    min-width: 950px;
+    min-width: min(950px, 100vw);
   }
 
   .usersTable th,
   .usersTable td {
-    padding: 0.6rem 0.4rem;
-    font-size: 0.8rem;
+    padding: clamp(0.4rem, 1.2vw, 0.6rem) clamp(0.3rem, 1vw, 0.5rem);
+    font-size: clamp(0.8rem, 2vw, 0.9rem); /* Aumentado */
   }
 
   .userDetails {
-    padding: 0.75rem;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
   }
 
   .detailsGrid {
-    gap: 1.25rem;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
   }
 
   .editInput {
     font-size: 16px;
-    padding: 0.875rem;
-    max-width: 180px; /* Aún más pequeño en móviles muy pequeños */
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
+    max-width: min(180px, 100%);
   }
 
   .backButton {
-    width: auto; /* Cambiado de 100% a auto */
+    width: auto;
     justify-content: flex-start;
   }
 
   .idCell {
-    min-width: 50px;
-    font-size: 0.8rem;
+    min-width: min(3rem, 10vw);
+    font-size: clamp(0.8rem, 2vw, 0.9rem); /* Aumentado */
   }
 
   /* Ajustes para pantallas muy pequeñas */
   .editField {
-    gap: 0.5rem;
+    gap: clamp(0.3rem, 1vw, 0.5rem);
   }
   
   .editInput {
-    max-width: 150px;
+    max-width: min(150px, 100%);
   }
   
   .roleSelect {
-    min-width: 180px;
-    max-width: 200px;
+    min-width: min(180px, 100%);
+    max-width: min(200px, 100%);
   }
 }
 
 @media (max-width: 360px) {
   .container {
-    padding: 0.5rem;
+    padding: clamp(0.4rem, 1.2vw, 0.6rem);
   }
 
   .header h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 4vw, 1.3rem);
   }
 
   .usersTable {
-    min-width: 1000px;
+    min-width: min(1000px, 100vw);
   }
 
   .usersTable th,
   .usersTable td {
-    padding: 0.5rem 0.3rem;
-    font-size: 0.75rem;
+    padding: clamp(0.3rem, 1vw, 0.5rem) clamp(0.25rem, 0.8vw, 0.4rem);
+    font-size: clamp(0.75rem, 1.8vw, 0.85rem); /* Aumentado */
   }
 
   .roleBadge {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.8rem;
-    min-width: 80px;
+    font-size: clamp(0.7rem, 1.5vw, 0.8rem); /* Aumentado */
+    padding: clamp(0.25rem, 0.8vw, 0.4rem) clamp(0.6rem, 1.8vw, 0.8rem);
+    min-width: min(80px, 20vw);
   }
   
   .editInput {
-    max-width: 130px;
+    max-width: min(130px, 100%);
+  }
+  
+  .actions {
+    gap: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .actionGroup {
+    min-width: 100%;
   }
 }
 
-.tableContainer {
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
-}
-
-.tableContainer::-webkit-scrollbar {
-  height: 12px;
-}
-
-.tableContainer::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 6px;
-}
-
-.tableContainer::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 6px;
-}
-
-.tableContainer::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+/* Mejoras de accesibilidad en móviles */
+@media (max-width: 768px) {
+  .pageButton,
+  .blockBtn,
+  .unblockBtn,
+  .editBtn,
+  .saveBtn,
+  .cancelBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .roleSelect,
+  .pageSelect,
+  .editInput {
+    font-size: 16px; /* Previene zoom en iOS */
+  }
 }

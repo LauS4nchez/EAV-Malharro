@@ -2,61 +2,62 @@
 
 .usinaCircularContainer {
   background-color: #111;
-  padding: 5rem 0;
+  padding: clamp(2rem, 5vw, 5rem) 0;
 }
 
 .usinaContent {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 clamp(1rem, 3vw, 2rem);
   position: relative;
   z-index: 2;
   width: 100%;
 }
 
 .usinaTitulo {
-  margin-top: 64px;
+  margin-top: clamp(2rem, 6vw, 4rem);
   color: #fff;
-  margin-left: 24px;
+  margin-left: clamp(1rem, 2.5vw, 1.5rem);
   margin-bottom: 1rem;
 }
 
 .usinaTitulo h2 {
-  font-size: 2.8rem;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
   font-weight: 700;
   line-height: 1.1;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .usinaParrafo {
-  margin-left: 24px;
+  margin-left: clamp(1rem, 2.5vw, 1.5rem);
   color: #ddd;
-  margin-bottom: 3rem;
-  font-size: 1.1rem;
-  max-width: 650px;
+  margin-bottom: clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  max-width: min(650px, 90vw);
+  line-height: 1.5;
 }
 
 /* === Galería === */
 .usinaGaleria {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(clamp(150px, 20vw, 260px), 1fr));
   justify-content: center;
   align-items: start;
-  gap: 28px;
+  gap: clamp(1rem, 2vw, 1.75rem);
   width: 100%;
-  padding: 0 24px 60px;
+  padding: 0 clamp(1rem, 2.5vw, 1.5rem) clamp(2rem, 5vw, 3.75rem);
   box-sizing: border-box;
 }
 
 /* === Card principal === */
 .usinaCard {
   position: relative;
-  border-radius: 20px;
+  border-radius: clamp(0.75rem, 2vw, 1.25rem);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   background: #111;
-  height: 300px;
+  height: clamp(200px, 40vw, 300px);
   display: flex;
   flex-direction: column;
 }
@@ -90,18 +91,18 @@
   color: #fff;
   backdrop-filter: blur(2px);
   background: #f4155be6;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 1.6rem;
+  border-radius: clamp(0.5rem, 1vw, 0.75rem);
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
   font-weight: 600;
   align-items: center;
   text-decoration: none;
   transition: all 0.3s;
   display: block;
-  width: 150px;
+  width: clamp(120px, 15vw, 150px);
   margin: 0 auto;
   text-align: center;
-  margin-top: 20px;
+  margin-top: clamp(1rem, 3vw, 1.25rem);
 }
 
 .usinaVerMas:hover {
@@ -124,8 +125,8 @@
 
 .modalContent {
   background: #1a1a1a;
-  border-radius: 16px;
-  max-width: 1000px;
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  max-width: min(1000px, 95vw);
   width: 90%;
   max-height: 90vh;
   overflow: hidden;
@@ -148,21 +149,26 @@
 
 .modalInfo {
   flex: 1.2;
-  padding: 2rem;
+  padding: clamp(1rem, 2.5vw, 2rem);
   color: #fff;
   overflow-y: auto;
 }
 
 .modalInfo h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
   color: #f4155b;
 }
 
 .modalInfo p {
-  margin-bottom: 0.7rem;
-  font-size: 1rem;
+  margin-bottom: clamp(0.4rem, 1vw, 0.7rem);
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #ddd;
+  line-height: 1.4;
+}
+
+.modalInfo b {
+  color: #fff;
 }
 
 .username {
@@ -172,14 +178,15 @@
 
 .modalLink {
   display: inline-block;
-  margin-top: 1rem;
-  padding: 8px 12px;
-  border-radius: 6px;
+  margin-top: clamp(0.5rem, 1.5vw, 1rem);
+  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.75rem, 1.5vw, 1rem);
+  border-radius: clamp(0.25rem, 0.75vw, 0.5rem);
   background: #f4155b;
   color: #fff;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s;
+  font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
 .modalLink:hover {
@@ -189,14 +196,15 @@
 
 .closeButton {
   position: absolute;
-  top: 12px;
-  right: 16px;
-  font-size: 1.5rem;
+  top: clamp(0.5rem, 1.5vw, 0.75rem);
+  right: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
   background: transparent;
   border: none;
   color: #fff;
   cursor: pointer;
   transition: all 0.3s;
+  z-index: 2001;
 }
 
 .closeButton:hover {
@@ -219,28 +227,16 @@
   .modalContent {
     flex-direction: column;
     max-height: 85vh;
+    width: 95%;
   }
 
   .modalInfo {
-    padding: 1.5rem;
-  }
-}
-
-
-/* === Responsividad === */
-@media (max-width: 768px) {
-  .usinaCircularContainer {
-    height: auto;
-    padding: 3rem 0;
+    padding: clamp(1rem, 3vw, 1.5rem);
   }
 
   .usinaGaleria {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-  }
-
-  .usinaCard {
-    height: 260px; /* También más alargadas en móvil */
+    grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 25vw, 180px), 1fr));
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
 }
 
@@ -249,26 +245,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
+  height: clamp(150px, 30vw, 200px);
   color: #666;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
 }
 
 .filtrosContainer {
-  max-width: 800px;
-  margin: 0 auto 3rem;
-  padding: 0 1rem;
+  max-width: min(800px, 95vw);
+  margin: 0 auto clamp(1.5rem, 4vw, 3rem);
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
 }
 
 .searchBox {
-  margin-bottom: 1.5rem;
+  margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .searchInput {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
   border: 2px solid #e5e5e5;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: clamp(0.5rem, 1vw, 0.75rem);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
   transition: border-color 0.2s;
 }
 
@@ -279,20 +276,20 @@
 
 .filtrosRow {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
   flex-wrap: wrap;
 }
 
 .filterSelect {
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
   border: 2px solid #e5e5e5;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: clamp(0.25rem, 0.75vw, 0.5rem);
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   background: white;
   cursor: pointer;
   flex: 1;
-  min-width: 150px;
+  min-width: min(150px, 100%);
 }
 
 .filterSelect:focus {
@@ -303,7 +300,7 @@
 .resultadosInfo {
   text-align: center;
   color: #666;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .resultadosInfo p {
@@ -318,7 +315,7 @@
   right: 0;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
   color: white;
-  padding: 1rem;
+  padding: clamp(0.5rem, 1.5vw, 1rem);
   opacity: 0;
   transition: opacity 0.2s;
   transform: translateY(10px);
@@ -330,14 +327,14 @@
 }
 
 .cardTitle {
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   font-weight: 600;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 clamp(0.15rem, 0.5vw, 0.25rem) 0;
   line-height: 1.2;
 }
 
 .cardCarrera {
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   margin: 0;
   opacity: 0.9;
 }
@@ -345,27 +342,31 @@
 .noResults {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 3rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
   color: #666;
 }
 
 .noResults p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
 }
 
-/* Ajustes para la galería completa */
-.usinaGaleria {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  padding: 0 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.infoText {
+  color: #fff;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive adicional para móviles muy pequeños */
+@media (max-width: 480px) {
+  .usinaGaleria {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .usinaCard {
+    height: clamp(180px, 35vw, 220px);
+  }
+  
   .filtrosRow {
     flex-direction: column;
   }
@@ -374,21 +375,23 @@
     flex: none;
     width: 100%;
   }
-  
+}
+
+@media (max-width: 380px) {
   .usinaGaleria {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
   
-  .cardOverlay {
-    padding: 0.5rem;
+  .usinaCard {
+    height: 160px;
   }
   
-  .cardTitle {
-    font-size: 0.8rem;
+  .usinaTitulo h2 {
+    font-size: 1.5rem;
   }
   
-  .cardCarrera {
-    font-size: 0.7rem;
+  .usinaParrafo {
+    font-size: 0.85rem;
   }
 }

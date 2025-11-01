@@ -30,6 +30,7 @@ html {
   /* Pesos de fuente */
   --peso-regular: 400;
   --peso-light: 300;
+  --peso-bold: 500;
 }
 
 body {

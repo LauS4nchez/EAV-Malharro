@@ -1,28 +1,29 @@
 /* src/styles/components/AcordeonCarreras.module.css */
 .acordeonContainer {
-  background-color: #1b1b1b;
+  background-color: #1f1f1f;
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
 }
 
 .textoItem {
   background-color: #fafafa;
   text-align: left;
-  margin: 0 auto 12px auto;
-  border-radius: 10px;
+  margin: 0 auto clamp(0.5rem, 1.5vw, 0.75rem) auto;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  max-width: 100%;
 }
 
 .textoHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 40px 25px 40px;
+  padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
   cursor: pointer;
-  gap: 15px;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
 }
 
-/* Nuevo contenedor para el título */
 .tituloContainer {
   flex: 1;
-  min-width: 0; /* Esto permite que el texto se trunque */
+  min-width: 0;
 }
 
 .tituloAcordeon {
@@ -31,45 +32,41 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+  font-size: clamp(2.5rem, 3.5vw, 2.7rem);
+  line-height: 1.3;
 }
 
 .textoContenido {
-  padding: 20px 40px;
-  padding-top: 0px;
+  padding: 0 clamp(0.75rem, 2vw, 1rem);
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.4s ease, padding 0.3s ease;
-  padding: 0 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
-  font-size: 1.2rem;
+  margin: 0 clamp(1rem, 2.5vw, 1.5rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
 }
 
 .textoContenidoAbierto {
-  max-height: 500px;
-  padding: 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
+  max-height: 800px;
+  padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.75rem, 2vw, 1rem);
+  margin: 0 clamp(1rem, 2.5vw, 1.5rem);
   background-color: transparent;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.5rem, 1.5vw, 0.75rem);
 }
 
 .textoContenidoCerrado {
   max-height: 0;
-  padding: 0 1rem;
-  margin-left: 25px;
-  margin-right: 25px;
+  padding: 0 clamp(0.75rem, 2vw, 1rem);
+  margin: 0 clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .botonTexto {
-  /* Quitamos todos los estilos de círculo */
   background-color: transparent !important;
   border: none !important;
   cursor: pointer;
   justify-content: center;
   flex-shrink: 0;
   padding: 0;
-  margin-right: 25px;
+  margin-right: clamp(1rem, 2.5vw, 1.5rem);
   box-shadow: none !important;
   width: auto;
   height: auto;
@@ -79,10 +76,10 @@
 
 .flechaIcono {
   transition: transform 0.3s ease;
-  width: 24px; /* Tamaño del SVG */
-  height: 24px; /* Tamaño del SVG */
-  stroke: white; /* Color blanco para carreras */
-  stroke-width: 2.5; /* Más gruesa */
+  width: clamp(1.25rem, 3vw, 1.5rem);
+  height: clamp(1.25rem, 3vw, 1.5rem);
+  stroke: white;
+  stroke-width: 2.5;
 }
 
 .flechaAbierta {
@@ -90,24 +87,32 @@
 }
 
 .contenidoInterno {
-  padding: 1rem 0;
+  padding: clamp(0.5rem, 1.5vw, 1rem) 0;
+}
+
+.contenidoTexto {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
 /* Estilos para el botón "Saber más" */
 .saberMasBtn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  background-color: transparent;
+  color: inherit;
+  border: 2px solid currentColor;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: clamp(0.25rem, 0.75vw, 0.5rem);
   cursor: pointer;
   margin-top: 1rem;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .saberMasBtn:hover {
-  background-color: #0056b3;
+  background-color: currentColor;
+  color: #fff;
 }
 
 /* Estilos Acordeon */
@@ -136,45 +141,73 @@
 /* Media Queries para responsividad del acordeón */
 @media (max-width: 768px) {
   .textoItem {
-    margin-left: -20px;
-    margin-right: -20px;
+    margin-left: clamp(-1rem, -3vw, -0.5rem);
+    margin-right: clamp(-1rem, -3vw, -0.5rem);
   }
   
   .textoHeader {
-    padding: 15px 20px 25px 20px;
+    padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.5rem);
   }
   
   .botonTexto {
     margin-right: 0;
   }
   
-  .flechaIcono {
-    width: 22px;
-    height: 22px;
-  }
-  
   .tituloAcordeon {
-    font-size: 2rem;
+    font-size: clamp(2rem, 4vw, 2.5rem);
   }
 
   .contenidoTexto {
-    font-size: 1rem;
-    font-weight: var(--peso-light);
+    font-size: clamp(0.95rem, 3vw, 1.1rem);
   }
 }
 
 @media (max-width: 480px) {
   .textoItem {
-    margin-left: -10px;
-    margin-right: -10px;
+    margin-left: clamp(-0.75rem, -2vw, -0.5rem);
+    margin-right: clamp(-0.75rem, -2vw, -0.5rem);
   }
   
   .textoHeader {
-    padding: 12px 15px 20px 15px;
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .tituloAcordeon {
+    font-size: clamp(1.6rem, 4.5vw, 2rem);
+  }
+  
+  .textoContenido,
+  .textoContenidoAbierto,
+  .textoContenidoCerrado {
+    margin-left: clamp(0.5rem, 1.5vw, 0.75rem);
+    margin-right: clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .acordeonContainer {
+    padding: 0 0.25rem;
+  }
+  
+  .textoHeader {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .tituloAcordeon {
+    font-size: 1.6rem;
   }
   
   .flechaIcono {
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  .contenidoTexto {
+    font-size: 0.95rem;
+  }
+  
+  .saberMasBtn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }

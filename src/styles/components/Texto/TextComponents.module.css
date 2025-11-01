@@ -3,9 +3,8 @@
 .texto {
   text-align: center;
   color: #444;
-  margin-bottom: 0px;
-  padding-bottom: 0px;
-  margin: -15px 40px;
+  margin: clamp(-0.75rem, -2vw, -1rem) clamp(1rem, 3vw, 2.5rem);
+  padding-bottom: 0;
   background-color: #1f1f1f;
 }
 
@@ -17,24 +16,35 @@
 
 .textoContenedor2 {
   width: 100%;
-  max-width: 700px;
-  flex: 1 1 300px;
-  padding: 1rem;
+  max-width: min(700px, 90vw);
+  flex: 1 1 min(300px, 100%);
+  padding: clamp(0.75rem, 2vw, 1rem);
   box-sizing: border-box;
   background-color: #ffffff;
-  border-radius: 8px;
-  margin-left: 20px;
-  margin-right: 20px;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin: 0 clamp(0.5rem, 1.5vw, 1.25rem);
+  font-size: clamp(1rem, 2.5vw, 1.3rem); /* Más pequeño que el contenedor1 */
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.textoContenedor2 h4 {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+  color: #000000;
+  line-height: inherit;
 }
 
 .textoContainer {
   background-color: #1f1f1f;
-  margin-top: 2rem;
+  margin-top: clamp(1rem, 3vw, 2rem);
 }
 
 .textoRegular {
-  font-size: 1.5em;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
   color: black;
+  line-height: 1.6;
 }
 
 .textoNegrita {
@@ -44,48 +54,58 @@
 
 .textoContenedor {
   width: 100%;
-  max-width: 400px;
-  flex: 1 1 300px;
-  padding: 1rem;
+  max-width: min(500px, 90vw);
+  flex: 1 1 min(350px, 100%);
+  padding: clamp(1rem, 3vw, 1.5rem);
   box-sizing: border-box;
   background-color: #ffffff;
-  border-radius: 8px;
-  margin-left: 20px;
-  margin-right: 20px;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin: 0 clamp(0.5rem, 1.5vw, 1.25rem);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Este selector llega al texto dentro del componente <Texto /> */
+.textoContenedor .markdownContent p {
+  font-size: clamp(2rem, 4vw, 3rem); /* Ajustá según gusto */
+  margin: 0;
+  color: #000000;
+  text-align: left;
 }
 
 .textosRow {
-  margin-top: 30px;
-  margin-bottom: 30px;
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
   justify-content: center;
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
 }
 
 .textoError {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 20px;
+  font-size: clamp(1rem, 3vw, 1.25rem);
   color: brown;
   text-align: center;
-  padding: 1rem;
+  padding: clamp(0.75rem, 2vw, 1rem);
 }
 
 /* Estados de carga */
 .loading {
   text-align: center;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   color: #666;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
 }
 
 .error {
   text-align: center;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   color: #d32f2f;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   background-color: #ffebee;
-  border-radius: 8px;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
   border: 1px solid #ffcdd2;
 }
 
@@ -94,9 +114,9 @@
   background-color: #e7f0ff;
   color: #1a4fb3;
   border: 1px solid #b9d3ff;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -116,9 +136,9 @@
 /* --- Contenedor de botones (guardar / cancelar) --- */
 .buttonGroup {
   display: flex;
-  gap: 0.6rem;
+  gap: clamp(0.4rem, 1vw, 0.6rem);
   justify-content: flex-end;
-  margin-top: 0.8rem;
+  margin-top: clamp(0.5rem, 1.5vw, 0.8rem);
 }
 
 /* --- Campos de edición --- */
@@ -126,14 +146,15 @@
 input.textareaEditar {
   width: 100%;
   border: 1px solid #dcdcdc;
-  border-radius: 8px;
-  padding: 0.7rem;
-  margin-top: 0.5rem;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding: clamp(0.5rem, 1.5vw, 0.7rem);
+  margin-top: clamp(0.3rem, 1vw, 0.5rem);
   resize: vertical;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  color: #000 !important; /* fuerza el color negro */
+  color: #000 !important;
   background-color: #fff !important;
+  min-height: clamp(80px, 20vw, 120px);
 }
 
 .textareaEditar:focus {
@@ -144,16 +165,17 @@ input.textareaEditar {
 
 .botonesFila {
   display: flex;
-  justify-content: space-between; /* separa uno a la izquierda y otro a la derecha */
+  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  gap: 10px; /* si querés que estén más juntos, bajá este valor */
+  margin-top: clamp(0.5rem, 1.5vw, 0.8rem);
+  gap: clamp(0.5rem, 1.5vw, 0.8rem);
 }
 
 .editingTitulo {
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: clamp(0.5rem, 1.5vw, 0.8rem);
   color: #000;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
 }
 
 .editingContainer {
@@ -162,7 +184,7 @@ input.textareaEditar {
 
 /* En tu archivo TextComponents.module.css */
 .switchContainer {
-  margin: 1rem 0;
+  margin: clamp(0.75rem, 2vw, 1rem) 0;
   display: flex;
   justify-content: flex-start;
 }
@@ -170,9 +192,9 @@ input.textareaEditar {
 .switchLabel {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 1vw, 0.5rem);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .switchInput {
@@ -181,22 +203,22 @@ input.textareaEditar {
 
 .switchSlider {
   position: relative;
-  width: 50px;
-  height: 24px;
+  width: clamp(2.5rem, 6vw, 3.125rem);
+  height: clamp(1.25rem, 3vw, 1.5rem);
   background-color: #ccc;
-  border-radius: 24px;
+  border-radius: clamp(1.25rem, 3vw, 1.5rem);
   transition: background-color 0.3s;
 }
 
 .switchSlider:before {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: clamp(1rem, 2.5vw, 1.25rem);
+  height: clamp(1rem, 2.5vw, 1.25rem);
   border-radius: 50%;
   background-color: white;
-  top: 2px;
-  left: 2px;
+  top: clamp(0.125rem, 0.3vw, 0.15rem);
+  left: clamp(0.125rem, 0.3vw, 0.15rem);
   transition: transform 0.3s;
 }
 
@@ -205,18 +227,65 @@ input.textareaEditar {
 }
 
 .switchInput:checked + .switchSlider:before {
-  transform: translateX(26px);
+  transform: translateX(clamp(1.25rem, 3vw, 1.5rem));
 }
 
 /* Media Queries para responsividad */
 @media (max-width: 768px) {
   .texto {
-    margin: -15px 20px;
+    margin: clamp(-0.75rem, -2vw, -1rem) clamp(0.75rem, 2vw, 1.25rem);
+  }
+  
+  .textosRow {
+    gap: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .textoContenedor,
+  .textoContenedor2 {
+    margin: 0 clamp(0.25rem, 1vw, 0.5rem);
   }
 }
 
 @media (max-width: 480px) {
   .texto {
-    margin: -15px 10px;
+    margin: clamp(-0.5rem, -1.5vw, -0.75rem) clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .textosRow {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .textoContenedor,
+  .textoContenedor2 {
+    max-width: 95%;
+    margin: 0;
+  }
+  
+  .botonesFila {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .btnAccion {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .textoContenedor,
+  .textoContenedor2 {
+    max-width: 100%;
+    padding: 0.75rem;
+  }
+  
+  .textoRegular {
+    font-size: 1rem;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
   }
 }

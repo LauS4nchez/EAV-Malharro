@@ -32,9 +32,7 @@ export default function Page() {
 
       <div className="home">
         <Header/>
-        <div className={styles.carruselContainer}>
-          <Carrusel />
-        </div>
+        <Carrusel />
 
         <div className={`${textStyles.textosRow} mt-5`}>
           <div className={textStyles.textoContenedor}>
