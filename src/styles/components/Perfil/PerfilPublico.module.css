@@ -938,3 +938,37 @@
 .textSizeSelector {
   color: #000;
 }
+
+/* Agregar esto en PerfilPublico.module.css */
+
+/* Botones de edición en modales */
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.editButton:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.editButton:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.editIcon {
+  width: 1rem;
+  height: 1rem;
+}

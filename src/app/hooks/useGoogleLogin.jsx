@@ -1,10 +1,14 @@
+"use client";
 import { useGoogleLogin } from "@react-oauth/google";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { API_URL } from "../config";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
 export const useGoogleAuth = (setStep, setEmail, setLoading, router) => {
-  return useGoogleLogin({
+  // --- WEB normal ---
+  const webGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         setLoading(true);
@@ -28,7 +32,6 @@ export const useGoogleAuth = (setStep, setEmail, setLoading, router) => {
         if (authRes.ok) {
           const authData = JSON.parse(responseText);
 
-          // Si el usuario aún no tiene contraseña → paso "setPassword"
           if (authData.user.loginMethods !== "both") {
             setEmail(authData.user.email);
             setStep("setPassword");
@@ -36,7 +39,6 @@ export const useGoogleAuth = (setStep, setEmail, setLoading, router) => {
             return;
           }
 
-          // Si ya tiene contraseña
           localStorage.setItem("jwt", authData.jwt);
           localStorage.setItem("userRole", authData.user.role?.name || "Authenticated");
           toast.success(`¡Bienvenido ${authData.user.username}!`);
@@ -44,7 +46,6 @@ export const useGoogleAuth = (setStep, setEmail, setLoading, router) => {
         } else {
           throw new Error(responseText);
         }
-
       } catch (error) {
         console.error("Error Google Login:", error);
         toast.error("Error al ingresar con Google.");
@@ -57,4 +58,24 @@ export const useGoogleAuth = (setStep, setEmail, setLoading, router) => {
       toast.error("Falló el login con Google");
     },
   });
+
+  // --- APK / Capacitor ---
+  const nativeGoogleLogin = async () => {
+    try {
+      const loginUrl = `${API_URL}/google-auth/start`; // endpoint que inicia OAuth
+      await Browser.open({ url: loginUrl });
+    } catch (err) {
+      console.error("Error al abrir login Google:", err);
+      toast.error("No se pudo abrir el inicio de sesión con Google.");
+    }
+  };
+
+  // --- Selector automático ---
+  return () => {
+    if (Capacitor.isNativePlatform()) {
+      nativeGoogleLogin();
+    } else {
+      webGoogleLogin();
+    }
+  };
 };

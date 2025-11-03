@@ -418,3 +418,51 @@
     font-size: 0.8rem;
   }
 }
+
+/* MEJORAS PARA EL COMPORTAMIENTO DEL HOVER */
+
+/* Cuando solo hay 1 slide visible, todas las agendas pueden hacer hover */
+.agendaWrapper:not(.slick-initialized) .agendaCard,
+.agendaWrapper :global(.slick-slide) .agendaCard.canHover {
+  cursor: pointer;
+}
+
+.agendaWrapper:not(.slick-initialized) .agendaCard .agendaContenidoHover,
+.agendaWrapper :global(.slick-slide) .agendaCard.canHover .agendaContenidoHover {
+  display: none;
+}
+
+.agendaWrapper:not(.slick-initialized) .agendaCard:hover .agendaContenidoHover,
+.agendaWrapper :global(.slick-slide) .agendaCard.canHover:hover .agendaContenidoHover {
+  display: block;
+}
+
+/* Asegurar que en móvil el hover funcione correctamente */
+@media (max-width: 900px) {
+  .agendaCard {
+    cursor: pointer !important;
+  }
+  
+  .agendaCard .agendaContenidoHover {
+    display: none;
+  }
+  
+  .agendaCard:hover .agendaContenidoHover {
+    display: block;
+  }
+}
+
+/* Para tablets (2 slides) mantener el comportamiento central */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .agendaWrapper :global(.slick-slide:not(.slick-center)) .agendaCard {
+    cursor: default;
+  }
+  
+  .agendaWrapper :global(.slick-slide:not(.slick-center)) .agendaCard:hover .agendaContenidoHover {
+    display: none !important;
+  }
+  
+  .agendaWrapper :global(.slick-slide:not(.slick-center)) .agendaCard:hover .agendaContenido {
+    display: flex !important;
+  }
+}

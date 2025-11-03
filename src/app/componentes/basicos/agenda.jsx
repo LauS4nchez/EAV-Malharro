@@ -27,7 +27,8 @@ export default function Agenda() {
   const sliderRef = useRef(null);
   const [agendas, setAgendas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0); // índice del slide activo (para saber cuál es la central)
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [slidesToShow, setSlidesToShow] = useState(3); // Estado para slides visibles
 
   /** Carga inicial: obtiene agendas con imagen; ordena por fecha desc y limita a 7 */
   useEffect(() => {
@@ -40,9 +41,8 @@ export default function Agenda() {
         }
         const { data } = await res.json();
 
-        // Nota: si la API devuelve atributos anidados, adaptar aquí (item.attributes.fecha, etc.)
         const sorted = data
-          .filter(item => item.fecha) // evita items sin fecha
+          .filter(item => item.fecha)
           .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
           .slice(0, 7);
 
@@ -57,9 +57,21 @@ export default function Agenda() {
     fetchAgendas();
   }, []);
 
+  // Detectar cambios en el número de slides visibles
+  const handleBeforeChange = (oldIndex, newIndex) => {
+    // Esta función se ejecuta antes del cambio, podemos usarla para detectar el breakpoint actual
+    if (window.innerWidth <= 900) {
+      setSlidesToShow(1);
+    } else if (window.innerWidth <= 1200) {
+      setSlidesToShow(2);
+    } else {
+      setSlidesToShow(3);
+    }
+  };
+
   const settings = {
     dots: false,
-    infinite: agendas.length > 3, // solo loop si hay suficientes ítems
+    infinite: agendas.length > 3,
     speed: 300,
     slidesToShow: 3,
     slidesToScroll: 1,
@@ -72,13 +84,31 @@ export default function Agenda() {
     centerPadding: "0px",
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
-    afterChange: (current) => setCurrentSlide(current), // para aplicar hover solo a la central
+    beforeChange: handleBeforeChange, // 🔥 Nueva función para detectar breakpoints
+    afterChange: (current) => setCurrentSlide(current),
     responsive: [
-      { breakpoint: 1200, settings: { slidesToShow: 2 } },
-      { breakpoint: 900, settings: { slidesToShow: 1, centerMode: false } },
+      { 
+        breakpoint: 1200, 
+        settings: { 
+          slidesToShow: 2,
+          centerMode: true
+        } 
+      },
+      { 
+        breakpoint: 900, 
+        settings: { 
+          slidesToShow: 1, 
+          centerMode: false 
+        } 
+      },
       {
         breakpoint: 600,
-        settings: { slidesToShow: 1, arrows: false, dots: true, centerMode: false },
+        settings: { 
+          slidesToShow: 1, 
+          arrows: false, 
+          dots: true, 
+          centerMode: false 
+        },
       },
     ],
   };
@@ -101,19 +131,20 @@ export default function Agenda() {
           {agendas.map((item, index) => {
             const { id, tituloActividad, contenidoActividad, fecha, imagen } = item;
 
-            // Soporta url directa o anidada (Strapi). Si usás base URL, resolvela en fetch/normalización.
             const imageUrl = imagen?.url || imagen?.data?.attributes?.url || "";
 
-            // Solo la card central permite el overlay hover (controlado por CSS con .canHover/.noHover)
-            const isCenter = index === currentSlide;
+            // 🔥 LÓGICA CORREGIDA: Solo desactivar hover cuando hay centerMode activo
+            // En móvil (slidesToShow = 1), todas las agendas pueden hacer hover
+            const isCenter = slidesToShow > 1 ? index === currentSlide : true;
+            const canHoverClass = isCenter ? styles.canHover : styles.noHover;
 
             return (
               <div key={id} className={styles.agendaContainer}>
-                <div className={`${styles.agendaCard} ${isCenter ? styles.canHover : styles.noHover}`}>
+                <div className={`${styles.agendaCard} ${canHoverClass}`}>
                   {imageUrl && (
                     <img
                       src={imageUrl}
-                      alt="Imagen del evento" // si tu API provee alt, reemplazar por el texto correcto
+                      alt="Imagen del evento"
                       className={styles.imagenAgenda}
                     />
                   )}

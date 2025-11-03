@@ -354,15 +354,15 @@ export default function GaleriaPage() {
 
                 {selectedUsina.creador && (
                     <p>
-                    <strong>Creador:</strong> {selectedUsina.creador.name} {selectedUsina.creador.surname}{' '}
-                    <span className={styles.username}>@{selectedUsina.creador.username}</span>
+                      <strong style={{color: '#fff'}}>Creador:</strong> {selectedUsina.creador.name} {selectedUsina.creador.surname}{' '}
+                      <span className={styles.username}>@{selectedUsina.creador.username}</span>
                     </p>
                 )}
 
-                <p><strong>Carrera:</strong> {selectedUsina.creador?.carrera || 'No especificada'}</p>
+                <p><strong style={{color: '#fff'}}>Carrera:</strong> {selectedUsina.creador?.carrera || 'No especificada'}</p>
 
                 {selectedUsina.creado && (
-                    <p><strong>Publicado:</strong> {new Date(selectedUsina.creado).toLocaleDateString('es-AR')}</p>
+                    <p><strong style={{color: '#fff'}}>Publicado:</strong> {new Date(selectedUsina.creado).toLocaleDateString('es-AR')}</p>
                 )}
 
                 {selectedUsina.creador?.username && (

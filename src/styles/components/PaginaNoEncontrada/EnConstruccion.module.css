@@ -6,63 +6,90 @@
   justify-content: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   text-align: center;
 }
 
 .content {
   background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  box-shadow: 0 clamp(0.5rem, 1.5vw, 1rem) clamp(1rem, 3vw, 2rem) rgba(0, 0, 0, 0.1);
+  max-width: min(500px, 90vw);
   width: 100%;
-  border: 2px solid #e9ecef;
+  border: clamp(1px, 0.3vw, 2px) solid #e9ecef;
 }
 
 .constructionIcon {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 2rem;
+  width: clamp(5rem, 15vw, 7.5rem);
+  height: clamp(5rem, 15vw, 7.5rem);
+  margin-bottom: clamp(1rem, 3vw, 2rem);
   opacity: 0.8;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 700;
   color: #1B1B1B;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
   background: linear-gradient(135deg, #F4155B 0%, #5044C4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   color: #6c757d;
-  margin-bottom: 2.5rem;
-  line-height: 1.6;
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.5;
 }
 
 .backButton {
   background: linear-gradient(135deg, #5044C4 0%, #6257CA 100%);
   color: white;
   border: none;
-  padding: 1rem 2.5rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3.5vw, 2.5rem);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(80, 68, 196, 0.3);
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(0.75rem, 2.5vw, 1.25rem) rgba(80, 68, 196, 0.3);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  min-height: clamp(2.5rem, 7vw, 3.5rem);
 }
 
 .backButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(80, 68, 196, 0.4);
+  box-shadow: 0 clamp(3px, 1vw, 6px) clamp(1rem, 3vw, 1.75rem) rgba(80, 68, 196, 0.4);
+}
+
+.homeButton {
+  background: linear-gradient(135deg, #5044C4 0%, #6257CA 100%);
+  color: white;
+  border: none;
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3.5vw, 2.5rem);
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(0.75rem, 2.5vw, 1.25rem) rgba(80, 68, 196, 0.3);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  min-height: clamp(2.5rem, 7vw, 3.5rem);
+}
+
+.homeButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 clamp(3px, 1vw, 6px) clamp(1rem, 3vw, 1.75rem) rgba(80, 68, 196, 0.4);
 }
 
 /* Animación para el ícono */
@@ -79,32 +106,137 @@
   animation: float 3s ease-in-out infinite;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .content {
-    padding: 2rem;
-    margin: 1rem;
-  }
-  
-  .title {
-    font-size: 2rem;
-  }
-  
-  .constructionIcon {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .subtitle {
-    font-size: 1.1rem;
-  }
-}
-
 .logoContainer {
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
 }
 
 .logo {
   color: var(--color-primary);  
   opacity: 0.8;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+  .content {
+    padding: clamp(1.25rem, 3vw, 1.5rem);
+    margin: clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .title {
+    font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+  }
+  
+  .constructionIcon {
+    width: clamp(4rem, 12vw, 5rem);
+    height: clamp(4rem, 12vw, 5rem);
+  }
+  
+  .subtitle {
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
+  }
+  
+  .homeButton,
+  .backButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .enConstruccionContainer {
+    padding: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .content {
+    padding: clamp(1rem, 2.5vw, 1.25rem);
+    border-radius: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .title {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+  
+  .subtitle {
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
+    margin-bottom: clamp(1.25rem, 3vw, 1.5rem);
+  }
+  
+  .constructionIcon {
+    margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .logo {
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
+  }
+}
+
+@media (max-width: 360px) {
+  .enConstruccionContainer {
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
+  }
+  
+  .content {
+    padding: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .title {
+    font-size: clamp(1.1rem, 4vw, 1.3rem);
+  }
+  
+  .subtitle {
+    font-size: clamp(0.75rem, 2vw, 0.85rem);
+  }
+  
+  .homeButton,
+  .backButton {
+    padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+    font-size: clamp(0.85rem, 2.2vw, 0.95rem);
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (max-width: 768px) {
+  .homeButton,
+  .backButton {
+    min-height: 44px; /* Tamaño mínimo de touch */
+  }
+}
+
+/* Estados para dispositivos táctiles */
+@media (hover: none) {
+  .homeButton:hover,
+  .backButton:hover {
+    transform: none;
+    box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(0.75rem, 2.5vw, 1.25rem) rgba(80, 68, 196, 0.3);
+  }
+}
+
+/* Soporte para modo oscuro del sistema */
+@media (prefers-color-scheme: dark) {
+  .enConstruccionContainer {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  }
+  
+  .content {
+    background: #1a202c;
+    border-color: #2d3748;
+  }
+  
+  .subtitle {
+    color: #a0aec0;
+  }
+}
+
+/* Mejoras de rendimiento para animaciones */
+@media (prefers-reduced-motion: reduce) {
+  .constructionIcon {
+    animation: none;
+  }
+  
+  .homeButton,
+  .backButton {
+    transition: none;
+  }
 }
