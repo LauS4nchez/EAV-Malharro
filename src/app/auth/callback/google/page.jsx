@@ -124,7 +124,7 @@ export default function GoogleCallback() {
       } catch (err) {
         alert('❌ ERROR FINAL: ' + err.message);
         
-        if (window.Capacitor && Browser) {
+        if (window.Capacitor) {
           await Browser.close();
         }
         
