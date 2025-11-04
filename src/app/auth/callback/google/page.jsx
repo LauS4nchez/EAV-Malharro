@@ -32,7 +32,7 @@ export default function GoogleCallback() {
 
         // 1. Cerrar el browser si estamos en mobile
         alert('🔧 PASO 3: Cerrando browser...');
-        if (window.Capacitor && Browser) {
+        if (window.Capacitor) {
           await Browser.close();
           alert('✅ Browser cerrado');
         }
