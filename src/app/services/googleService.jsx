@@ -2,16 +2,19 @@ import { isNative, getGoogleRedirectUri } from "@/app/config";
 
 export const googleService = {
   async openAuthPopup() {
+    const redirectUri = getGoogleRedirectUri();
+    
     if (isNative()) {
       // Para apps nativas
-      const redirectUri = getGoogleRedirectUri();
       const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
         client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
         redirect_uri: redirectUri,
-        response_type: 'token',
+        response_type: 'token',  // Para mobile usa token
         scope: 'email profile',
         state: Math.random().toString(36).substring(7),
       })}`;
+
+      console.log('Google Auth URL (mobile):', url);
 
       if (window.Capacitor && window.Capacitor.Plugins?.Browser) {
         await window.Capacitor.Plugins.Browser.open({ url });
@@ -21,20 +24,22 @@ export const googleService = {
       return null;
     } else {
       // Para web
-      const width = 600;
-      const height = 700;
-      const left = (window.screen.width - width) / 2;
-      const top = (window.screen.height - height) / 2;
-
       const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
         client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
-        redirect_uri: getGoogleRedirectUri(),
-        response_type: 'code',
+        redirect_uri: redirectUri,
+        response_type: 'code',  // Para web usa code
         scope: 'email profile',
         access_type: 'offline',
         prompt: 'consent',
         state: Math.random().toString(36).substring(7),
       })}`;
+
+      console.log('Google Auth URL (web):', url);
+
+      const width = 600;
+      const height = 700;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
 
       return window.open(
         url,

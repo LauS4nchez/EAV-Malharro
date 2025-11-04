@@ -25,27 +25,32 @@ export const useDeepLinks = () => {
         }
         
         // Manejar callback de Google
-        if (url.pathname.includes('/auth/callback/google')) {
+        if (url.hostname === 'eav-malharro.onrender.com' && url.pathname.includes('/auth/callback/google')) {
+          console.log('Google deep link received:', url.toString());
+          
           const hashParams = new URLSearchParams(url.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const error = hashParams.get('error');
           
+          console.log('Google mobile accessToken:', accessToken);
+          
           if (accessToken) {
-            console.log('Google callback access token:', accessToken);
+            console.log('Google mobile auth success');
             if (window.Capacitor.Plugins?.Browser) {
               window.Capacitor.Plugins.Browser.close();
             }
+            // Para mobile, usamos directamente el accessToken
             window.dispatchEvent(new CustomEvent('googleAuthCallback', {
               detail: { accessToken }
             }));
           } else if (error) {
-            console.error('Google auth error:', error);
+            console.error('Google mobile auth error:', error);
             window.dispatchEvent(new CustomEvent('authError', {
-              detail: { error }
+              detail: { error, provider: 'google' }
             }));
           }
         }
-      });
+      }); // ← Esta llave estaba faltando
     }
 
     return () => {
