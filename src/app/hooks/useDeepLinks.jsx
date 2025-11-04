@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Browser } from '@capacitor/browser';
+import { toast } from 'react-hot-toast';
 
 export const useDeepLinks = () => {
   useEffect(() => {
@@ -10,11 +11,34 @@ export const useDeepLinks = () => {
       const handleAppUrlOpen = (data) => {
         try {
           const url = new URL(data.url);
-          console.log('🔧 Deep link received:', url.toString());
+          console.log('🔧 Deep link recibido:', url.toString());
 
           // Alertas para debugging
           if (window.alert) {
             alert('🔧 Deep link recibido: ' + url.toString());
+          }
+
+          // Manejar callback de Discord
+          if (url.protocol === 'malharro:' && url.host === 'auth' && url.pathname.includes('/callback/discord')) {
+            const code = url.searchParams.get('code');
+            const error = url.searchParams.get('error');
+            
+            console.log('🔧 Discord callback - code:', code, 'error:', error);
+
+            if (code) {
+              // Cerrar el browser
+              Browser.close();
+              // Disparar evento para procesar el login
+              window.dispatchEvent(new CustomEvent('discordAuthCallback', {
+                detail: { code }
+              }));
+            } else if (error) {
+              console.error('Discord auth error:', error);
+              Browser.close();
+              window.dispatchEvent(new CustomEvent('authError', {
+                detail: { error, provider: 'discord' }
+              }));
+            }
           }
           
           // Manejar callback de Google
@@ -24,48 +48,67 @@ export const useDeepLinks = () => {
             
             console.log('🔧 Google callback - code:', code, 'error:', error);
 
-            if (window.alert) {
-              alert('🔧 Google callback - code: ' + code);
-            }
-
             if (code) {
-              // Cerrar el browser
               Browser.close();
-              // Disparar evento para procesar el login
               window.dispatchEvent(new CustomEvent('googleAuthCallback', {
                 detail: { code }
               }));
             } else if (error) {
               console.error('Google auth error:', error);
+              Browser.close();
               window.dispatchEvent(new CustomEvent('authError', {
                 detail: { error, provider: 'google' }
               }));
             }
           }
-          
-          // Manejar callback de Discord
-          if (url.protocol === 'malharro:' && url.host === 'auth' && url.pathname.includes('/callback/discord')) {
-            const code = url.searchParams.get('code');
-            const error = url.searchParams.get('error');
-            
-            console.log('🔧 Discord callback - code:', code, 'error:', error);
 
-            if (window.alert) {
-              alert('🔧 Discord callback - code: ' + code);
-            }
+          // Manejar regreso de login exitoso desde el callback web
+          if (url.protocol === 'malharro:' && url.host === 'login') {
+            if (url.pathname.includes('/success')) {
+              // Login exitoso
+              const jwt = url.searchParams.get('jwt');
+              const userParam = url.searchParams.get('user');
+              
+              console.log('🔧 Login exitoso - JWT:', jwt ? 'RECIBIDO' : 'NO RECIBIDO');
+              
+              if (jwt && userParam) {
+                try {
+                  const user = JSON.parse(decodeURIComponent(userParam));
+                  
+                  // Guardar sesión en la app
+                  localStorage.setItem("jwt", jwt);
+                  localStorage.setItem("userRole", user.role?.name || "Authenticated");
+                  
+                  console.log('✅ Login exitoso desde deep link - Usuario:', user.username);
+                  
+                  // Mostrar toast de éxito
+                  toast.success(`¡Bienvenido ${user.username || 'Usuario'}!`);
+                  
+                  // Disparar evento para que los componentes se actualicen
+                  window.dispatchEvent(new CustomEvent('authSuccess', {
+                    detail: { user, jwt }
+                  }));
 
-            if (code) {
-              Browser.close();
-              window.dispatchEvent(new CustomEvent('discordAuthCallback', {
-                detail: { code }
-              }));
-            } else if (error) {
-              console.error('Discord auth error:', error);
-              window.dispatchEvent(new CustomEvent('authError', {
-                detail: { error, provider: 'discord' }
-              }));
+                } catch (error) {
+                  console.error('Error procesando login exitoso:', error);
+                  toast.error('Error al procesar el login');
+                }
+              }
+            } else {
+              // Error de login
+              const error = url.searchParams.get('error');
+              if (error) {
+                console.error('❌ Error de login desde deep link:', error);
+                toast.error('Error en login: ' + decodeURIComponent(error));
+                
+                // Disparar evento de error
+                window.dispatchEvent(new CustomEvent('authError', {
+                  detail: { error: decodeURIComponent(error) }
+                }));
+              }
             }
           }
+
         } catch (error) {
           console.error('Error processing deep link:', error);
         }
@@ -74,8 +117,29 @@ export const useDeepLinks = () => {
       window.Capacitor.Plugins.App.addListener('appUrlOpen', handleAppUrlOpen);
 
       return () => {
-        window.Capacitor.Plugins.App.removeAllListeners();
+        if (window.Capacitor && window.Capacitor.Plugins?.App) {
+          window.Capacitor.Plugins.App.removeAllListeners();
+        }
       };
     }
+
+    // También manejar eventos personalizados para auth
+    const handleAuthSuccess = (event) => {
+      console.log('✅ Auth success event received:', event.detail);
+      // Aquí puedes agregar lógica adicional cuando el login es exitoso
+    };
+
+    const handleAuthError = (event) => {
+      console.error('❌ Auth error event received:', event.detail);
+      // Aquí puedes agregar lógica adicional cuando hay error de login
+    };
+
+    window.addEventListener('authSuccess', handleAuthSuccess);
+    window.addEventListener('authError', handleAuthError);
+
+    return () => {
+      window.removeEventListener('authSuccess', handleAuthSuccess);
+      window.removeEventListener('authError', handleAuthError);
+    };
   }, []);
 };

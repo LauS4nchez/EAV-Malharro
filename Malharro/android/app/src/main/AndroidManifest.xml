@@ -44,6 +44,15 @@
                 <data android:pathPrefix="/callback/discord" />
             </intent-filter>
 
+            <!-- Deep link para login exitoso -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="malharro" />
+                <data android:host="login" />
+            </intent-filter>
+
         </activity>
 
         <provider
