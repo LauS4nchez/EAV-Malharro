@@ -1,6 +1,6 @@
 import { isNative } from "@/app/config";
 import { Browser } from "@capacitor/browser";
-import { clientIDDiscord } from "@/app/config";
+import { clientIDDiscord, getDiscordRedirectUri } from "@/app/config";
 
 export const discordService = {
 async openAuthPopup() {
