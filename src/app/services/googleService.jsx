@@ -1,15 +1,15 @@
-import { isNative, getDiscordRedirectUri } from "@/app/config";
+import { isNative, getGoogleRedirectUri } from "@/app/config";
 
-export const discordService = {
+export const googleService = {
   async openAuthPopup() {
     if (isNative()) {
       // Para apps nativas
-      const redirectUri = getDiscordRedirectUri();
-      const url = `https://discord.com/oauth2/authorize?${new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+      const redirectUri = getGoogleRedirectUri();
+      const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+        client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
         redirect_uri: redirectUri,
-        response_type: "code",
-        scope: "identify email",
+        response_type: 'token',
+        scope: 'email profile',
         state: Math.random().toString(36).substring(7),
       })}`;
 
@@ -26,42 +26,44 @@ export const discordService = {
       const left = (window.screen.width - width) / 2;
       const top = (window.screen.height - height) / 2;
 
-      const url = `https://discord.com/oauth2/authorize?${new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
-        redirect_uri: getDiscordRedirectUri(),
-        response_type: "code",
-        scope: "identify email",
+      const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+        client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
+        redirect_uri: getGoogleRedirectUri(),
+        response_type: 'code',
+        scope: 'email profile',
+        access_type: 'offline',
+        prompt: 'consent',
         state: Math.random().toString(36).substring(7),
       })}`;
 
       return window.open(
         url,
-        "Discord Auth",
+        "Google Auth",
         `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
       );
     }
   },
 
   async getAccessToken(code, redirectUri) {
-    const tokenResponse = await fetch("/api/discord/auth", {
+    const tokenResponse = await fetch("/api/google/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, redirectUri }),
     });
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
-      throw new Error(`Failed to get access token from Discord: ${tokenResponse.status} - ${errorData}`);
+      throw new Error(`Failed to get access token from Google: ${tokenResponse.status} - ${errorData}`);
     }
     return await tokenResponse.json();
   },
 
   async getUserInfo(accessToken) {
-    const userResponse = await fetch("https://discord.com/api/users/@me", {
+    const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!userResponse.ok) {
       const errorText = await userResponse.text();
-      throw new Error(`Failed to get user info from Discord: ${userResponse.status} - ${errorText}`);
+      throw new Error(`Failed to get user info from Google: ${userResponse.status} - ${errorText}`);
     }
     return await userResponse.json();
   },

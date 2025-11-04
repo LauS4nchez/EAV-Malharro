@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { useGoogleAuthCross } from "@/app/hooks/useGoogleAuthCross";
 import { useDiscordAuthCross } from "@/app/hooks/useDiscordAuthCross";
+import { useDeepLinks } from "@/app/hooks/useDeepLinks";
 
 import { authService, validateEmail, validateUsername, validatePassword } from "@/app/services/authService";
 import styles from "@/styles/components/Login/Login.module.css";
@@ -17,6 +18,9 @@ export default function UnifiedAuth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Usar el hook de deep links para mobile
+  useDeepLinks();
 
   useEffect(() => {
     const pendingAuth = localStorage.getItem("pendingDiscordAuth");
@@ -140,6 +144,23 @@ export default function UnifiedAuth() {
     setPassword("");
     localStorage.removeItem("pendingDiscordAuth");
   };
+
+  // Manejar auth exitosa desde deep links
+  useEffect(() => {
+    const handleAuthSuccess = (event) => {
+      if (event.detail?.user && event.detail?.jwt) {
+        localStorage.setItem("jwt", event.detail.jwt);
+        localStorage.setItem("userRole", event.detail.user.role?.name || "Authenticated");
+        toast.success(`¡Bienvenido ${event.detail.user.username}!`);
+        router.push("/");
+      }
+    };
+
+    window.addEventListener('authSuccess', handleAuthSuccess);
+    return () => {
+      window.removeEventListener('authSuccess', handleAuthSuccess);
+    };
+  }, [router]);
 
   return (
     <div className={styles.container}>
