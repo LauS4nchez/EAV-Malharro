@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Browser } from "@capacitor/browser";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { API_URL } from "@/app/config";
+import { API_URL, clientIDGoogle, clientSecretGoogle } from "@/app/config";
 
 export default function GoogleCallback() {
   const router = useRouter();
@@ -18,7 +18,10 @@ export default function GoogleCallback() {
         const code = urlParams.get("code");
         const error = urlParams.get("error");
 
-        alert('🔧 PASO 2: Code recibido: ' + (code ? 'SÍ' : 'NO'));
+        // MOSTRAR INFORMACIÓN CRÍTICA
+        alert('🔧 PASO 2: Code recibido: ' + code);
+        alert('🔧 Client ID: ' + (clientIDGoogle ? 'CONFIGURADO' : 'NO CONFIGURADO'));
+        alert('🔧 Client Secret: ' + (clientSecretGoogle ? 'CONFIGURADO' : 'NO CONFIGURADO'));
 
         if (error) {
           alert('❌ ERROR de Google: ' + error);
