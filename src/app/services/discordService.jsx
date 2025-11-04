@@ -1,10 +1,11 @@
-import { isNative, getDiscordRedirectUri } from "@/app/config";
+import { isNative } from "@/app/config";
+import { Browser } from "@capacitor/browser";
 
 export const discordService = {
   async openAuthPopup() {
     if (isNative()) {
-      // Para apps nativas
-      const redirectUri = getDiscordRedirectUri();
+      // Para apps nativas - usa deep link
+      const redirectUri = "malharro://auth/callback/discord";
       const url = `https://discord.com/oauth2/authorize?${new URLSearchParams({
         client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
         redirect_uri: redirectUri,
@@ -12,6 +13,13 @@ export const discordService = {
         scope: "identify email",
         state: Math.random().toString(36).substring(7),
       })}`;
+
+      console.log('🔧 Discord Auth URL (mobile):', url);
+
+      // Alertas para debugging
+      if (window.alert) {
+        alert('🔧 Abriendo Discord Auth con deep link...');
+      }
 
       if (window.Capacitor && window.Capacitor.Plugins?.Browser) {
         await window.Capacitor.Plugins.Browser.open({ url });

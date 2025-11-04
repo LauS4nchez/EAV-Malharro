@@ -8,14 +8,14 @@ import { API_URL, clientIDGoogle } from "../config";
 
 export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
   
-  // NATIVO - Usando Capacitor Browser
+  // NATIVO - Usando Capacitor Browser con deep links
   const nativeLogin = async () => {
     try {
       setLoading(true);
       console.log('🔧 Starting native Google login with Browser...');
 
-      // URL de autenticación de Google
-      const redirectUri = 'https://eav-malharro.onrender.com/auth/callback/google';
+      // Para mobile, usa el deep link de tu app
+      const redirectUri = 'malharro://auth/callback/google';
       const state = Math.random().toString(36).substring(7);
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
@@ -28,7 +28,12 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
         state: state,
       })}`;
 
-      console.log('🔧 Opening Browser with Google auth URL');
+      console.log('🔧 Google Auth URL:', authUrl);
+
+      // Alertas para debugging
+      if (window.alert) {
+        alert('🔧 Abriendo Google Auth con deep link...');
+      }
 
       // Abrir el browser nativo
       await Browser.open({ 
@@ -37,16 +42,20 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
       });
 
       // No esperamos aquí - el deep link manejará el callback
-      // El callback page se encargará de cerrar el browser y procesar el login
       
     } catch (err) {
       console.error("❌ Error opening Browser:", err);
+      
+      if (window.alert) {
+        alert('❌ Error: ' + err.message);
+      }
+      
       toast.error("Error al abrir el navegador");
       setLoading(false);
     }
   };
 
-  // WEB (usa @react-oauth/google)
+  // WEB (mantén tu código actual)
   const webLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {

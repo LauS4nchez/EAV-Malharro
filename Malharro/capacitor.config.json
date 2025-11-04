@@ -1,0 +1,10 @@
+{
+  "appId": "com.example.eavmalharro",
+  "appName": "EAV-Malharro",
+  "webDir": "dist",
+  "server": {
+    "url": "https://eav-malharro.onrender.com/",
+    "cleartext": true,
+    "allowNavigation": ["eav-malharro.onrender.com"]
+  }
+}
