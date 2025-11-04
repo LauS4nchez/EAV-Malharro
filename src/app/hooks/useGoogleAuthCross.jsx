@@ -12,18 +12,27 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
   const nativeLogin = async () => {
   try {
     setLoading(true);
+    console.log('🔧 Starting native Google login with Browser...');
 
-    // Para mobile, pedir token directamente (no code)
+    // Usa tu URL web como redirect
     const redirectUri = 'https://eav-malharro.onrender.com/auth/callback/google';
     const state = Math.random().toString(36).substring(7);
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
       client_id: clientIDGoogle,
       redirect_uri: redirectUri,
-      response_type: 'token',  // ← CAMBIO IMPORTANTE
+      response_type: 'code',
       scope: 'email profile',
+      access_type: 'offline',
+      prompt: 'consent',
       state: state,
     })}`;
+
+    console.log('🔧 Google Auth URL:', authUrl);
+
+    if (window.alert) {
+      alert('🔧 Abriendo Google Auth...');
+    }
 
     await Browser.open({ 
       url: authUrl,
@@ -31,7 +40,7 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
     });
 
   } catch (err) {
-    console.error("Error opening Browser:", err);
+    console.error("❌ Error opening Browser:", err);
     toast.error("Error al abrir el navegador");
     setLoading(false);
   }
