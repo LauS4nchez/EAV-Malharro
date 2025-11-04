@@ -88,11 +88,21 @@ export default function Header({ variant = 'light' }) {
   const renderUserMenuItems = () => {
     const items = []
 
-      if (userRole === 'Authenticated' || userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+    if (userRole === 'Authenticated' || userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="informacion">
           <Link href={`/perfil/${user.username}#informacion`} onClick={closeMenu}>
             Información Personal
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Authenticated' || userRole === 'Estudiante' || userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="notificaciones">
+          <Link href={`/notificaciones`} onClick={closeMenu}>
+            Notificaciones
           </Link>
         </li>
       )
@@ -114,6 +124,16 @@ export default function Header({ variant = 'light' }) {
         <li key="mis-agendas">
           <Link href={`/perfil/${user.username}#agendas`} onClick={closeMenu}>
             Mis agendas
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="agendas-admin">
+          <Link href={`/agendas-admin`} onClick={closeMenu}>
+            Editar Agendas
           </Link>
         </li>
       )
@@ -196,13 +216,13 @@ export default function Header({ variant = 'light' }) {
                   </button>
 
                   <ul className={`${currentStyles.dropdownMenu} ${isDropdownOpen('carreras') ? currentStyles.open : ''}`}>
-                    <li><Link href="/paginas-informativas/disenografico" onClick={closeMenu}>Diseño Gráfico</Link></li>
-                    <li><Link href="/paginas-informativas/escenografia" onClick={closeMenu}>Escenografía</Link></li>
-                    <li><Link href="/paginas-informativas/fotografia" onClick={closeMenu}>Fotografía</Link></li>
-                    <li><Link href="/paginas-informativas/ilustracion" onClick={closeMenu}>Ilustración</Link></li>
-                    <li><Link href="/paginas-informativas/mediosav" onClick={closeMenu}>Medios Audiovisuales</Link></li>
-                    <li><Link href="/paginas-informativas/profesorado" onClick={closeMenu}>Profesorado</Link></li>
-                    <li><Link href="/paginas-informativas/realizador" onClick={closeMenu}>Realizador</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/diseno-grafico" onClick={closeMenu}>Diseño Gráfico</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/escenografia" onClick={closeMenu}>Escenografía</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/fotografia" onClick={closeMenu}>Fotografía</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/ilustracion" onClick={closeMenu}>Ilustración</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/medios-audiovisuales" onClick={closeMenu}>Medios Audiovisuales</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/profesorado" onClick={closeMenu}>Profesorado</Link></li>
+                    <li><Link href="/paginas-informativas/carreras/realizador" onClick={closeMenu}>Realizador</Link></li>
                   </ul>
                 </li>
 

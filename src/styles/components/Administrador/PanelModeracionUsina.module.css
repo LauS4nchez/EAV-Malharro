@@ -1,4 +1,3 @@
-/* src/styles/components/Administrador/PanelModeracionUsina.module.css */
 .bodyPanel{
   background: linear-gradient(135deg, #f5f7fa, #dfe9f3);
 }
@@ -7,53 +6,51 @@
   width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa, #dfe9f3);
-  padding: clamp(1rem, 3vw, 2rem);
+  padding: 30px 20px;
 }
 
 .adminContent {
-  max-width: min(1200px, 95vw);
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .adminTitle {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: 2.5rem;
   font-weight: 700;
   text-align: center;
   color: #000;
-  margin-bottom: clamp(0.5rem, 1.5vw, 0.75rem);
-  line-height: 1.2;
+  margin-bottom: 10px;
 }
 
 .adminSubtitle {
   text-align: center;
   color: #666;
-  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: 1.1rem;
+  margin-bottom: 40px;
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  gap: clamp(0.5rem, 1.5vw, 0.75rem);
-  margin-bottom: clamp(1.5rem, 4vw, 2rem);
+  gap: 10px;
+  margin-bottom: 30px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .tab {
   background: #fff;
-  border: clamp(1px, 0.3vw, 2px) solid #e1e5e9;
-  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
-  font-size: clamp(0.85rem, 2.2vw, 1rem);
+  border: 2px solid #e1e5e9;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: clamp(0.4rem, 1vw, 0.5rem);
+  gap: 8px;
   color: #555;
-  white-space: nowrap;
 }
 
 .tab:hover {
@@ -69,9 +66,9 @@
 
 .tabCount {
   background: rgba(255, 255, 255, 0.2);
-  padding: clamp(0.15rem, 0.5vw, 0.25rem) clamp(0.4rem, 1.2vw, 0.6rem);
-  border-radius: clamp(0.75rem, 2vw, 1rem);
-  font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
 }
 
 .activeTab .tabCount {
@@ -81,15 +78,15 @@
 /* Grid de usinas */
 .usinaGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 35vw, 350px), 1fr));
-  gap: clamp(1rem, 2.5vw, 1.75rem);
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
 }
 
 .usinaCard {
   background: #fff;
-  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(1rem, 3vw, 1.75rem) rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -97,12 +94,12 @@
 
 .usinaCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 clamp(4px, 1vw, 8px) clamp(1.5rem, 4vw, 2.5rem) rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .imageContainer {
   width: 100%;
-  height: clamp(10rem, 25vw, 12.5rem);
+  height: 200px;
   background: #f8f9fa;
   display: flex;
   align-items: center;
@@ -125,55 +122,54 @@
 .noImage {
   color: #999;
   font-style: italic;
-  padding: clamp(1rem, 2.5vw, 1.5rem);
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  padding: 20px;
 }
 
 .usinaInfo {
-  padding: clamp(1rem, 2.5vw, 1.5rem);
+  padding: 20px;
   flex: 1;
 }
 
 .titulo {
-  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  font-size: 1.3rem;
   font-weight: 700;
   color: #000;
-  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  margin-bottom: 15px;
   line-height: 1.3;
 }
 
 .creadorInfo {
   background: #f8f9fa;
-  padding: clamp(0.75rem, 2vw, 1rem);
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
-  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
 }
 
 .creadorNombre {
-  margin: 0 0 clamp(0.25rem, 1vw, 0.5rem) 0;
+  margin: 0 0 5px 0;
   color: #333;
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-size: 0.95rem;
 }
 
 .creadorUsername {
-  margin: 0 0 clamp(0.25rem, 1vw, 0.5rem) 0;
+  margin: 0 0 5px 0;
   color: #666;
-  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+  font-size: 0.9rem;
   font-style: italic;
 }
 
 .creadorCarrera {
   margin: 0;
   color: #007bff;
-  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 .estado {
-  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+  font-size: 0.9rem;
   font-weight: 600;
-  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);
-  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  padding: 6px 12px;
+  border-radius: 20px;
   display: inline-block;
 }
 
@@ -198,25 +194,23 @@
 /* Botones de acción */
 .actions {
   display: flex;
-  gap: clamp(0.5rem, 1.5vw, 0.75rem);
-  padding: clamp(1rem, 2.5vw, 1.5rem);
+  gap: 10px;
+  padding: 20px;
   background: #fafbfc;
   border-top: 1px solid #e1e5e9;
-  flex-wrap: wrap;
 }
 
 .btnAprobar,
 .btnRechazar,
 .btnEliminar {
   flex: 1;
-  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  padding: 10px 16px;
   border: none;
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-  min-width: min(80px, 100%);
+  font-size: 0.9rem;
 }
 
 .btnAprobar {
@@ -253,15 +247,15 @@
 .noUsinas {
   grid-column: 1 / -1;
   text-align: center;
-  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 3vw, 1.5rem);
+  padding: 60px 20px;
   color: #666;
   background: white;
-  border-radius: clamp(1rem, 2.5vw, 1.5rem);
-  border: clamp(1px, 0.3vw, 2px) dashed #e1e5e9;
+  border-radius: 16px;
+  border: 2px dashed #e1e5e9;
 }
 
 .noUsinas p {
-  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  font-size: 1.1rem;
   margin: 0;
 }
 
@@ -273,14 +267,14 @@
   justify-content: center;
   min-height: 60vh;
   color: #000;
-  gap: clamp(1rem, 3vw, 1.5rem);
+  gap: 20px;
 }
 
 .spinner {
-  width: clamp(3rem, 8vw, 4rem);
-  height: clamp(3rem, 8vw, 4rem);
-  border: clamp(3px, 0.8vw, 4px) solid #e1e5e9;
-  border-top: clamp(3px, 0.8vw, 4px) solid #007bff;
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e1e5e9;
+  border-top: 4px solid #007bff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -302,8 +296,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: clamp(1rem, 3vw, 1.5rem);
-  backdrop-filter: blur(3px);
+  padding: 20px;
 }
 
 .modalContent {
@@ -317,21 +310,21 @@
   height: auto;
   max-width: 100%;
   max-height: 80vh;
-  border-radius: clamp(0.75rem, 2vw, 1rem);
-  box-shadow: 0 clamp(0.5rem, 1.5vw, 1rem) clamp(2rem, 5vw, 3rem) rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
 .modalClose {
   position: absolute;
-  top: clamp(-0.75rem, -2vw, -1rem);
-  right: clamp(-0.75rem, -2vw, -1rem);
+  top: -15px;
+  right: -15px;
   background: #dc3545;
   color: white;
   border: none;
   border-radius: 50%;
-  width: clamp(2.5rem, 6vw, 3rem);
-  height: clamp(2.5rem, 6vw, 3rem);
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  width: 35px;
+  height: 35px;
+  font-size: 1.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -346,57 +339,51 @@
 
 .confirmModal {
   background: white;
-  border-radius: clamp(1rem, 2.5vw, 1.5rem);
-  padding: clamp(1.5rem, 4vw, 2rem);
-  max-width: min(400px, 90vw);
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 400px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 clamp(1rem, 3vw, 2rem) clamp(3rem, 8vw, 5rem) rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .modalTitle {
-  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  margin-bottom: 15px;
   color: #000;
-  line-height: 1.3;
 }
 
 .modalText {
   color: #666;
-  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  margin-bottom: 20px;
   line-height: 1.5;
-  font-size: clamp(0.85rem, 2.2vw, 1rem);
 }
 
 .modalUsinaInfo {
   background: #f8f9fa;
-  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
-  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   color: #333;
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .modalButtons {
   display: flex;
-  gap: clamp(0.75rem, 2vw, 1rem);
+  gap: 12px;
   justify-content: center;
-  flex-wrap: wrap;
 }
 
 .btnConfirmar {
   background: #007bff;
   color: white;
   border: none;
-  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
-  min-width: min(120px, 100%);
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .btnConfirmar:hover {
@@ -408,14 +395,12 @@
   background: #6c757d;
   color: white;
   border: none;
-  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
-  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
-  min-width: min(120px, 100%);
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
 .btnCancelar:hover {
@@ -423,43 +408,362 @@
   transform: translateY(-1px);
 }
 
+/* 🔹 Botón EDITAR dentro de la card */
+.btnEditar {
+  background: #ffffff;
+  color: #1b1b1b;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btnEditar:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.btnEditar:active {
+  transform: translateY(0);
+}
+
+/* 🔹 Reutilizamos el overlay que ya tenías para modales */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+/* 🔹 Modal de edición */
+.editModal {
+  background: #ffffff;
+  width: min(600px, 100%);
+  max-height: 90vh;
+  border-radius: 1.2rem;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.14);
+  padding: 1.6rem 1.8rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* título y texto del modal (ya los estás usando en otros) */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1f2933;
+}
+
+.input,
+.editModal textarea {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.86rem;
+  outline: none;
+  transition: border 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  resize: vertical;
+  min-height: 42px;
+}
+
+.input:focus,
+.editModal textarea:focus {
+  border: 1px solid #c7005a;
+  box-shadow: 0 0 0 3px rgba(199, 0, 90, 0.15);
+}
+
+.inputError,
+.editModal textarea.inputError {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.73rem;
+}
+
+/* 🔹 media dentro del modal */
+.mediaEditWrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mediaPreviewBox {
+  width: 115px;
+  height: 85px;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mediaPreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noMedia {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.fileInput {
+  font-size: 0.73rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* 🔹 Botones del modal */
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.btnCancelar {
+  background: #e2e8f0;
+  color: #0f172a;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s ease-in-out;
+}
+
+.btnCancelar:hover {
+  background: #cbd5e1;
+}
+
+.btnConfirmar {
+  background: #c7005a;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.12s ease-in-out, transform 0.12s ease-in-out;
+}
+
+.btnConfirmar:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btnConfirmar:disabled,
+.btnCancelar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 🔹 responsive */
+@media (max-width: 540px) {
+  .editModal {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 1rem;
+    padding: 1.15rem 1rem 1.25rem;
+  }
+
+  .mediaEditWrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modalButtons {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .btnConfirmar,
+  .btnCancelar {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* los 3 botones de arriba quedan en la primera fila */
+.btnAprobar,
+.btnRechazar,
+.btnEliminar {
+  order: 1;
+}
+
+/* el botón EDITAR va ABAJO */
+.btnEditar {
+  order: 2;
+  width: 100%;
+  justify-content: center;
+}
+
+/* en pantallas chicas que todo quede prolijo */
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: row;
+  }
+  .btnAprobar,
+  .btnRechazar,
+  .btnEliminar {
+    flex: 1 1 calc(33.33% - 0.5rem);
+  }
+  .btnEditar {
+    width: 100%;
+  }
+}
+
+/* ====== MODAL DE EDICIÓN: COLORES ====== */
+.editModal {
+  background: #ffffff;
+  color: #0f172a;           /* 👈 fuerza texto oscuro */
+}
+
+.editModal h2,
+.editModal .modalTitle {
+  color: #0f172a;
+}
+
+.editModal p,
+.editModal .modalText {
+  color: #475569;          /* gris legible */
+}
+
+.editModal .label {
+  color: #0f172a;
+}
+
+/* textarea del modal de editar */
+.editModal textarea {
+  background: #ffffff !important;
+  color: #0f172a !important;     /* 👈 texto negro */
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 0.6rem;
+  font-size: 0.9rem;
+}
+
+/* por si usás input reutilizado */
+.editModal .input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* placeholder también oscuro */
+.editModal textarea::placeholder,
+.editModal .input::placeholder {
+  color: rgba(15, 23, 42, 0.35);
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adminContainer {
+    padding: 20px 15px;
+  }
+  
+  .adminTitle {
+    font-size: 2rem;
+  }
+  
+  .tabs {
+    flex-direction: column;
+  }
+  
+  .usinaGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .modalButtons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .adminContent {
+    padding: 0 10px;
+  }
+  
+  .usinaCard {
+    margin: 0 -10px;
+  }
+}
+
 /* Controles de paginación */
 .paginationControls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(1rem, 3vw, 1.5rem);
-  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem);
+  margin-bottom: 20px;
+  padding: 15px 20px;
   background: white;
-  border-radius: clamp(0.75rem, 2vw, 1rem);
-  box-shadow: 0 clamp(1px, 0.3vw, 2px) clamp(0.5rem, 1.5vw, 0.75rem) rgba(0, 0, 0, 0.08);
-  flex-wrap: wrap;
-  gap: clamp(0.75rem, 2vw, 1rem);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .pageSizeSelector {
   display: flex;
   align-items: center;
-  gap: clamp(0.5rem, 1.5vw, 0.75rem);
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  gap: 10px;
+  font-size: 0.9rem;
   color: #666;
-  flex-wrap: wrap;
 }
 
 .pageSizeSelect {
-  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);
+  padding: 6px 10px;
   border: 1px solid #e1e5e9;
-  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  border-radius: 6px;
   background: white;
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-size: 0.9rem;
   color: #000000;
 }
 
 .paginationInfo {
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-size: 0.9rem;
   color: #666;
   font-weight: 500;
-  white-space: nowrap;
 }
 
 /* Paginación */
@@ -467,24 +771,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: clamp(0.5rem, 1.5vw, 0.75rem);
-  margin-top: clamp(1.5rem, 4vw, 2rem);
-  padding: clamp(1rem, 3vw, 1.5rem);
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 20px;
 }
 
 .paginationBtn {
-  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+  padding: 8px 16px;
   border: 1px solid #e1e5e9;
   background: white;
-  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
-  min-width: clamp(2.5rem, 6vw, 3rem);
-  min-height: clamp(2.5rem, 6vw, 3rem);
+  font-size: 0.9rem;
+  min-width: 40px;
   color: #333;
 }
+
 
 .paginationBtn:hover:not(:disabled) {
   background: #007bff;
@@ -507,391 +810,35 @@
 .paginationNumbers {
   color: #000;
   display: flex;
-  gap: clamp(0.25rem, 1vw, 0.5rem);
+  gap: 5px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .paginationEllipsis {
-  padding: 0 clamp(0.4rem, 1vw, 0.5rem);
+  padding: 0 8px;
   color: #999;
 }
 
 .textPageSize {
   color: #000;
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
 }
 
-/* RESPONSIVE MEJORADO */
+/* Responsive para paginación */
 @media (max-width: 768px) {
-  .adminContainer {
-    padding: clamp(0.75rem, 2vw, 1rem);
-  }
-  
-  .tabs {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .tab {
-    justify-content: center;
-    text-align: center;
-  }
-  
-  .usinaGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .actions {
-    flex-direction: column;
-  }
-  
-  .btnAprobar,
-  .btnRechazar,
-  .btnEliminar {
-    width: 100%;
-  }
-  
-  .modalButtons {
-    flex-direction: column;
-  }
-  
   .paginationControls {
     flex-direction: column;
+    gap: 15px;
     text-align: center;
-  }
-  
-  .pageSizeSelector {
-    justify-content: center;
   }
   
   .pagination {
-    gap: clamp(0.25rem, 1vw, 0.5rem);
+    flex-wrap: wrap;
+    gap: 5px;
   }
   
   .paginationBtn {
-    padding: clamp(0.4rem, 1.2vw, 0.5rem) clamp(0.5rem, 1.5vw, 0.6rem);
-    font-size: clamp(0.75rem, 1.8vw, 0.85rem);
-    min-width: clamp(2.25rem, 5.5vw, 2.75rem);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-width: 35px;
   }
-}
-
-@media (max-width: 480px) {
-  .adminContent {
-    padding: 0 clamp(0.5rem, 1.5vw, 0.75rem);
-  }
-  
-  .usinaCard {
-    margin: 0 clamp(-0.5rem, -1.5vw, -0.75rem);
-  }
-  
-  .imageContainer {
-    height: clamp(8rem, 20vw, 10rem);
-  }
-  
-  .titulo {
-    font-size: clamp(0.9rem, 2.2vw, 1rem);
-  }
-  
-  .creadorInfo {
-    padding: clamp(0.5rem, 1.5vw, 0.75rem);
-  }
-  
-  .modalContent {
-    max-width: 95%;
-  }
-  
-  .confirmModal {
-    padding: clamp(1.25rem, 3vw, 1.5rem) clamp(1rem, 2.5vw, 1.25rem);
-  }
-}
-
-@media (max-width: 360px) {
-  .adminContainer {
-    padding: 0.5rem;
-  }
-  
-  .usinaGrid {
-    gap: 0.75rem;
-  }
-  
-  .usinaCard {
-    border-radius: 0.75rem;
-  }
-  
-  .imageContainer {
-    height: 7rem;
-  }
-  
-  .usinaInfo {
-    padding: 0.75rem;
-  }
-  
-  .actions {
-    padding: 0.75rem;
-    gap: 0.5rem;
-  }
-  
-  .paginationBtn {
-    min-width: 2rem;
-    min-height: 2rem;
-    padding: 0.4rem 0.5rem;
-    font-size: 0.75rem;
-  }
-}
-
-/* Mejoras de accesibilidad para móviles */
-@media (max-width: 768px) {
-  .paginationBtn,
-  .btnAprobar,
-  .btnRechazar,
-  .btnEliminar,
-  .btnConfirmar,
-  .btnCancelar,
-  .modalClose {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  .tab {
-    min-height: 44px;
-  }
-}
-
-/* Estados para dispositivos táctiles */
-@media (hover: none) {
-  .usinaCard:hover {
-    transform: none;
-    box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(1rem, 3vw, 1.75rem) rgba(0, 0, 0, 0.08);
-  }
-  
-  .btnAprobar:hover,
-  .btnRechazar:hover,
-  .btnEliminar:hover,
-  .btnConfirmar:hover,
-  .btnCancelar:hover {
-    transform: none;
-  }
-  
-  .imageContainer:hover .image {
-    transform: none;
-  }
-}
-
-/* Modal para media - ESTILOS MEJORADOS COMO USINA */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(clamp(5px, 1vw, 10px));
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: clamp(1rem, 3vw, 2rem);
-  animation: fadeIn 0.3s ease;
-}
-
-.modalContent {
-  background: #1a1a1a;
-  border-radius: clamp(0.75rem, 2vw, 1rem);
-  max-width: min(1000px, 95vw);
-  max-height: min(90vh, 95vw);
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 0 clamp(20px, 4vw, 40px) rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  animation: modalSlideIn 0.3s ease;
-}
-
-.modalImageContainer {
-  flex: none;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  max-height: 70vh;
-  overflow: hidden;
-}
-
-.modalMedia {
-  max-width: 100%;
-  max-height: 70vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-.modalInfo {
-  padding: clamp(1rem, 2.5vw, 2rem);
-  color: #fff;
-  background: #1a1a1a;
-  border-top: 1px solid #333;
-  overflow-y: auto;
-}
-
-.modalTitle {
-  font-size: clamp(1.3rem, 3vw, 1.8rem);
-  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
-  color: #f4155b;
-  line-height: 1.2;
-}
-
-.modalText {
-  margin-bottom: clamp(0.4rem, 1vw, 0.7rem);
-  font-size: clamp(0.85rem, 2vw, 1rem);
-  color: #ddd;
-  line-height: 1.4;
-}
-
-.modalText strong {
-  color: #fff;
-}
-
-.username {
-  color: #aaa;
-  font-style: italic;
-}
-
-.modalEstado {
-  display: inline-block;
-  padding: clamp(0.3rem, 0.8vw, 0.5rem) clamp(0.6rem, 1.5vw, 1rem);
-  border-radius: clamp(0.25rem, 0.75vw, 0.5rem);
-  font-size: clamp(0.8rem, 2vw, 0.9rem);
-  font-weight: 600;
-  margin: clamp(0.5rem, 1.5vw, 1rem) 0;
-}
-
-.modalEstado.pendiente {
-  background: #ffc107;
-  color: #000;
-}
-
-.modalEstado.aprobada {
-  background: #28a745;
-  color: #fff;
-}
-
-.modalEstado.rechazada {
-  background: #dc3545;
-  color: #fff;
-}
-
-.modalLink {
-  display: inline-block;
-  margin-top: clamp(0.5rem, 1.5vw, 1rem);
-  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.75rem, 1.5vw, 1rem);
-  border-radius: clamp(0.25rem, 0.75vw, 0.5rem);
-  background: #f4155b;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s;
-  font-size: clamp(0.85rem, 2vw, 1rem);
-}
-
-.modalLink:hover {
-  background: #ff3d7d;
-  transform: scale(1.05);
-}
-
-.closeButton {
-  position: absolute;
-  top: clamp(0.5rem, 1.5vw, 0.75rem);
-  right: clamp(0.75rem, 2vw, 1rem);
-  font-size: clamp(1.1rem, 3vw, 1.5rem);
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s;
-  z-index: 1001;
-  width: clamp(2rem, 5vw, 2.5rem);
-  height: clamp(2rem, 5vw, 2.5rem);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.closeButton:hover {
-  background: rgba(0, 0, 0, 0.9);
-  color: #f4155b;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Responsive para el modal */
-@media (max-width: 768px) {
-  .modalContent {
-    max-height: 85vh;
-    width: 95%;
-  }
-  
-  .modalImageContainer {
-    max-height: 60vh;
-  }
-  
-  .modalMedia {
-    max-height: 60vh;
-  }
-  
-  .modalInfo {
-    padding: clamp(1rem, 3vw, 1.5rem);
-  }
-}
-
-@media (max-width: 480px) {
-  .modalOverlay {
-    padding: clamp(0.5rem, 1.5vw, 1rem);
-  }
-}
-
-/* Indicador de video en el grid */
-.videoIndicator {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  backdrop-filter: blur(4px);
-}
-
-.videoIcon {
-  font-size: 0.7rem;
-}
-
-.videoText {
-  font-weight: 600;
-}
-
-.imageContainer {
-  position: relative;
-  cursor: pointer;
 }

@@ -2,234 +2,408 @@
 
 import { useEffect, useState } from 'react';
 import { API_URL, URL, API_TOKEN } from '@/app/config';
-import styles from '@/styles/components/Administrador/PanelModeracionUsina.module.css';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
 import toast from 'react-hot-toast';
+import styles from '@/styles/components/Administrador/PanelModeracionUsina.module.css';
 
-export default function AdminUsinasPage() {
-  const [usinas, setUsinas] = useState([]);
+/** Helper notificaciones (ajustado a tu schema real) */
+async function crearNotificacionInlineAgenda({
+  jwt,
+  titulo,
+  mensaje,
+  receptorId,
+  emisorId,
+  agendaId,
+  usinaId,
+  tipo = 'agenda',
+}) {
+  const token = jwt || API_TOKEN;
+  if (!token) return;
+
+  try {
+    const data = {
+      titulo,
+      mensaje,
+      tipo,                // "agenda" | "usina" | "sistema"
+      leida: 'no-leida',   // enum de tu schema
+      fechaEmision: new Date().toISOString(),
+    };
+
+    if (receptorId) data.receptor = receptorId;
+    if (emisorId) data.emisor = emisorId;
+    if (agendaId) data.agendaAfectada = agendaId;
+    if (usinaId) data.usinaAfectada = usinaId;
+
+    const res = await fetch(`${API_URL}/notificaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ data }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      console.error('Error creando notificación (agenda):', err);
+    }
+  } catch (err) {
+    console.error('Error creando notificación (agenda):', err);
+  }
+}
+
+export default function Page() {
+  // datos
+  const [agendas, setAgendas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('pendientes');
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [modal, setModal] = useState({ open: false, action: '', usina: null });
-  const [jwt, setJwt] = useState(null); // 🔹 Estado para JWT
-  
-  // 🔹 Estado para paginación
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 10,
-    total: 0
-  });
 
-  // 🔹 Obtener JWT solo en el cliente
+  // auth / rol / user
+  const [jwt, setJwt] = useState(null);
+  const [rol, setRol] = useState(null);
+  const [user, setUser] = useState(null);
+  const [checkingRole, setCheckingRole] = useState(true);
+
+  // ui
+  const [tab, setTab] = useState('pendientes'); // pendientes | aprobadas | rechazadas
+  const [modal, setModal] = useState({ open: false, action: '', agenda: null });
+  const [rechazoMotivo, setRechazoMotivo] = useState('');
+
+  // paginación
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 10, total: 0 });
+
+  // ============================
+  // 1) JWT + rol + user
+  // ============================
   useEffect(() => {
-    setJwt(localStorage.getItem('jwt'));
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+    setJwt(token);
+
+    const fetchRole = async () => {
+      if (!token) {
+        setCheckingRole(false);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/users/me?populate=role`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        const roleName = data?.role?.name || data?.role?.type || data?.role || null;
+        setRol(roleName);
+        setUser(data);
+      } catch (err) {
+        console.error('Error obteniendo rol:', err);
+        setRol(null);
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+
+    fetchRole();
   }, []);
 
-  // 🔹 Cargar usinas con la nueva estructura
+  const isAdmin = rol === 'Administrador' || rol === 'SuperAdministrador';
+
+  // ============================
+  // 2) Traer AGENDAS (solo admin)
+  // ============================
   useEffect(() => {
-    const fetchUsinas = async () => {
+    const fetchAgendas = async () => {
       try {
-        const res = await fetch(`${API_URL}/usinas?populate[0]=media&populate[1]=creador`, {
-          headers: {
-            'Authorization': `Bearer ${API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        // populate de los campos comunes
+        const res = await fetch(
+          `${API_URL}/agendas?populate[0]=creador&populate[1]=imagen&populate[2]=portada&populate[3]=media&sort=createdAt:desc`,
+          {
+            headers: {
+              Authorization: `Bearer ${API_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         const json = await res.json();
         const items = Array.isArray(json?.data) ? json.data : [];
 
         const normalized = items.map((item) => {
-          const attributes = item.attributes ?? item;
-          
-          // Obtener URL del media
-          let mediaUrl = '/placeholder.jpg';
-          const mediaField = attributes.media;
-          const mediaData = mediaField?.data ?? mediaField;
-          const mediaAttrs = mediaData?.attributes ?? mediaData;
-          const urlPath = mediaAttrs?.url;
+          const a = item.attributes ?? item;
 
-          if (urlPath) {
-            mediaUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
-          }
+          // Título / descripción (mapeo flexible)
+          const titulo =
+            a.titulo ??
+            a.tituloActividad ??
+            'Sin título';
 
-          // Obtener información del creador
-          const creadorField = attributes.creador;
+          const descripcion =
+            a.descripcion ??
+            a.contenidoActividad ??
+            '';
+
+          // Fecha (mapeo flexible)
+          const fecha =
+            a.fecha ??
+            a.fechaEvento ??
+            '';
+
+          // Estado moderación (mapeo flexible)
+          const aprobado =
+            a.aprobado ??
+            a.estado ??
+            'pendiente';
+
+          // Motivo rechazo opcional
+          const motivoRechazo = a.motivoRechazo ?? '';
+
+          // Imagen: acepta imagen / portada / media
+          let imagenUrl = '/placeholder.jpg';
+          const imagenField = a.imagen || a.portada || a.media;
+          const imgData = imagenField?.data ?? imagenField;
+          const imgAttrs = imgData?.attributes ?? imgData;
+          const urlPath = imgAttrs?.url;
+          if (urlPath) imagenUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
+
+          // Creador
+          const creadorField = a.creador;
           const creadorData = creadorField?.data ?? creadorField;
           const creadorAttrs = creadorData?.attributes ?? creadorData;
+          const creador = creadorAttrs
+            ? {
+                id: creadorData?.id,
+                name: creadorAttrs.name || '',
+                surname: creadorAttrs.surname || '',
+                username: creadorAttrs.username || '',
+                carrera: creadorAttrs.carrera || '',
+              }
+            : null;
 
           return {
-            id: item.id,
-            documentId: item.documentId ?? item.id,
-            titulo: attributes.titulo ?? 'Sin título',
-            aprobado: attributes.aprobado ?? 'pendiente',
-            mediaUrl,
-            creador: creadorAttrs ? {
-              name: creadorAttrs.name || '',
-              surname: creadorAttrs.surname || '',
-              username: creadorAttrs.username || '',
-              carrera: creadorAttrs.carrera || 'Sin carrera',
-            } : null
+            id: item.id,                 // ← ID numérico (usado para PUT/DELETE)
+            documentId: item.documentId, // opcional, no lo usamos para REST
+            titulo,
+            descripcion,
+            fecha,
+            hora: a.hora ?? '',
+            lugar: a.lugar ?? '',
+            aprobado,
+            motivoRechazo,
+            imagenUrl,
+            creador,
           };
         });
 
-        setUsinas(normalized);
-        setPagination(prev => ({ ...prev, total: normalized.length }));
+        setAgendas(normalized);
+        setPagination((p) => ({ ...p, total: normalized.length }));
       } catch (err) {
-        console.error('Error al obtener usinas:', err);
-        toast.error('Error al cargar las usinas');
+        console.error('Error al obtener agendas:', err);
+        toast.error('Error al cargar las agendas');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsinas();
-  }, []);
+    if (!checkingRole && isAdmin) {
+      fetchAgendas();
+    } else if (!checkingRole) {
+      setLoading(false);
+    }
+  }, [checkingRole, isAdmin]);
 
-  // 🔹 Actualizar estado
-  const actualizarEstado = async (usina, nuevoEstado) => {
+  // helper para id: usar SIEMPRE id numérico
+  const getAgendaApiId = (agenda) => {
+    if (agenda?.id) return String(agenda.id);
+    // Solo como fallback MUY opcional:
+    if (agenda?.documentId) return String(agenda.documentId);
+    return '';
+  };
+
+  // ============================
+  // aprobar / rechazar / eliminar
+  // ============================
+  const actualizarEstadoAgenda = async (agenda, nuevoEstado, motivo = '') => {
     try {
-      if (!jwt) {
-        toast.error('No hay token. Inicia sesión.');
-        return;
+      if (!jwt) return toast.error('No hay token. Iniciá sesión.');
+      if (!isAdmin) return toast.error('No tenés permisos.');
+
+      const apiId = getAgendaApiId(agenda);
+      if (!apiId) throw new Error('ID de agenda inválido');
+
+      // Validación de motivo
+      if (nuevoEstado === 'rechazada') {
+        const m = (motivo || '').trim();
+        if (!m) return toast.error('Escribí el motivo del rechazo');
+        if (m.length > 500) return toast.error('El motivo no puede superar 500 caracteres');
       }
 
-      const url = `${API_URL}/usinas/${usina.documentId}`;
-      const res = await fetch(url, {
+      // Construir payload. Si tu schema usa "estado" en vez de "aprobado", cambialo aquí.
+      const payload = {
+        aprobado: nuevoEstado,
+        motivoRechazo: nuevoEstado === 'rechazada' ? motivo : null,
+      };
+
+      const res = await fetch(`${API_URL}/agendas/${encodeURIComponent(apiId)}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: JSON.stringify({
-          data: { aprobado: nuevoEstado },
-        }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+        body: JSON.stringify({ data: payload }),
       });
 
       if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        console.error('Error al actualizar agenda:', errJson);
         throw new Error(`Error HTTP ${res.status}`);
       }
 
-      setUsinas((prev) =>
-        prev.map((u) =>
-          u.documentId === usina.documentId ? { ...u, aprobado: nuevoEstado } : u
+      // actualizar en memoria
+      setAgendas((prev) =>
+        prev.map((a) =>
+          getAgendaApiId(a) === apiId ? { ...a, aprobado: nuevoEstado, motivoRechazo: payload.motivoRechazo } : a
         )
       );
 
-      toast.success(`Trabajo ${nuevoEstado === 'aprobada' ? 'aprobado' : 'rechazado'} correctamente`);
+      // Notificar al creador
+      if (agenda?.creador?.id) {
+        const ahora = new Date();
+        const fechaTxt = ahora.toLocaleDateString('es-AR');
+        const horaTxt = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const aprobador =
+          user?.name && user?.surname ? `${user.name} ${user.surname}` : user?.username || 'Administrador';
+
+        const msgAprob = `Tu agenda "${agenda.titulo}" fue aprobada el ${fechaTxt} a las ${horaTxt} por ${aprobador}.`;
+        const msgRech = `Tu agenda "${agenda.titulo}" fue rechazada el ${fechaTxt} a las ${horaTxt} por ${aprobador}.\nMotivo: ${motivo}`;
+
+        await crearNotificacionInlineAgenda({
+          jwt,
+          titulo: nuevoEstado === 'aprobada' ? 'Tu agenda fue aprobada' : 'Tu agenda fue rechazada',
+          mensaje: nuevoEstado === 'aprobada' ? msgAprob : msgRech,
+          receptorId: agenda.creador.id,
+          emisorId: user?.id,
+          agendaId: agenda.id, // relaciona con agendaAfectada
+          tipo: 'agenda',
+        });
+      }
+
+      toast.success(`Agenda ${nuevoEstado === 'aprobada' ? 'aprobada' : 'rechazada'} correctamente`);
     } catch (error) {
-      console.error('Error al actualizar:', error);
-      toast.error('Error al actualizar el trabajo');
+      console.error('Error al actualizar agenda:', error);
+      toast.error('Error al actualizar la agenda');
     } finally {
-      setModal({ open: false, action: '', usina: null });
+      setModal({ open: false, action: '', agenda: null });
+      setRechazoMotivo('');
     }
   };
 
-  // 🔹 Eliminar usina
-  const eliminarUsina = async (usina) => {
+  const eliminarAgenda = async (agenda) => {
     try {
-      if (!jwt) {
-        toast.error('No hay token. Inicia sesión.');
-        return;
-      }
+      if (!jwt) return toast.error('No hay token. Iniciá sesión.');
+      if (!isAdmin) return toast.error('No tenés permisos.');
 
-      const url = `${API_URL}/usinas/${usina.documentId}`;
-      const res = await fetch(url, {
+      const apiId = getAgendaApiId(agenda);
+      if (!apiId) throw new Error('ID de agenda inválido');
+
+      const res = await fetch(`${API_URL}/agendas/${encodeURIComponent(apiId)}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${jwt}` },
       });
-      
+
       if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        console.error('Error al eliminar agenda:', errJson);
         throw new Error(`Error HTTP ${res.status}`);
       }
-      
-      setUsinas((prev) => prev.filter((u) => u.documentId !== usina.documentId));
-      toast.success('Trabajo eliminado correctamente');
+
+      setAgendas((prev) => prev.filter((a) => getAgendaApiId(a) !== apiId));
+      toast.success('Agenda eliminada correctamente');
     } catch (error) {
       console.error('Error al eliminar:', error);
-      toast.error('Error al eliminar el trabajo');
+      toast.error('Error al eliminar la agenda');
     } finally {
-      setModal({ open: false, action: '', usina: null });
+      setModal({ open: false, action: '', agenda: null });
+      setRechazoMotivo('');
     }
   };
 
-  // 🔹 Confirmar acción desde el modal
   const confirmarAccion = () => {
-    const { action, usina } = modal;
-    if (action === 'aprobar') actualizarEstado(usina, 'aprobada');
-    else if (action === 'rechazar') actualizarEstado(usina, 'rechazada');
-    else if (action === 'eliminar') eliminarUsina(usina);
+    const { action, agenda } = modal;
+    if (action === 'aprobar') actualizarEstadoAgenda(agenda, 'aprobada');
+    else if (action === 'rechazar') actualizarEstadoAgenda(agenda, 'rechazada', rechazoMotivo.trim());
+    else if (action === 'eliminar') eliminarAgenda(agenda);
   };
 
-  // 🔹 Manejar cambio de página
-  const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
-  };
-
-  // 🔹 Manejar cambio de tamaño de página
-  const handlePageSizeChange = (newSize) => {
-    setPagination({ page: 1, pageSize: parseInt(newSize), total: usinasFiltradas.length });
-  };
-
-  // 🔹 Resetear paginación cuando cambia el tab
+  // ============================
+  // tabs + paginación
+  // ============================
   useEffect(() => {
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   }, [tab]);
 
-  // 🔹 Filtrar usinas según tab
-  const usinasFiltradas = usinas.filter((u) =>
-    tab === 'pendientes'
-      ? u.aprobado === 'pendiente'
-      : tab === 'aprobadas'
-      ? u.aprobado === 'aprobada'
-      : u.aprobado === 'rechazada'
+  const agendasFiltradas = agendas.filter((a) =>
+    tab === 'pendientes' ? a.aprobado === 'pendiente'
+    : tab === 'aprobadas' ? a.aprobado === 'aprobada'
+    : a.aprobado === 'rechazada'
   );
 
-  // 🔹 Calcular datos de paginación
-  const totalUsinas = usinasFiltradas.length;
-  const totalPages = Math.ceil(totalUsinas / pagination.pageSize);
+  const totalAgendas = agendasFiltradas.length;
+  const totalPages = Math.ceil(totalAgendas / pagination.pageSize) || 1;
   const startIndex = (pagination.page - 1) * pagination.pageSize;
   const endIndex = startIndex + pagination.pageSize;
-  const usinasPaginated = usinasFiltradas.slice(startIndex, endIndex);
+  const agendasPaginated = agendasFiltradas.slice(startIndex, endIndex);
 
-  if (loading) {
+  const handlePageChange = (newPage) => setPagination((p) => ({ ...p, page: newPage }));
+  const handlePageSizeChange = (newSize) =>
+    setPagination({ page: 1, pageSize: parseInt(newSize), total: agendasFiltradas.length });
+
+  // ============================
+  // RENDER
+  // ============================
+  if (checkingRole || loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
-        <p>Cargando trabajos...</p>
+        <p>Cargando panel...</p>
       </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <>
+        <Header variant="dark" />
+        <div className={styles.noPermisos}>
+          <h1>No tenés permisos para ver este panel</h1>
+          <p>Solo los roles <b>Administrador</b> y <b>SuperAdministrador</b> pueden moderar agendas.</p>
+        </div>
+        <Footer />
+      </>
     );
   }
 
   return (
     <div className={styles.bodyPanel}>
-      <Header variant='dark'/>
+      <Header variant="dark" />
       <div className={styles.adminContainer}>
         <div className={`${styles.adminContent} mt-5`}>
-          <h1 className={styles.adminTitle}>Panel de Moderación</h1>
-          <p className={styles.adminSubtitle}>
-            Gestiona los trabajos enviados por los usuarios
-          </p>
+          <h1 className={styles.adminTitle}>Panel de Moderación de Agendas</h1>
+          <p className={styles.adminSubtitle}>Gestioná los eventos creados por los usuarios</p>
 
-          {/* 🔹 Tabs */}
+          {/* tabs */}
           <div className={styles.tabs}>
-            {['pendientes', 'aprobadas', 'rechazadas'].map((tipo) => (
-              <button
-                key={tipo}
-                className={`${styles.tab} ${tab === tipo ? styles.activeTab : ''}`}
-                onClick={() => setTab(tipo)}
-              >
-                {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                <span className={styles.tabCount}>
-                  ({usinas.filter(u => u.aprobado === (tipo === 'pendientes' ? 'pendiente' : tipo.slice(0, -1))).length})
-                </span>
-              </button>
-            ))}
+            {['pendientes', 'aprobadas', 'rechazadas'].map((tipo) => {
+              const count =
+                tipo === 'pendientes'
+                  ? agendas.filter((a) => a.aprobado === 'pendiente').length
+                  : tipo === 'aprobadas'
+                  ? agendas.filter((a) => a.aprobado === 'aprobada').length
+                  : agendas.filter((a) => a.aprobado === 'rechazada').length;
+              return (
+                <button
+                  key={tipo}
+                  className={`${styles.tab} ${tab === tipo ? styles.activeTab : ''}`}
+                  onClick={() => setTab(tipo)}
+                >
+                  {tipo.charAt(0).toUpperCase() + tipo.slice(1)}{' '}
+                  <span className={styles.tabCount}>({count})</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* 🔹 Controles de paginación - Superior */}
-          {usinasFiltradas.length > 0 && (
+          {/* paginación arriba */}
+          {agendasFiltradas.length > 0 && (
             <div className={styles.paginationControls}>
               <div className={styles.pageSizeSelector}>
                 <label className={styles.textPageSize} htmlFor="pageSize">Mostrar:</label>
@@ -244,92 +418,117 @@ export default function AdminUsinasPage() {
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <span className={styles.textPageSize} >entradas por página</span>
+                <span className={styles.textPageSize}>entradas por página</span>
               </div>
-              
+
               <div className={styles.paginationInfo}>
-                Mostrando {Math.min(endIndex, totalUsinas)} de {totalUsinas} trabajos
+                Mostrando {Math.min(endIndex, totalAgendas)} de {totalAgendas} agendas
               </div>
             </div>
           )}
 
-          {/* 🔹 Grid de usinas */}
+          {/* grid */}
           <div className={styles.usinaGrid}>
-            {usinasPaginated.length > 0 ? (
-              usinasPaginated.map((usina) => (
-                <div key={usina.documentId} className={styles.usinaCard}>
-                  <div
-                    className={styles.imageContainer}
-                    onClick={() => usina.mediaUrl && setSelectedImage(usina.mediaUrl)}
-                  >
-                    {usina.mediaUrl && usina.mediaUrl !== '/placeholder.jpg' ? (
-                      <img src={usina.mediaUrl} alt={usina.titulo} className={styles.image} />
+            {agendasPaginated.length > 0 ? (
+              agendasPaginated.map((agenda) => (
+                <div key={agenda.id ?? agenda.documentId} className={styles.usinaCard}>
+                  <div className={styles.imageContainer}>
+                    {agenda.imagenUrl && agenda.imagenUrl !== '/placeholder.jpg' ? (
+                      <img src={agenda.imagenUrl} alt={agenda.titulo} className={styles.image} />
                     ) : (
                       <div className={styles.noImage}>Sin imagen</div>
                     )}
                   </div>
 
                   <div className={styles.usinaInfo}>
-                    <h2 className={styles.titulo}>{usina.titulo}</h2>
-                    
-                    {usina.creador && (
+                    <h2 className={styles.titulo}>{agenda.titulo}</h2>
+
+                    {agenda.fecha && (
+                      <p className={styles.creadorCarrera}>
+                        📅 {agenda.fecha} {agenda.hora ? `• ${agenda.hora}` : ''}
+                      </p>
+                    )}
+                    {agenda.lugar && <p className={styles.creadorUsername}>📍 {agenda.lugar}</p>}
+
+                    {agenda.creador && (
                       <div className={styles.creadorInfo}>
                         <p className={styles.creadorNombre}>
-                          <strong>Creador:</strong> {usina.creador.name} {usina.creador.surname}
+                          <strong>Creador:</strong> {agenda.creador.name} {agenda.creador.surname}
                         </p>
-                        <p className={styles.creadorUsername}>
-                          @{usina.creador.username}
-                        </p>
-                        <p className={styles.creadorCarrera}>
-                          {usina.creador.carrera}
-                        </p>
+                        <p className={styles.creadorUsername}>@{agenda.creador.username}</p>
                       </div>
                     )}
 
-                    <div className={`${styles.estado} ${styles[usina.aprobado]}`}>
-                      Estado: {usina.aprobado}
+                    <div className={`${styles.estado} ${styles[agenda.aprobado]}`}>
+                      Estado: {agenda.aprobado}
                     </div>
+
+                    {agenda.aprobado === 'rechazada' && agenda.motivoRechazo && (
+                      <div className={styles.motivoBox}>
+                        <strong>Motivo:</strong> {agenda.motivoRechazo}
+                      </div>
+                    )}
                   </div>
 
-                  {/* 🔹 Botones según tab */}
+                  {/* acciones */}
                   <div className={styles.actions}>
                     {tab === 'pendientes' && (
                       <>
                         <button
                           className={styles.btnAprobar}
-                          onClick={() => setModal({ open: true, action: 'aprobar', usina })}
+                          onClick={() => setModal({ open: true, action: 'aprobar', agenda })}
                         >
                           Aprobar
                         </button>
                         <button
                           className={styles.btnRechazar}
-                          onClick={() => setModal({ open: true, action: 'rechazar', usina })}
+                          onClick={() => {
+                            setRechazoMotivo('');
+                            setModal({ open: true, action: 'rechazar', agenda });
+                          }}
                         >
                           Rechazar
+                        </button>
+                        <button
+                          className={styles.btnEliminar}
+                          onClick={() => setModal({ open: true, action: 'eliminar', agenda })}
+                        >
+                          Eliminar
                         </button>
                       </>
                     )}
 
                     {tab === 'aprobadas' && (
-                      <button
-                        className={styles.btnRechazar}
-                        onClick={() => setModal({ open: true, action: 'rechazar', usina })}
-                      >
-                        Rechazar
-                      </button>
+                      <>
+                        <button
+                          className={styles.btnRechazar}
+                          onClick={() => {
+                            setRechazoMotivo('');
+                            setModal({ open: true, action: 'rechazar', agenda });
+                          }}
+                        >
+                          Pasar a rechazada
+                        </button>
+                        <button
+                          className={styles.btnEliminar}
+                          onClick={() => setModal({ open: true, action: 'eliminar', agenda })}
+                        >
+                          Eliminar
+                        </button>
+                      </>
                     )}
 
                     {tab === 'rechazadas' && (
                       <>
                         <button
                           className={styles.btnAprobar}
-                          onClick={() => setModal({ open: true, action: 'aprobar', usina })}
+                          onClick={() => setModal({ open: true, action: 'aprobar', agenda })}
                         >
                           Aprobar
                         </button>
                         <button
                           className={styles.btnEliminar}
-                          onClick={() => setModal({ open: true, action: 'eliminar', usina })}
+                          onClick={() => setModal({ open: true, action: 'eliminar', agenda })}
                         >
                           Eliminar
                         </button>
@@ -340,12 +539,12 @@ export default function AdminUsinasPage() {
               ))
             ) : (
               <div className={styles.noUsinas}>
-                <p>No hay trabajos {tab} en este momento.</p>
+                <p>No hay agendas {tab} en este momento.</p>
               </div>
             )}
           </div>
 
-          {/* 🔹 Controles de paginación - Inferior */}
+          {/* paginación abajo */}
           {totalPages > 1 && (
             <div className={styles.pagination}>
               <button
@@ -355,22 +554,19 @@ export default function AdminUsinasPage() {
               >
                 Anterior
               </button>
-              
+
               <div className={styles.paginationNumbers}>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => 
-                    page === 1 || 
-                    page === totalPages || 
-                    Math.abs(page - pagination.page) <= 1
-                  )
+                  .filter((page) => page === 1 || page === totalPages || Math.abs(page - pagination.page) <= 1)
                   .map((page, index, array) => {
-                    // Agregar puntos suspensivos para páginas omitidas
                     const showEllipsis = index > 0 && page - array[index - 1] > 1;
                     return (
                       <span key={page}>
                         {showEllipsis && <span className={styles.paginationEllipsis}>...</span>}
                         <button
-                          className={`${styles.paginationBtn} ${pagination.page === page ? styles.paginationBtnActive : ''}`}
+                          className={`${styles.paginationBtn} ${
+                            pagination.page === page ? styles.paginationBtnActive : ''
+                          }`}
                           onClick={() => handlePageChange(page)}
                         >
                           {page}
@@ -379,7 +575,7 @@ export default function AdminUsinasPage() {
                     );
                   })}
               </div>
-              
+
               <button
                 className={styles.paginationBtn}
                 onClick={() => handlePageChange(pagination.page + 1)}
@@ -390,47 +586,47 @@ export default function AdminUsinasPage() {
             </div>
           )}
 
-          {/* 🔹 Modal para imagen */}
-          {selectedImage && (
-            <div className={styles.modalOverlay} onClick={() => setSelectedImage(null)}>
-              <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                <button className={styles.modalClose} onClick={() => setSelectedImage(null)}>
-                  ✕
-                </button>
-                <img src={selectedImage} alt="Trabajo" className={styles.modalImage} />
-              </div>
-            </div>
-          )}
-
-          {/* 🔹 Modal de confirmación */}
+          {/* modal confirmación */}
           {modal.open && (
             <div className={styles.modalOverlay}>
               <div className={styles.confirmModal}>
                 <h2 className={styles.modalTitle}>Confirmar acción</h2>
                 <p className={styles.modalText}>
-                  ¿Seguro que deseas {modal.action === 'eliminar'
-                    ? 'eliminar este trabajo'
-                    : `${modal.action} este trabajo`
-                  }?
+                  {modal.action === 'rechazar'
+                    ? 'Escribí el motivo del rechazo y confirmá.'
+                    : '¿Seguro que deseas continuar?'}
                 </p>
-                {modal.usina && (
+
+                {modal.agenda && (
                   <div className={styles.modalUsinaInfo}>
-                    <strong>{modal.usina.titulo}</strong>
-                    {modal.usina.creador && (
-                      <span> - @{modal.usina.creador.username}</span>
-                    )}
+                    <strong>{modal.agenda.titulo}</strong>
+                    {modal.agenda.creador && <span> — @{modal.agenda.creador.username}</span>}
                   </div>
                 )}
+
+                {modal.action === 'rechazar' && (
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="motivoRechazo">Motivo del rechazo *</label>
+                    <textarea
+                      id="motivoRechazo"
+                      rows={3}
+                      className={styles.textareaRechazo}
+                      value={rechazoMotivo}
+                      onChange={(e) => setRechazoMotivo(e.target.value.slice(0, 500))}
+                      placeholder="Ej: El evento tiene fecha pasada, revisá..."
+                    />
+                    <p className={styles.charCounter}>{rechazoMotivo.length} / 500</p>
+                  </div>
+                )}
+
                 <div className={styles.modalButtons}>
-                  <button
-                    className={styles.btnConfirmar}
-                    onClick={confirmarAccion}
-                  >
-                    Confirmar
-                  </button>
+                  <button className={styles.btnConfirmar} onClick={confirmarAccion}>Confirmar</button>
                   <button
                     className={styles.btnCancelar}
-                    onClick={() => setModal({ open: false, action: '', usina: null })}
+                    onClick={() => {
+                      setModal({ open: false, action: '', agenda: null });
+                      setRechazoMotivo('');
+                    }}
                   >
                     Cancelar
                   </button>

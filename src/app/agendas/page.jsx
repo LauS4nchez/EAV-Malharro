@@ -1,8 +1,8 @@
-'use client'; // Componente client-side (usa hooks, localStorage, etc.)
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { API_URL, URL } from '@/app/config';
+import { API_URL, URL, API_TOKEN } from '@/app/config';
 import {
   startOfMonth,
   endOfMonth,
@@ -20,6 +20,51 @@ import { es } from 'date-fns/locale';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
 import styles from '@/styles/components/Agenda/AgendaPage.module.css';
+import toast from 'react-hot-toast';
+
+async function crearNotificacionInline({
+  jwt,
+  adminToken,
+  titulo,
+  mensaje,
+  receptorId,
+  emisorId,
+  agendaId,
+  tipo = 'agenda',
+}) {
+  const token = jwt || adminToken;
+  if (!token) return;
+
+  try {
+    const data = {
+      titulo,
+      mensaje,
+      tipo,                 // "agenda" | "usina" | "sistema"
+      leida: 'no-leida',    // coincide con el enum
+      fechaEmision: new Date().toISOString(),
+    };
+
+    if (receptorId) data.receptor = receptorId;
+    if (emisorId) data.emisor = emisorId;
+    if (agendaId) data.agendaAfectada = agendaId; // nombre real de la relación
+
+    const res = await fetch(`${API_URL}/notificaciones`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ data }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      console.error('Error creando notificación:', err);
+    }
+  } catch (err) {
+    console.error('Error creando notificación:', err);
+  }
+}
 
 export default function CalendarioPage() {
   // Estado principal
@@ -27,10 +72,13 @@ export default function CalendarioPage() {
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedAgenda, setSelectedAgenda] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);        // Modal de detalle
+  const [modalOpen, setModalOpen] = useState(false); // Modal de detalle
   const [formModalOpen, setFormModalOpen] = useState(false); // Modal de creación
+
+  // user + rol
   const [userId, setUserId] = useState(null);
   const [rol, setRol] = useState(null);
+  const [jwt, setJwt] = useState(null);
 
   // Avisos compactos para feedback (éxito/error)
   const [notice, setNotice] = useState(null); // {type:'success'|'error', text:string}
@@ -50,7 +98,6 @@ export default function CalendarioPage() {
   const [touched, setTouched] = useState({});
 
   // ---------- helpers de validación ----------
-  // Acepta hoy o futuro (bloquea fechas pasadas)
   const isFutureOrToday = (yyyyMMdd) => {
     if (!yyyyMMdd) return false;
     const d = new Date(`${yyyyMMdd}T00:00:00`);
@@ -59,10 +106,8 @@ export default function CalendarioPage() {
     return d >= today;
   };
 
-  // Limpia espacios repetidos
   const sanitize = (s = '') => s.replace(/\s+/g, ' ').trim();
 
-  // Reglas de negocio para crear agenda
   const validateAgenda = (form, list) => {
     const e = {};
     const titulo = sanitize(form.tituloActividad);
@@ -84,7 +129,7 @@ export default function CalendarioPage() {
     else if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) e.fecha = 'Fecha inválida.';
     else if (!isFutureOrToday(fecha)) e.fecha = 'La fecha no puede ser pasada.';
 
-    // Imagen obligatoria: tipo y peso
+    // Imagen obligatoria
     if (!form.imagen) {
       e.imagen = 'La imagen es obligatoria.';
     } else {
@@ -95,12 +140,12 @@ export default function CalendarioPage() {
       else if (file.size > maxMB * 1024 * 1024) e.imagen = `La imagen supera ${maxMB} MB.`;
     }
 
-    // Duplicados por (título, fecha) para evitar eventos repetidos
+    // Duplicados
     if (titulo && fecha && Array.isArray(list)) {
       const dup = list.some(
         (a) =>
           sanitize(a.tituloActividad).toLowerCase() === titulo.toLowerCase() &&
-          (a.fecha?.slice(0, 10) === fecha)
+          a.fecha?.slice(0, 10) === fecha
       );
       if (dup) e.tituloActividad = 'Ya existe una agenda con ese título en esa fecha.';
     }
@@ -108,15 +153,15 @@ export default function CalendarioPage() {
     return e;
   };
 
-  // Validación en vivo (derive de form y lista)
   const liveErrors = useMemo(() => validateAgenda(agendaForm, agendas), [agendaForm, agendas]);
   const formIsValid = Object.keys(liveErrors).length === 0;
 
   // ---------- usuario y rol ----------
-  // Lee el usuario autenticado y su rol desde Strapi
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+    if (token) setJwt(token);
+
     const fetchUser = async () => {
-      const token = localStorage.getItem('jwt');
       if (!token) return;
       try {
         const res = await fetch(`${API_URL}/users/me?populate=role`, {
@@ -133,10 +178,14 @@ export default function CalendarioPage() {
   }, []);
 
   // ---------- cargar agendas ----------
-  // Normaliza respuesta de Strapi (maneja populate=imagen y url absolutas/relativas)
   const fetchAgendas = async () => {
     try {
-      const res = await fetch(`${API_URL}/agendas?populate=imagen`, { cache: 'no-store' });
+      const res = await fetch(
+        `${API_URL}/agendas?populate=imagen&populate=creador&sort=fecha:asc`,
+        {
+          cache: 'no-store',
+        }
+      );
       const json = await res.json();
       const items = Array.isArray(json?.data) ? json.data : [];
 
@@ -150,12 +199,25 @@ export default function CalendarioPage() {
         let imageUrl = '/placeholder.jpg';
         if (urlPath) imageUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
 
+        // creador
+        const creadorField = a.creador;
+        const creadorData = creadorField?.data ?? creadorField;
+        const creadorAttrs = creadorData?.attributes ?? creadorData;
+
         return {
           id: item.id,
+          documentId: item.documentId,
           tituloActividad: a.tituloActividad ?? '',
           contenidoActividad: a.contenidoActividad ?? '',
           fecha: a.fecha ?? '',
-          creadorId: a.creador?.data?.id ?? null,
+          creador: creadorAttrs
+            ? {
+                id: creadorData?.id,
+                name: creadorAttrs.name || '',
+                surname: creadorAttrs.surname || '',
+                username: creadorAttrs.username || '',
+              }
+            : null,
           imageUrl,
         };
       });
@@ -173,6 +235,69 @@ export default function CalendarioPage() {
     fetchAgendas();
   }, []);
 
+  // ---------- notificar "hoy" y "mañana" al usuario actual ----------
+  useEffect(() => {
+    if (!jwt || !userId || agendas.length === 0) return;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const mañana = new Date(hoy);
+    mañana.setDate(hoy.getDate() + 1);
+
+    const checkYNotificar = async () => {
+      for (const ag of agendas) {
+        if (!ag.fecha) continue;
+
+        let f;
+        try {
+          f = parseISO(ag.fecha);
+        } catch {
+          f = new Date(ag.fecha);
+        }
+        f.setHours(0, 0, 0, 0);
+
+        // notificación para hoy
+        if (f.getTime() === hoy.getTime()) {
+          const key = `noti-agenda-hoy-${ag.id}-${userId}`;
+          if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+            await crearNotificacionInline({
+              jwt,
+              titulo: 'Evento de hoy',
+              mensaje: `Tenés el evento "${ag.tituloActividad}" hoy (${f.toLocaleDateString(
+                'es-AR'
+              )}).`,
+              receptorId: userId,
+              agendaId: ag.id,
+              tipo: 'agenda',
+            });
+            localStorage.setItem(key, '1');
+          }
+        }
+
+        // notificación para mañana
+        if (f.getTime() === mañana.getTime()) {
+          const key = `noti-agenda-mañana-${ag.id}-${userId}`;
+          if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+            await crearNotificacionInline({
+              jwt,
+              titulo: 'Evento mañana',
+              mensaje: `Mañana tenés el evento "${ag.tituloActividad}" (${f.toLocaleDateString(
+                'es-AR'
+              )}).`,
+              receptorId: userId,
+              agendaId: ag.id,
+              tipo: 'agenda',
+            });
+            localStorage.setItem(key, '1');
+          }
+        }
+      }
+    };
+
+    checkYNotificar();
+  }, [jwt, userId, agendas]);
+
   // ---------- formulario ----------
   const handleFormChange = (e) => {
     const { name, value, files } = e.target;
@@ -183,7 +308,7 @@ export default function CalendarioPage() {
     } else {
       setAgendaForm((prev) => ({ ...prev, [name]: value }));
     }
-    setErrors(liveErrors); // Sincroniza errores mientras escribe
+    setErrors(liveErrors);
   };
 
   const handleBlur = (e) => {
@@ -204,14 +329,14 @@ export default function CalendarioPage() {
   };
 
   // ---------- crear agenda ----------
-  // Sube primero la imagen a /upload y luego crea la agenda vinculando imagenId
   const handleSubmitAgenda = async (e) => {
     e.preventDefault();
     if (!userId) {
       setNotice({ type: 'error', text: 'Usuario no identificado.' });
       return;
     }
-    const token = localStorage.getItem('jwt');
+
+    const token = jwt;
     if (!token) {
       setNotice({ type: 'error', text: 'Debes iniciar sesión.' });
       return;
@@ -219,14 +344,19 @@ export default function CalendarioPage() {
 
     const errs = validateAgenda(agendaForm, agendas);
     setErrors(errs);
-    setTouched({ tituloActividad: true, contenidoActividad: true, fecha: true, imagen: true });
+    setTouched({
+      tituloActividad: true,
+      contenidoActividad: true,
+      fecha: true,
+      imagen: true,
+    });
     if (Object.keys(errs).length) {
       setNotice({ type: 'error', text: 'Revisá los campos marcados en rojo.' });
       return;
     }
 
     try {
-      // 1) Subida de imagen (Strapi Upload)
+      // 1) Subida de imagen
       let imagenId = null;
       if (agendaForm.imagen) {
         const uploadForm = new FormData();
@@ -243,7 +373,7 @@ export default function CalendarioPage() {
         imagenId = uploadData[0].id;
       }
 
-      // 2) Creación de la agenda con relación al usuario e imagen
+      // 2) Crear agenda
       const res = await fetch(`${API_URL}/agendas`, {
         method: 'POST',
         headers: {
@@ -264,50 +394,90 @@ export default function CalendarioPage() {
       const created = await res.json();
       if (!res.ok) throw new Error(created?.error?.message || 'Error al crear agenda');
 
+      // id real de la agenda creada
+      const nuevaAgendaId = created?.data?.id ?? created?.id ?? null;
+
+      // 3) Notificar al que la creó (⚠️ sin fechaEvento)
+      await crearNotificacionInline({
+        jwt: token,
+        titulo: 'Agenda creada',
+        mensaje: `Creaste la agenda "${agendaForm.tituloActividad}" para el ${new Date(
+          agendaForm.fecha
+        ).toLocaleDateString('es-AR')}.`,
+        receptorId: userId,
+        emisorId: userId,
+        agendaId: nuevaAgendaId,
+        tipo: 'agenda',
+      });
+
+      // 4) Notificar a TODOS los usuarios (con API_TOKEN)
+      try {
+        if (API_TOKEN) {
+          const usersRes = await fetch(
+            `${API_URL}/users?pagination[pageSize]=1000`,
+            {
+              headers: {
+                Authorization: `Bearer ${API_TOKEN}`,
+              },
+            }
+          );
+          const usersData = await usersRes.json();
+
+          // puede venir como [] o como {data: []}
+          const users = Array.isArray(usersData)
+            ? usersData
+            : Array.isArray(usersData?.data)
+            ? usersData.data
+            : [];
+
+          const fechaBonita = new Date(agendaForm.fecha).toLocaleDateString('es-AR');
+
+          await Promise.all(
+            users.map((u) =>
+              crearNotificacionInline({
+                adminToken: API_TOKEN,
+                titulo: 'Nuevo evento en la agenda',
+                mensaje: `Se creó el evento "${agendaForm.tituloActividad}" para el ${fechaBonita}.`,
+                receptorId: u.id,
+                emisorId: userId,
+                agendaId: nuevaAgendaId,
+                tipo: 'agenda',
+              })
+            )
+          );
+        } else {
+          console.warn('No hay API_TOKEN para notificar a todos los usuarios.');
+        }
+      } catch (err) {
+        console.error('No se pudieron notificar a todos los usuarios:', err);
+      }
+
       setNotice({ type: 'success', text: 'Agenda creada correctamente.' });
       resetForm();
       setFormModalOpen(false);
-      fetchAgendas(); // Refresca listado
+      fetchAgendas();
     } catch (err) {
       console.error('Error al crear agenda:', err);
       setNotice({ type: 'error', text: 'Ocurrió un problema al crear la agenda.' });
     }
   };
 
-  // ---------- eliminar agenda (sin alerts ni confirm) ----------
-  // Elimina por id y actualiza estado local
-  const handleDeleteAgenda = async (agenda) => {
-    if (!userId) return;
-    try {
-      const token = localStorage.getItem('jwt');
-      const res = await fetch(`${API_URL}/agendas/${agenda.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Error al eliminar agenda');
-      setAgendas((prev) => prev.filter((a) => a.id !== agenda.id));
-      setNotice({ type: 'success', text: 'Agenda eliminada.' });
-    } catch (err) {
-      console.error(err);
-      setNotice({ type: 'error', text: 'No se pudo eliminar la agenda.' });
-    }
-  };
-
   // ---------- calendario ----------
-  // Navegación de meses
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  // Encabezado del calendario (mes/año con locale ES)
   const renderHeader = () => (
     <div className={styles.header}>
-      <button onClick={prevMonth} className={styles.navButton}>‹</button>
+      <button onClick={prevMonth} className={styles.navButton}>
+        ‹
+      </button>
       <h2>{format(currentMonth, 'MMMM yyyy', { locale: es })}</h2>
-      <button onClick={nextMonth} className={styles.navButton}>›</button>
+      <button onClick={nextMonth} className={styles.navButton}>
+        ›
+      </button>
     </div>
   );
 
-  // Días de la semana (inicia en lunes)
   const renderDays = () => {
     const days = [];
     const startDate = startOfWeek(currentMonth, { locale: es, weekStartsOn: 1 });
@@ -320,7 +490,6 @@ export default function CalendarioPage() {
     return <div className={styles.daysRow}>{days}</div>;
   };
 
-  // Celdas del calendario: pinta número de día y agendas de esa fecha
   const renderCells = () => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
@@ -333,7 +502,6 @@ export default function CalendarioPage() {
 
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
-        // Filtra agendas del día actual (maneja ISO y errores de parse)
         const dayAgendas = agendas.filter((a) => {
           try {
             return isSameDay(parseISO(a.fecha), day);
@@ -386,7 +554,6 @@ export default function CalendarioPage() {
       </div>
     );
 
-  // helper de fecha para el modal (humano + locale ES)
   const fechaBonita = (iso) => {
     try {
       return format(parseISO(iso), "EEEE d 'de' MMMM, yyyy", { locale: es });
@@ -397,7 +564,7 @@ export default function CalendarioPage() {
 
   return (
     <div>
-      <Header  variant='dark'/>
+      <Header variant="dark" />
       <div className={styles.container}>
         {/* Avisos globales */}
         {notice && (
@@ -411,9 +578,9 @@ export default function CalendarioPage() {
 
         <h1 className={styles.title}>Calendario de Agendas</h1>
 
-        {/* Acciones superiores: creación, mis agendas y volver */}
+        {/* Acciones superiores */}
         <div className={styles.actions}>
-          {(rol === 'Administrador' || rol === 'Profesor') && (
+          {(rol === 'Administrador' || rol === 'Profesor' || rol === 'SuperAdministrador') && (
             <>
               <button
                 className={styles.navButton}
@@ -426,16 +593,12 @@ export default function CalendarioPage() {
                 + Crear Agenda
               </button>
 
-              <button
-                className={styles.navButton}
-                onClick={() => router.push('/mis-agendas')}
-              >
+              <button className={styles.navButton} onClick={() => router.push('/mis-agendas')}>
                 Ver mis agendas
               </button>
             </>
           )}
 
-          {/* Este botón SIEMPRE visible, sin requerir rol */}
           <button
             className={styles.navButton}
             onClick={() => router.push('/')}
@@ -450,11 +613,13 @@ export default function CalendarioPage() {
         {renderDays()}
         {renderCells()}
 
-        {/* Modal crear agenda: click fuera para cerrar, stopPropagation en caja */}
+        {/* Modal crear agenda */}
         {formModalOpen && (
           <div className={styles.modalOverlay} onClick={() => setFormModalOpen(false)}>
             <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-              <button className={styles.modalClose} onClick={() => setFormModalOpen(false)}>✕</button>
+              <button className={styles.modalClose} onClick={() => setFormModalOpen(false)}>
+                ✕
+              </button>
               <h3>Crear Nueva Agenda</h3>
 
               <form onSubmit={handleSubmitAgenda} noValidate>
@@ -481,7 +646,9 @@ export default function CalendarioPage() {
                     value={agendaForm.contenidoActividad}
                     onChange={handleFormChange}
                     onBlur={handleBlur}
-                    aria-invalid={!!(touched.contenidoActividad && liveErrors.contenidoActividad)}
+                    aria-invalid={!!(
+                      touched.contenidoActividad && liveErrors.contenidoActividad
+                    )}
                     required
                   />
                   {touched.contenidoActividad && liveErrors.contenidoActividad && (
@@ -538,7 +705,9 @@ export default function CalendarioPage() {
         {modalOpen && selectedAgenda && (
           <div className={styles.modalOverlay} onClick={() => setModalOpen(false)}>
             <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-              <button className={styles.modalClose} onClick={() => setModalOpen(false)}>✕</button>
+              <button className={styles.modalClose} onClick={() => setModalOpen(false)}>
+                ✕
+              </button>
               <h3>{selectedAgenda.tituloActividad}</h3>
               {selectedAgenda.imageUrl && (
                 <img
@@ -547,8 +716,12 @@ export default function CalendarioPage() {
                   className={styles.modalImage}
                 />
               )}
-              <p><strong>Fecha:</strong> {fechaBonita(selectedAgenda.fecha)}</p>
-              <p><strong>Descripción:</strong> {selectedAgenda.contenidoActividad}</p>
+              <p>
+                <strong>Fecha:</strong> {fechaBonita(selectedAgenda.fecha)}
+              </p>
+              <p>
+                <strong>Descripción:</strong> {selectedAgenda.contenidoActividad}
+              </p>
             </div>
           </div>
         )}
