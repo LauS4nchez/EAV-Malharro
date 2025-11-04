@@ -1,14 +1,53 @@
 "use client";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { API_URL } from "../config";
+import { API_URL, clientIDGoogle } from "../config";
 
 export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
   
-  // MISMO CÓDIGO para web y mobile (WebView)
-  const googleLogin = useGoogleLogin({
+  // NATIVO - Usando Capacitor Browser
+  const nativeLogin = async () => {
+    try {
+      setLoading(true);
+      console.log('🔧 Starting native Google login with Browser...');
+
+      // URL de autenticación de Google
+      const redirectUri = 'https://eav-malharro.onrender.com/auth/callback/google';
+      const state = Math.random().toString(36).substring(7);
+      
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+        client_id: clientIDGoogle,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'email profile',
+        access_type: 'offline',
+        prompt: 'consent',
+        state: state,
+      })}`;
+
+      console.log('🔧 Opening Browser with Google auth URL');
+
+      // Abrir el browser nativo
+      await Browser.open({ 
+        url: authUrl,
+        windowName: '_self'
+      });
+
+      // No esperamos aquí - el deep link manejará el callback
+      // El callback page se encargará de cerrar el browser y procesar el login
+      
+    } catch (err) {
+      console.error("❌ Error opening Browser:", err);
+      toast.error("Error al abrir el navegador");
+      setLoading(false);
+    }
+  };
+
+  // WEB (usa @react-oauth/google)
+  const webLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         setLoading(true);
@@ -59,6 +98,6 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
     },
   });
 
-  const signIn = () => googleLogin();
+  const signIn = () => (Capacitor.isNativePlatform() ? nativeLogin() : webLogin());
   return { signIn };
 }
