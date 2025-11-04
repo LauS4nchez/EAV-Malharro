@@ -10,50 +10,41 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
   
   // NATIVO - Usando Capacitor Browser con deep links
   const nativeLogin = async () => {
-    try {
-      setLoading(true);
-      console.log('🔧 Starting native Google login with Browser...');
+  try {
+    setLoading(true);
+    console.log('🔧 Starting native Google login with Browser...');
 
-      // Para mobile, usa el deep link de tu app
-      const redirectUri = 'malharro://auth/callback/google';
-      const state = Math.random().toString(36).substring(7);
-      
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
-        client_id: clientIDGoogle,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope: 'email profile',
-        access_type: 'offline',
-        prompt: 'consent',
-        state: state,
-      })}`;
+    // Usa tu URL web como redirect
+    const redirectUri = 'https://eav-malharro.onrender.com/auth/callback/google';
+    const state = Math.random().toString(36).substring(7);
+    
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+      client_id: clientIDGoogle,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'email profile',
+      access_type: 'offline',
+      prompt: 'consent',
+      state: state,
+    })}`;
 
-      console.log('🔧 Google Auth URL:', authUrl);
+    console.log('🔧 Google Auth URL:', authUrl);
 
-      // Alertas para debugging
-      if (window.alert) {
-        alert('🔧 Abriendo Google Auth con deep link...');
-      }
-
-      // Abrir el browser nativo
-      await Browser.open({ 
-        url: authUrl,
-        windowName: '_self'
-      });
-
-      // No esperamos aquí - el deep link manejará el callback
-      
-    } catch (err) {
-      console.error("❌ Error opening Browser:", err);
-      
-      if (window.alert) {
-        alert('❌ Error: ' + err.message);
-      }
-      
-      toast.error("Error al abrir el navegador");
-      setLoading(false);
+    if (window.alert) {
+      alert('🔧 Abriendo Google Auth...');
     }
-  };
+
+    await Browser.open({ 
+      url: authUrl,
+      windowName: '_self'
+    });
+
+  } catch (err) {
+    console.error("❌ Error opening Browser:", err);
+    toast.error("Error al abrir el navegador");
+    setLoading(false);
+  }
+};
 
   // WEB (mantén tu código actual)
   const webLogin = useGoogleLogin({

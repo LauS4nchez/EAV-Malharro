@@ -6,6 +6,7 @@ export const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 export const clientIDGoogle = process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE;
 export const clientIDDiscord = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
 export const clientSecretDiscord = process.env.DISCORD_CLIENT_SECRET;
+export const clientSecretGoogle = process.env.GOOGLE_CLIENT_SECRET
 
 // URLs para Discord
 export const discordRedirectUriProd =
