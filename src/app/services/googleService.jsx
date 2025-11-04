@@ -2,26 +2,47 @@ import { isNative, getGoogleRedirectUri } from "@/app/config";
 
 export const googleService = {
   async openAuthPopup() {
-    const redirectUri = getGoogleRedirectUri();
-    
     if (isNative()) {
-      // Para apps nativas
-      const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
-        redirect_uri: redirectUri,
-        response_type: 'token',  // Para mobile usa token
-        scope: 'email profile',
-        state: Math.random().toString(36).substring(7),
-      })}`;
+      // Para mobile, usa el mismo approach que en web - flujo interno
+      return new Promise((resolve, reject) => {
+        // Abre Google Auth
+        const redirectUri = getGoogleRedirectUri();
+        const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+          client_id: process.env.NEXT_PUBLIC_CLIENT_ID_GOOGLE,
+          redirect_uri: redirectUri,
+          response_type: 'token',
+          scope: 'email profile',
+          state: Math.random().toString(36).substring(7),
+        })}`;
 
-      console.log('Google Auth URL (mobile):', url);
+        console.log('📱 Google Auth URL:', url);
 
-      if (window.Capacitor && window.Capacitor.Plugins?.Browser) {
-        await window.Capacitor.Plugins.Browser.open({ url });
-      } else {
-        window.open(url, '_system');
-      }
-      return null;
+        // Abre el browser
+        if (window.Capacitor && window.Capacitor.Plugins?.Browser) {
+          window.Capacitor.Plugins.Browser.open({ url });
+          
+          // Escuchar el deep link con el token
+          const handleDeepLink = (data) => {
+            const url = new URL(data.url);
+            if (url.hostname === 'eav-malharro.onrender.com' && url.pathname.includes('/auth/callback/google')) {
+              const hashParams = new URLSearchParams(url.hash.substring(1));
+              const accessToken = hashParams.get('access_token');
+              
+              if (accessToken) {
+                window.Capacitor.Plugins.Browser.close();
+                resolve({ accessToken });
+              } else {
+                reject(new Error('No access token received'));
+              }
+              
+              // Remover el listener
+              window.Capacitor.Plugins.App.removeListener('appUrlOpen', handleDeepLink);
+            }
+          };
+          
+          window.Capacitor.Plugins.App.addListener('appUrlOpen', handleDeepLink);
+        }
+      });
     } else {
       // Para web
       const url = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({

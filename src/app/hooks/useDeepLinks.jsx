@@ -50,7 +50,7 @@ export const useDeepLinks = () => {
             }));
           }
         }
-      }); // ← Esta llave estaba faltando
+      });
     }
 
     return () => {
