@@ -2,142 +2,90 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Browser } from "@capacitor/browser";
-import axios from "axios";
 import { toast } from "react-hot-toast";
-import { API_URL, clientIDGoogle, clientSecretGoogle } from "@/app/config";
+import { API_URL } from "@/app/config"; // ← Solo API_URL
 
 export default function GoogleCallback() {
   const router = useRouter();
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Cerrar browser inmediatamente (sin await)
+      if (window.Capacitor) {
+        Browser.close();
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      
+      if (!code) {
+        toast.error("No se recibió código de autorización");
+        router.push("/login");
+        return;
+      }
+
       try {
-        alert('🔧 PASO 1: Callback iniciado');
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
-        const error = urlParams.get("error");
-
-        // MOSTRAR INFORMACIÓN CRÍTICA
-        alert('🔧 PASO 2: Code recibido: ' + code);
-        alert('🔧 Client ID: ' + (clientIDGoogle ? 'CONFIGURADO' : 'NO CONFIGURADO'));
-        alert('🔧 Client Secret: ' + (clientSecretGoogle ? 'CONFIGURADO' : 'NO CONFIGURADO'));
-
-        if (error) {
-          alert('❌ ERROR de Google: ' + error);
-          throw new Error(`Google auth error: ${error}`);
-        }
-
-        if (!code) {
-          alert('❌ NO hay código de Google');
-          throw new Error("No se recibió código de autorización de Google");
-        }
-
-        // 1. Cerrar el browser si estamos en mobile
-        alert('🔧 PASO 3: Cerrando browser...');
-        if (window.Capacitor) {
-          await Browser.close();
-          alert('✅ Browser cerrado');
-        }
-
-        // 2. Intercambiar code por token
-        alert('🔧 PASO 4: Intercambiando code por token...');
+        // Intercambiar code por token
         const tokenResponse = await fetch("/api/google/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            code, 
-            redirectUri: window.location.origin + "/auth/callback/google" 
+            code: code,
+            redirectUri: 'https://eav-malharro.onrender.com/auth/callback/google'
           }),
         });
 
-        alert('🔧 PASO 4.1: Respuesta del API - Status: ' + tokenResponse.status);
-        
         if (!tokenResponse.ok) {
           const errorText = await tokenResponse.text();
-          alert('❌ ERROR en intercambio de token: ' + errorText);
-          throw new Error(`Token exchange failed: ${errorText}`);
+          throw new Error(`Error del servidor: ${errorText}`);
         }
 
         const tokenData = await tokenResponse.json();
-        alert('🔧 PASO 4.2: Token recibido: ' + (tokenData.access_token ? 'SÍ' : 'NO'));
-
+        
         if (!tokenData.access_token) {
-          alert('❌ NO hay access token en la respuesta');
-          throw new Error("No access token received from Google");
+          throw new Error("No se recibió token de acceso");
         }
 
-        // 3. Obtener info del usuario
-        alert('🔧 PASO 5: Obteniendo info del usuario de Google...');
-        const googleUser = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+        // Obtener info del usuario
+        const userResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
           headers: { Authorization: `Bearer ${tokenData.access_token}` },
         });
-
-        alert('🔧 PASO 5.1: Info de usuario recibida: ' + (googleUser.data.email ? 'SÍ' : 'NO'));
         
-        if (!googleUser.data.email) {
-          alert('❌ NO hay email en la info del usuario');
-          throw new Error("No email received from Google");
+        if (!userResponse.ok) {
+          throw new Error("Error al obtener información del usuario");
         }
 
-        const { email, name, sub: googleId } = googleUser.data;
+        const userData = await userResponse.json();
 
-        // 4. Login con Strapi
-        alert('🔧 PASO 6: Enviando a Strapi...');
+        // Login con Strapi
         const authRes = await fetch(`${API_URL}/google-auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, googleId, name }),
+          body: JSON.stringify({ 
+            email: userData.email, 
+            googleId: userData.sub, 
+            name: userData.name || userData.email.split('@')[0]
+          }),
         });
 
-        alert('🔧 PASO 6.1: Respuesta de Strapi - Status: ' + authRes.status);
-        
-        const authText = await authRes.text();
-        alert('🔧 PASO 6.2: Texto de respuesta Strapi: ' + authText.substring(0, 100));
-        
         if (!authRes.ok) {
-          alert('❌ ERROR de Strapi: ' + authText);
-          throw new Error(authText || 'Error del servidor Strapi');
+          const errorText = await authRes.text();
+          throw new Error(`Error Strapi: ${errorText}`);
         }
 
-        const authData = JSON.parse(authText);
-        alert('🔧 PASO 6.3: JWT recibido: ' + (authData.jwt ? 'SÍ' : 'NO'));
-
-        // 5. Guardar sesión y redirigir
-        alert('🔧 PASO 7: Guardando sesión...');
-        if (!authData.jwt) {
-          alert('❌ NO hay JWT de Strapi');
-          throw new Error("No JWT received from Strapi");
-        }
-
+        const authData = await authRes.json();
+        
+        // Guardar sesión y redirigir
         localStorage.setItem("jwt", authData.jwt);
         localStorage.setItem("userRole", authData.user?.role?.name || "Authenticated");
         
-        alert('✅ PASO 8: Login EXITOSO! Redirigiendo...');
-        
-        toast.success(`¡Bienvenido ${authData.user?.username || 'Usuario'}!`);
-        
-        // Redirigir
-        if (window.Capacitor) {
-          router.push("/");
-        } else {
-          window.location.href = "/";
-        }
+        toast.success(`¡Bienvenido ${authData.user?.username || userData.name}!`);
+        router.push("/");
 
       } catch (err) {
-        alert('❌ ERROR FINAL: ' + err.message);
-        
-        if (window.Capacitor) {
-          await Browser.close();
-        }
-        
-        toast.error("Error: " + err.message);
-        
-        if (window.Capacitor) {
-          router.push("/login");
-        } else {
-          window.location.href = "/login";
-        }
+        console.error("Google callback error:", err);
+        toast.error("Error en autenticación: " + err.message);
+        router.push("/login");
       }
     };
 
