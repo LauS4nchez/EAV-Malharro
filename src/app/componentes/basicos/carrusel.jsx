@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { checkUserRole } from '@/app/componentes/validacion/checkRole';
 import toast from 'react-hot-toast';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import styles from '@/styles/components/Carrusel/Carousel.module.css';
@@ -16,7 +17,6 @@ const COLLECTION_PATH = '/carrusels';
 
 export default function Carrusel() {
   const sliderRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const [imagenesCarrusel, setImagenesCarrusel] = useState([]);
   const [title, setTitle] = useState('');
@@ -165,6 +165,87 @@ export default function Carrusel() {
     return true;
   };
 
+  // ========== NUEVO: Manejo de selección de imágenes con Capacitor ==========
+  const handleSelectImage = async () => {
+    if (uploading) return;
+
+    const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+    if (!jwt) {
+      toast.error('Tenés que iniciar sesión para subir imágenes.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen es muy grande (máx 5MB).');
+        return;
+      }
+
+      // Subir a Strapi
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: formData,
+      });
+
+      const uploadText = await uploadRes.text();
+
+      if (!uploadRes.ok) {
+        console.error('❌ Error upload:', uploadText);
+        toast.error('No se pudo subir la imagen.');
+        return;
+      }
+
+      const uploaded = JSON.parse(uploadText);
+      const uploadedFile = uploaded[0];
+
+      // Agregar a las imágenes editadas
+      setEditImages((prev) => [
+        ...prev,
+        {
+          id: uploadedFile.id,
+          url: uploadedFile.url.startsWith('http')
+            ? uploadedFile.url
+            : `${API_URL}${uploadedFile.url}`,
+        },
+      ]);
+
+      toast.success('Imagen subida correctamente.');
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+      toast.error('No se pudo subir la imagen: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ========== GUARDAR (Strapi 5 → documentId) ==========
   const handleSave = async (e) => {
     e?.preventDefault?.();
@@ -270,81 +351,6 @@ export default function Carrusel() {
     } catch (error) {
       console.error('❌ Error en fetch:', error);
       toast.error('No se pudo guardar el carrusel.');
-    }
-  };
-
-  // ========== SUBIR IMG DESDE DISPOSITIVO ==========
-  const handleOpenFilePicker = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e) => {
-    const files = e.target.files;
-    if (!files || !files.length) return;
-
-    const jwt =
-      typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
-    if (!jwt) {
-      toast.error('Tenés que iniciar sesión para subir imágenes.');
-      return;
-    }
-
-    const file = files[0];
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Solo se permiten imágenes.');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('La imagen es muy grande (máx 5MB).');
-      return;
-    }
-
-    try {
-      setUploading(true);
-
-      const formData = new FormData();
-      formData.append('files', file);
-
-      const uploadRes = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: formData,
-      });
-
-      const uploadText = await uploadRes.text();
-
-      if (!uploadRes.ok) {
-        console.error('❌ Error upload:', uploadText);
-        toast.error('No se pudo subir la imagen.');
-        return;
-      }
-
-      const uploaded = JSON.parse(uploadText);
-      const uploadedFile = uploaded[0];
-
-      setEditImages((prev) => [
-        ...prev,
-        {
-          id: uploadedFile.id,
-          url: uploadedFile.url.startsWith('http')
-            ? uploadedFile.url
-            : `${API_URL}${uploadedFile.url}`,
-        },
-      ]);
-
-      toast.success('Imagen subida.');
-    } catch (err) {
-      console.error(err);
-      toast.error('No se pudo subir la imagen.');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -470,22 +476,14 @@ export default function Carrusel() {
                 </div>
               ))}
 
-              {/* input oculto */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-              />
-
               <button
                 type="button"
-                onClick={handleOpenFilePicker}
+                onClick={handleSelectImage}
                 className={styles.addBtn}
                 disabled={uploading}
               >
-                {uploading ? 'Subiendo...' : 'Subir imagen desde dispositivo'}
+                {uploading ? 'Subiendo...' : 
+                 isNativePlatform() ? '📱 Elegir imagen' : 'Subir imagen desde dispositivo'}
               </button>
 
               <div className={styles.modalActions}>

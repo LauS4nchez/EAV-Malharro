@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { API_URL, API_TOKEN } from '@/app/config';
 import { checkUserRole } from '@/app/componentes/validacion/checkRole';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import styles from '@/styles/components/Construccion/Footer.module.css';
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
@@ -84,6 +85,7 @@ export default function FooterPage() {
   const [editRedes, setEditRedes] = useState([]);
   const [editErrors, setEditErrors] = useState({ footer: {}, redes: {} });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // ========= 1) TRAER FOOTER con varios intentos =========
   const fetchFooter = useCallback(async () => {
@@ -252,6 +254,173 @@ export default function FooterPage() {
     return errs;
   };
 
+  // ========= NUEVO: Manejo de selección de archivos con Capacitor =========
+  const handleSelectFile = async (field) => {
+    if (uploading) return;
+
+    const jwt = getBrowserJwt();
+    if (!jwt) {
+      toast.error('Tenés que iniciar sesión para subir imágenes.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones básicas
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen es muy grande (máx 5MB).');
+        return;
+      }
+
+      // Subir a Strapi
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        console.error('Error upload:', errText);
+        toast.error('No se pudo subir la imagen.');
+        return;
+      }
+
+      const uploaded = await uploadRes.json();
+      const uploadedFile = uploaded[0];
+
+      // Actualizar el estado correspondiente
+      const previewUrl = uploadedFile.url.startsWith('http')
+        ? uploadedFile.url
+        : `${API_URL}${uploadedFile.url}`;
+
+      if (field === 'img_ilustracion' || field === 'logo_principal') {
+        setEditData(prev => ({
+          ...prev,
+          [field]: uploadedFile.id,
+          [`${field}_preview`]: previewUrl
+        }));
+      }
+
+      toast.success('Imagen subida correctamente.');
+      return uploadedFile.id;
+
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+      toast.error('No se pudo subir la imagen: ' + err.message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // ========= NUEVO: Manejo de iconos para redes =========
+  const handleSelectIcon = async (index) => {
+    if (uploading) return;
+
+    const jwt = getBrowserJwt();
+    if (!jwt) {
+      toast.error('Tenés que iniciar sesión para subir imágenes.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      // Subir a Strapi
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        console.error('Error upload:', errText);
+        toast.error('No se pudo subir el icono.');
+        return;
+      }
+
+      const uploaded = await uploadRes.json();
+      const uploadedFile = uploaded[0];
+
+      const previewUrl = uploadedFile.url.startsWith('http')
+        ? uploadedFile.url
+        : `${API_URL}${uploadedFile.url}`;
+
+      // Actualizar la red específica
+      setEditRedes(prev => 
+        prev.map((red, i) => 
+          i === index ? {
+            ...red,
+            iconoId: uploadedFile.id,
+            iconoUrl: previewUrl
+          } : red
+        )
+      );
+
+      toast.success('Icono subido correctamente.');
+      return uploadedFile.id;
+
+    } catch (err) {
+      console.error('Error subiendo icono:', err);
+      toast.error('No se pudo subir el icono: ' + err.message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ========= 3) ABRIR MODAL =========
   const handleEditClick = () => {
     if (!canEdit) {
@@ -305,23 +474,6 @@ export default function FooterPage() {
     setEditErrors((prev) => ({ ...prev, footer: validateFooter(next) }));
   };
 
-  const handleFileChange = (field, file) => {
-    if (!file) {
-      setEditData((prev) => ({
-        ...prev,
-        [field]: null,
-        [`${field}_preview`]: prev[`${field}_preview`] || null,
-      }));
-      return;
-    }
-    const preview = URL.createObjectURL(file);
-    setEditData((prev) => ({
-      ...prev,
-      [field]: file,
-      [`${field}_preview`]: preview,
-    }));
-  };
-
   const handleAddRed = () => {
     setEditRedes((prev) => [
       ...prev,
@@ -362,19 +514,6 @@ export default function FooterPage() {
     }));
   };
 
-  const handleIconChange = (index, file) => {
-    setEditRedes((prev) => {
-      const next = [...prev];
-      const preview = file ? URL.createObjectURL(file) : next[index].iconoUrl;
-      next[index] = {
-        ...next[index],
-        iconoFile: file,
-        iconoUrl: preview,
-      };
-      return next;
-    });
-  };
-
   // ========= 5) GUARDAR =========
   const handleSave = async (e) => {
     e?.preventDefault();
@@ -401,70 +540,19 @@ export default function FooterPage() {
     }
 
     try {
-      // subir ilustracion
-      let ilustracionId =
-        footerData?.img_ilustracion?.data?.id ||
-        footerData?.img_ilustracion?.id ||
-        null;
-      if (editData.img_ilustracion instanceof File) {
-        const form = new FormData();
-        form.append('files', editData.img_ilustracion);
-        const up = await fetch(`${API_URL}/upload`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        });
-        const upJson = await up.json().catch(() => null);
-        if (up.ok && upJson?.[0]?.id) {
-          ilustracionId = upJson[0].id;
-        }
-      }
+      // Las imágenes ya fueron subidas durante la selección, solo usamos los IDs
+      const ilustracionId = editData.img_ilustracion;
+      const logoId = editData.logo_principal;
 
-      // subir logo
-      let logoId =
-        footerData?.logo_principal?.data?.id ||
-        footerData?.logo_principal?.id ||
-        null;
-      if (editData.logo_principal instanceof File) {
-        const form = new FormData();
-        form.append('files', editData.logo_principal);
-        const up = await fetch(`${API_URL}/upload`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        });
-        const upJson = await up.json().catch(() => null);
-        if (up.ok && upJson?.[0]?.id) {
-          logoId = upJson[0].id;
-        }
-      }
-
-      // subir iconos de redes
+      // redes finales
       const redesFinal = [];
       for (const red of editRedes) {
         if (red._delete) continue;
 
-        let iconoId = red.iconoId || null;
-
-        if (red.iconoFile instanceof File) {
-          const form = new FormData();
-          form.append('files', red.iconoFile);
-          const up = await fetch(`${API_URL}/upload`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-            body: form,
-          });
-          const upJson = await up.json().catch(() => null);
-          if (up.ok && upJson?.[0]?.id) {
-            iconoId = upJson[0].id;
-          }
-        }
-
-        // 👇 importante: repeatable component → NO mandar id del componente
         redesFinal.push({
           nombre: (red.nombre || '').trim(),
           url: cleanUrl(red.url || ''),
-          icono: iconoId ?? null,
+          icono: red.iconoId ?? null,
         });
       }
 
@@ -845,16 +933,15 @@ export default function FooterPage() {
                       Sin ilustración
                     </span>
                   )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleFileChange(
-                        'img_ilustracion',
-                        e.target.files?.[0] || null
-                      )
-                    }
-                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSelectFile('img_ilustracion')}
+                    className={styles.footerEditFileBtn}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Subiendo...' : 
+                     isNativePlatform() ? '📱 Elegir imagen' : 'Seleccionar imagen'}
+                  </button>
                 </div>
 
                 <div>
@@ -870,16 +957,15 @@ export default function FooterPage() {
                       Sin logo
                     </span>
                   )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleFileChange(
-                        'logo_principal',
-                        e.target.files?.[0] || null
-                      )
-                    }
-                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSelectFile('logo_principal')}
+                    className={styles.footerEditFileBtn}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Subiendo...' : 
+                     isNativePlatform() ? '📱 Elegir imagen' : 'Seleccionar imagen'}
+                  </button>
                 </div>
               </div>
 
@@ -962,13 +1048,15 @@ export default function FooterPage() {
                             Sin icono
                           </span>
                         )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) =>
-                            handleIconChange(index, e.target.files?.[0] || null)
-                          }
-                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSelectIcon(index)}
+                          className={styles.footerEditFileBtn}
+                          disabled={uploading}
+                        >
+                          {uploading ? 'Subiendo...' : 
+                           isNativePlatform() ? '📱 Elegir icono' : 'Seleccionar icono'}
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleRemoveRed(index)}
@@ -987,14 +1075,14 @@ export default function FooterPage() {
                   type="button"
                   onClick={handleCancelEdit}
                   className={styles.footerEditCancel}
-                  disabled={saving}
+                  disabled={saving || uploading}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   className={styles.footerEditSave}
-                  disabled={saving}
+                  disabled={saving || uploading}
                 >
                   {saving ? 'Guardando...' : 'Guardar'}
                 </button>

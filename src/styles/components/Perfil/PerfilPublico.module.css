@@ -972,3 +972,38 @@
   width: 1rem;
   height: 1rem;
 }
+
+/* Agrega estos estilos al final de tu archivo CSS */
+.avatarChangeSection {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.avatarChangeLabel {
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
+}
+
+.avatarChangeButton {
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.avatarChangeButton:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.avatarChangeButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

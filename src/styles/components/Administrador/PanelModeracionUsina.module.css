@@ -928,3 +928,69 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Agrega estos estilos al archivo CSS existente */
+
+.imageSelectButton {
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.imageSelectButton:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.imageSelectButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.imagePreviewContainer {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.imagePreview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.fileInfo {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  background: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.mediaEditWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selectedFileInfo {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.selectedFileInfo p {
+  margin: 4px 0;
+  color: #495057;
+}

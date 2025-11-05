@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { API_URL, URL } from '@/app/config';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import styles from '@/styles/components/Agenda/MisAgendasPage.module.css';
 
 export default function MisAgendasPage() {
@@ -29,11 +30,13 @@ export default function MisAgendasPage() {
     contenidoActividad: '',
     fecha: '',
     imagen: null,
+    imagenPreview: '',
   });
 
   // --- validación + avisos livianos ---
   const [errors, setErrors] = useState({ tituloActividad: '', contenidoActividad: '', fecha: '' });
   const [notice, setNotice] = useState({ type: '', message: '' }); // type: 'ok' | 'err' | ''
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   /** Muestra aviso temporalmente (UX mínima, sin librerías) */
   const showNotice = (type, message, ms = 2500) => {
@@ -144,6 +147,63 @@ export default function MisAgendasPage() {
     }
   };
 
+  // ========== NUEVO: Manejo de selección de imagen con Capacitor ==========
+  const handleSelectImage = async () => {
+    if (uploadingImage) return;
+
+    try {
+      setUploadingImage(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      const okType = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+      const maxMB = 3;
+
+      if (!file.type.startsWith('image/')) {
+        showNotice('err', 'Solo se permiten imágenes.');
+        return;
+      }
+
+      if (!okType.includes(file.type)) {
+        showNotice('err', 'Formato inválido (JPG, PNG, WEBP o AVIF).');
+        return;
+      }
+
+      if (file.size > maxMB * 1024 * 1024) {
+        showNotice('err', `La imagen supera ${maxMB} MB.`);
+        return;
+      }
+
+      // Actualizar el formulario con la imagen seleccionada
+      setEditData((prev) => ({ 
+        ...prev, 
+        imagen: file,
+        imagenPreview: mediaResult.dataUrl || mediaResult.webPath
+      }));
+      
+      showNotice('ok', 'Imagen seleccionada correctamente');
+
+    } catch (err) {
+      console.error('Error seleccionando imagen:', err);
+      showNotice('err', 'Error al seleccionar la imagen: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   /** Prepara datos y abre modal de edición */
   const abrirEditar = (agenda) => {
     setSelectedAgenda(agenda);
@@ -152,6 +212,7 @@ export default function MisAgendasPage() {
       contenidoActividad: agenda.contenidoActividad,
       fecha: agenda.fecha,
       imagen: null,
+      imagenPreview: agenda.imageUrl,
     });
     setErrors({ tituloActividad: '', contenidoActividad: '', fecha: '' });
     setShowEditModal(true);
@@ -160,10 +221,22 @@ export default function MisAgendasPage() {
   /** Control del formulario de edición (incluye file input) */
   const handleEditChange = (e) => {
     const { name, value, files } = e.target;
-    setEditData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
+
+    if (name === 'imagen' && files && files[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => setEditData((prev) => ({ 
+        ...prev, 
+        imagen: file, 
+        imagenPreview: ev.target.result 
+      }));
+      reader.readAsDataURL(file);
+    } else {
+      setEditData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
 
     // Validación básica en vivo (solo campos de texto/fecha)
     if (['tituloActividad', 'contenidoActividad', 'fecha'].includes(name)) {
@@ -451,14 +524,45 @@ export default function MisAgendasPage() {
                 )}
               </div>
               <div>
-                <label htmlFor="imagen">Imagen (opcional):</label>
-                <input
-                  id="imagen"
-                  type="file"
-                  name="imagen"
-                  accept="image/*"
-                  onChange={handleEditChange}
-                />
+                <label>Imagen (opcional):</label>
+                
+                {/* Input file tradicional solo para web */}
+                {!isNativePlatform() && (
+                  <input
+                    id="imagen"
+                    type="file"
+                    name="imagen"
+                    accept="image/*"
+                    onChange={handleEditChange}
+                  />
+                )}
+
+                {/* Botón para seleccionar imagen en app nativa */}
+                <button
+                  type="button"
+                  onClick={handleSelectImage}
+                  className={styles.imageSelectButton}
+                  disabled={uploadingImage}
+                >
+                  {uploadingImage ? 'Seleccionando...' : 
+                   isNativePlatform() ? '📱 Elegir imagen' : 'Seleccionar imagen'}
+                </button>
+
+                {/* Mostrar preview de la imagen */}
+                {editData.imagenPreview && (
+                  <div className={styles.imagePreviewContainer}>
+                    <img 
+                      src={editData.imagenPreview} 
+                      alt="Preview" 
+                      className={styles.imagePreview}
+                    />
+                    {editData.imagen && (
+                      <p className={styles.fileInfo}>
+                        Archivo: {editData.imagen.name} ({(editData.imagen.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <div className={styles.modalButtons}>
                 <button type="submit" className={styles.btnModificar}>

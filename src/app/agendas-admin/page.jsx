@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { API_URL, URL, API_TOKEN } from '@/app/config';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import toast from 'react-hot-toast';
 import styles from '@/styles/components/Administrador/PanelModeracionUsina.module.css';
 
@@ -263,6 +264,7 @@ export default function AgendasAdminPage() {
   });
   const [editErrors, setEditErrors] = useState({});
   const [savingEdit, setSavingEdit] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const abrirModalEdicion = (agenda) => {
     setEditModal({ open: true, agenda });
@@ -294,6 +296,63 @@ export default function AgendasAdminPage() {
   const [deleteModal, setDeleteModal] = useState({ open: false, agenda: null, motivo: '' });
   const abrirModalDelete = (agenda) => setDeleteModal({ open: true, agenda, motivo: '' });
   const cerrarModalDelete = () => setDeleteModal({ open: false, agenda: null, motivo: '' });
+
+  /* =================== NUEVO: Manejo de selección de imagen con Capacitor =================== */
+  const handleSelectImage = async () => {
+    if (uploadingImage) return;
+
+    try {
+      setUploadingImage(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      const okType = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+      const maxMB = 3;
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      if (!okType.includes(file.type)) {
+        toast.error('Formato inválido (JPG, PNG, WEBP o AVIF).');
+        return;
+      }
+
+      if (file.size > maxMB * 1024 * 1024) {
+        toast.error(`La imagen supera ${maxMB} MB.`);
+        return;
+      }
+
+      // Actualizar el formulario con la imagen seleccionada
+      setEditForm((prev) => ({ 
+        ...prev, 
+        imagenFile: file,
+        imagenPreview: mediaResult.dataUrl || mediaResult.webPath
+      }));
+      
+      toast.success('Imagen seleccionada correctamente');
+
+    } catch (err) {
+      console.error('Error seleccionando imagen:', err);
+      toast.error('Error al seleccionar la imagen: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   /* =================== Validaciones =================== */
   const validarEdicion = (form) => {
@@ -798,14 +857,37 @@ export default function AgendasAdminPage() {
                         )
                         : <div className={styles.noMedia}>Sin imagen actual</div>
                       }
-                      <input
-                        type="file"
-                        name="imagen"
-                        id="imagen"
-                        accept="image/jpeg,image/png,image/webp,image/avif"
-                        onChange={handleEditInputChange}
-                        className={styles.fileInput}
-                      />
+                      
+                      {/* Input file tradicional solo para web */}
+                      {!isNativePlatform() && (
+                        <input
+                          type="file"
+                          name="imagen"
+                          id="imagen"
+                          accept="image/jpeg,image/png,image/webp,image/avif"
+                          onChange={handleEditInputChange}
+                          className={styles.fileInput}
+                        />
+                      )}
+
+                      {/* Botón para seleccionar imagen en app nativa */}
+                      <button
+                        type="button"
+                        onClick={handleSelectImage}
+                        className={styles.imageSelectButton}
+                        disabled={uploadingImage}
+                      >
+                        {uploadingImage ? 'Seleccionando...' : 
+                         isNativePlatform() ? '📱 Elegir imagen' : 'Seleccionar imagen'}
+                      </button>
+
+                      {/* Mostrar información del archivo seleccionado */}
+                      {editForm.imagenFile && (
+                        <div className={styles.selectedFileInfo}>
+                          <p>Archivo seleccionado: {editForm.imagenFile.name}</p>
+                          <p>Tamaño: {(editForm.imagenFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      )}
                     </div>
                     {editErrors.imagen && <p className={styles.errorText}>{editErrors.imagen}</p>}
                   </div>

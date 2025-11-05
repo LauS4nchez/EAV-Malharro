@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { API_URL, API_TOKEN } from '@/app/config';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import styles from '@/styles/components/Perfil/PerfilPublico.module.css';
 import toast from 'react-hot-toast';
 
@@ -179,32 +180,44 @@ export default function InformacionPersonal({
     }
   };
 
-  const handleAvatarChange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // ========== NUEVO: Manejo de avatar con Capacitor ==========
+  const handleAvatarChange = async () => {
+    if (avatarUploading) return;
 
-    // Validar que sea una imagen
-    if (!file.type.startsWith('image/')) {
-      setError('Por favor, selecciona un archivo de imagen válido');
-      toast.error('Archivo no válido');
-      return;
-    }
-
-    // Validar tamaño (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen debe ser menor a 5MB');
-      toast.error('La imagen debe ser menor a 5MB');
+    const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+    if (!jwt) {
+      setError('No se encontró la sesión del usuario. Volvé a iniciar sesión.');
+      toast.error('No se encontró la sesión del usuario.');
       return;
     }
 
     try {
       setAvatarUploading(true);
       setError('');
-      const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
 
-      if (!jwt) {
-        setError('No se encontró la sesión del usuario. Volvé a iniciar sesión.');
-        toast.error('No se encontró la sesión del usuario.');
+      // Usar el mediaPicker para seleccionar imagen
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: true, // Permitir recorte para avatar
+        quality: 80,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      if (!file.type.startsWith('image/')) {
+        toast.error('Por favor, selecciona un archivo de imagen válido');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen debe ser menor a 5MB');
         return;
       }
 
@@ -480,17 +493,19 @@ export default function InformacionPersonal({
         </div>
       </div>
 
-      {/* Input oculto para avatar */}
-      {isCurrentUser && (
-        <input
-          id="avatar-upload"
-          type="file"
-          accept="image/*"
-          onChange={handleAvatarChange}
-          className={styles.avatarUploadInput}
-          disabled={avatarUploading}
-          style={{ display: 'none' }}
-        />
+      {/* Botón para cambiar avatar - solo visible cuando se está editando */}
+      {isCurrentUser && editing && (
+        <div className={styles.avatarChangeSection}>
+          <p className={styles.avatarChangeLabel}>Cambiar avatar:</p>
+          <button
+            onClick={handleAvatarChange}
+            className={styles.avatarChangeButton}
+            disabled={avatarUploading}
+          >
+            {avatarUploading ? 'Subiendo...' : 
+             isNativePlatform() ? '📱 Elegir imagen de perfil' : 'Seleccionar imagen de perfil'}
+          </button>
+        </div>
       )}
     </div>
   );

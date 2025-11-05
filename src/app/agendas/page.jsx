@@ -19,6 +19,7 @@ import {
 import { es } from 'date-fns/locale';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import styles from '@/styles/components/Agenda/AgendaPage.module.css';
 import toast from 'react-hot-toast';
 
@@ -96,6 +97,7 @@ export default function CalendarioPage() {
   // Gestión de validaciones
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [uploading, setUploading] = useState(false);
 
   // ---------- helpers de validación ----------
   const isFutureOrToday = (yyyyMMdd) => {
@@ -298,6 +300,66 @@ export default function CalendarioPage() {
     checkYNotificar();
   }, [jwt, userId, agendas]);
 
+  // ---------- NUEVO: Manejo de selección de imagen con Capacitor ----------
+  const handleSelectImage = async () => {
+    if (uploading) return;
+
+    const token = jwt;
+    if (!token) {
+      setNotice({ type: 'error', text: 'Debes iniciar sesión para subir imágenes.' });
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones
+      const okType = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+      const maxMB = 3;
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      if (!okType.includes(file.type)) {
+        toast.error('Formato inválido (JPG, PNG, WEBP o AVIF).');
+        return;
+      }
+
+      if (file.size > maxMB * 1024 * 1024) {
+        toast.error(`La imagen supera ${maxMB} MB.`);
+        return;
+      }
+
+      // Actualizar el formulario con la imagen seleccionada
+      setAgendaForm((prev) => ({ ...prev, imagen: file }));
+      setTouched((prev) => ({ ...prev, imagen: true }));
+      
+      toast.success('Imagen seleccionada correctamente');
+
+    } catch (err) {
+      console.error('Error seleccionando imagen:', err);
+      toast.error('Error al seleccionar la imagen: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ---------- formulario ----------
   const handleFormChange = (e) => {
     const { name, value, files } = e.target;
@@ -356,6 +418,8 @@ export default function CalendarioPage() {
     }
 
     try {
+      setUploading(true);
+
       // 1) Subida de imagen
       let imagenId = null;
       if (agendaForm.imagen) {
@@ -459,6 +523,8 @@ export default function CalendarioPage() {
     } catch (err) {
       console.error('Error al crear agenda:', err);
       setNotice({ type: 'error', text: 'Ocurrió un problema al crear la agenda.' });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -674,15 +740,39 @@ export default function CalendarioPage() {
 
                 <div>
                   <label>Imagen:</label>
-                  <input
-                    type="file"
-                    name="imagen"
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                    onChange={handleFormChange}
-                    onBlur={handleBlur}
-                    aria-invalid={!!(touched.imagen && liveErrors.imagen)}
-                    required
-                  />
+                  
+                  {/* Input file tradicional solo para web */}
+                  {!isNativePlatform() && (
+                    <input
+                      type="file"
+                      name="imagen"
+                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      onChange={handleFormChange}
+                      onBlur={handleBlur}
+                      aria-invalid={!!(touched.imagen && liveErrors.imagen)}
+                      required
+                    />
+                  )}
+
+                  {/* Botón para seleccionar imagen en app nativa */}
+                  <button
+                    type="button"
+                    onClick={handleSelectImage}
+                    className={styles.imageSelectButton}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Seleccionando...' : 
+                     isNativePlatform() ? '📱 Elegir imagen' : 'Seleccionar imagen'}
+                  </button>
+
+                  {/* Mostrar información del archivo seleccionado */}
+                  {agendaForm.imagen && (
+                    <div className={styles.selectedFileInfo}>
+                      <p>Archivo seleccionado: {agendaForm.imagen.name}</p>
+                      <p>Tamaño: {(agendaForm.imagen.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  )}
+
                   {touched.imagen && liveErrors.imagen && (
                     <small className={styles.error}>{liveErrors.imagen}</small>
                   )}
@@ -691,10 +781,10 @@ export default function CalendarioPage() {
                 <button
                   type="submit"
                   className={styles.navButton}
-                  disabled={!formIsValid}
+                  disabled={!formIsValid || uploading}
                   title={!formIsValid ? 'Completá y corregí los campos' : 'Crear'}
                 >
-                  Crear
+                  {uploading ? 'Creando...' : 'Crear'}
                 </button>
               </form>
             </div>
