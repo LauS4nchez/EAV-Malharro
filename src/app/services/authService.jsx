@@ -87,7 +87,7 @@ export const authService = {
       headers["Authorization"] = `Bearer ${tempJwt}`;
     }
 
-    const response = await fetch(`${API_URL}/auth/set-password-provider`, {
+    const response = await fetch(`${API_URL}/set-password`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify({ email, username, password, provider }),
