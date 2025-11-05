@@ -34,8 +34,19 @@ export default function DiscordCallback() {
         // Cerrar browser si estamos en mobile
         alert('🔧 PASO 3: Cerrando browser...');
         if (window.Capacitor) {
-          await Browser.close();
-          alert('✅ Browser cerrado');
+          try {
+            // Verificar si hay una ventana activa antes de intentar cerrar
+            const canClose = await Browser.canClose();
+            if (canClose) {
+              await Browser.close();
+              alert('✅ Browser cerrado');
+            } else {
+              alert('ℹ️ No hay ventana activa para cerrar, continuando...');
+            }
+          } catch (closeError) {
+            alert('ℹ️ No se pudo cerrar el browser, continuando...');
+            console.warn('No se pudo cerrar el browser:', closeError);
+          }
         }
 
         // Intercambiar code por token
