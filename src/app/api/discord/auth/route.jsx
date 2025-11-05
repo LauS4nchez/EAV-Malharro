@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
-
 import { clientIDDiscord, clientSecretDiscord } from "@/app/config";
 
 export async function POST(request) {
   try {
     const { code, redirectUri } = await request.json();
+
+    console.log('=== DEBUG DISCORD AUTH ===');
+    console.log('Code recibido:', code ? 'SÍ' : 'NO');
+    console.log('Redirect URI:', redirectUri);
+    console.log('Client ID:', clientIDDiscord ? 'CONFIGURADO' : 'NO CONFIGURADO');
+    console.log('Client Secret:', clientSecretDiscord ? 'CONFIGURADO' : 'NO CONFIGURADO');
+    console.log('========================');
 
     if (!code || !redirectUri) {
       return NextResponse.json({ error: "Missing code or redirectUri" }, { status: 400 });
@@ -23,18 +29,21 @@ export async function POST(request) {
       }),
     });
 
+    const responseText = await tokenResponse.text();
+    console.log('Discord token response status:', tokenResponse.status);
+    console.log('Discord token response:', responseText);
+
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
       return NextResponse.json(
-        { error: `Discord API error: ${tokenResponse.status} - ${errorText}` },
+        { error: `Discord API error: ${tokenResponse.status} - ${responseText}` },
         { status: tokenResponse.status }
       );
     }
 
-    const tokenData = await tokenResponse.json();
+    const tokenData = JSON.parse(responseText);
     return NextResponse.json(tokenData);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Discord token exchange error:', error);
+    return NextResponse.json({ error: "Internal server error: " + error.message }, { status: 500 });
   }
 }

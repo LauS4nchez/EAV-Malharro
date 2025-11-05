@@ -12,7 +12,6 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
   const nativeLogin = async () => {
   try {
     setLoading(true);
-    console.log('🔧 Starting native Google login with Browser...');
 
     // Usa tu URL web como redirect
     const redirectUri = 'https://eav-malharro.onrender.com/auth/callback/google';
@@ -28,19 +27,12 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
       state: state,
     })}`;
 
-    console.log('🔧 Google Auth URL:', authUrl);
-
-    if (window.alert) {
-      alert('🔧 Abriendo Google Auth...');
-    }
-
     await Browser.open({ 
       url: authUrl,
       windowName: '_self'
     });
 
   } catch (err) {
-    console.error("❌ Error opening Browser:", err);
     toast.error("Error al abrir el navegador");
     setLoading(false);
   }
@@ -69,7 +61,6 @@ export function useGoogleAuthCross({ setStep, setEmail, setLoading, router }) {
         });
 
         const text = await authRes.text();
-        console.log('🔧 Strapi response:', text);
         
         if (!authRes.ok) throw new Error(text);
         const authData = JSON.parse(text);

@@ -13,17 +13,10 @@ export const useDeepLinks = () => {
           const url = new URL(data.url);
           console.log('🔧 Deep link recibido:', url.toString());
 
-          // Alertas para debugging
-          if (window.alert) {
-            alert('🔧 Deep link recibido: ' + url.toString());
-          }
-
           // Manejar callback de Discord
           if (url.protocol === 'malharro:' && url.host === 'auth' && url.pathname.includes('/callback/discord')) {
             const code = url.searchParams.get('code');
             const error = url.searchParams.get('error');
-            
-            console.log('🔧 Discord callback - code:', code, 'error:', error);
 
             if (code) {
               // Cerrar el browser

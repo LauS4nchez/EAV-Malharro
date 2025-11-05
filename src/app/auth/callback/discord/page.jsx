@@ -1,21 +1,67 @@
 "use client";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Browser } from "@capacitor/browser";
+import { toast } from "react-hot-toast";
 import { discordService } from "@/app/services/discordService";
 import { API_URL, getDiscordRedirectUri } from "@/app/config";
 
 export default function DiscordCallback() {
+  const router = useRouter();
+
   useEffect(() => {
-    const run = async () => {
+    const handleCallback = async () => {
       try {
+        alert('🔧 PASO 1: Discord callback iniciado');
+        
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
-        if (!code) throw new Error("No se recibió código de autorización");
+        const error = urlParams.get("error");
 
-        const redirectUri = getDiscordRedirectUri(); // https://tu-dominio.com/discord/callback
+        alert('🔧 PASO 2: Code recibido: ' + (code ? 'SÍ' : 'NO'));
 
+        if (error) {
+          alert('❌ ERROR de Discord: ' + error);
+          throw new Error(`Discord auth error: ${error}`);
+        }
+
+        if (!code) {
+          alert('❌ NO hay código de Discord');
+          throw new Error("No se recibió código de autorización de Discord");
+        }
+
+        // Cerrar browser si estamos en mobile
+        alert('🔧 PASO 3: Cerrando browser...');
+        if (window.Capacitor) {
+          await Browser.close();
+          alert('✅ Browser cerrado');
+        }
+
+        // Intercambiar code por token
+        alert('🔧 PASO 4: Intercambiando code por token...');
+        const redirectUri = getDiscordRedirectUri();
         const tokenData = await discordService.getAccessToken(code, redirectUri);
-        const discordUser = await discordService.getUserInfo(tokenData.access_token);
+        
+        alert('🔧 PASO 4.1: Token recibido: ' + (tokenData.access_token ? 'SÍ' : 'NO'));
 
+        if (!tokenData.access_token) {
+          alert('❌ NO hay access token en la respuesta');
+          throw new Error("No access token received from Discord");
+        }
+
+        // Obtener info del usuario
+        alert('🔧 PASO 5: Obteniendo info del usuario de Discord...');
+        const discordUser = await discordService.getUserInfo(tokenData.access_token);
+        
+        alert('🔧 PASO 5.1: Info de usuario recibida: ' + (discordUser.email ? 'SÍ' : 'NO'));
+
+        if (!discordUser.email) {
+          alert('❌ NO hay email en la info del usuario');
+          throw new Error("No email received from Discord");
+        }
+
+        // Login con Strapi
+        alert('🔧 PASO 6: Enviando a Strapi...');
         const authRes = await fetch(`${API_URL}/discord-auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -30,45 +76,72 @@ export default function DiscordCallback() {
           }),
         });
 
+        alert('🔧 PASO 6.1: Respuesta de Strapi - Status: ' + authRes.status);
+        
         const responseText = await authRes.text();
-        if (!authRes.ok) throw new Error(responseText);
-        const authData = JSON.parse(responseText);
+        alert('🔧 PASO 6.2: Texto de respuesta Strapi: ' + responseText.substring(0, 100));
+        
+        if (!authRes.ok) {
+          alert('❌ ERROR de Strapi: ' + responseText);
+          throw new Error(responseText);
+        }
 
-        if (authData.user && authData.user.loginMethods && authData.user.loginMethods !== "both") {
-          if (window.opener) {
-            window.opener.postMessage(
-              {
-                type: "DISCORD_AUTH_NEEDS_PASSWORD",
-                email: authData.user.email,
-                jwt: authData.jwt,
-                userData: authData.user,
-              },
-              window.location.origin
-            );
+        const authData = JSON.parse(responseText);
+        alert('🔧 PASO 6.3: JWT recibido: ' + (authData.jwt ? 'SÍ' : 'NO'));
+
+        // VERIFICAR SI NECESITA SET PASSWORD
+        if (authData.user?.loginMethods !== "both") {
+          // Usuario necesita configurar contraseña
+          alert('🔧 Usuario necesita setPassword');
+          
+          if (window.Capacitor) {
+            // Redirigir a la app con información para setPassword
+            const appUrl = `malharro://login/setPassword?email=${encodeURIComponent(authData.user.email)}&jwt=${encodeURIComponent(authData.jwt)}&provider=discord`;
+            alert('🔧 Redirigiendo a setPassword: ' + appUrl);
+            window.location.href = appUrl;
+          } else {
+            // En web - guardar en localStorage y redirigir a setPassword
+            localStorage.setItem("pendingDiscordAuth", JSON.stringify({
+              email: authData.user.email,
+              jwt: authData.jwt
+            }));
+            router.push("/login?step=setPassword");
           }
         } else {
-          if (window.opener) {
-            window.opener.postMessage(
-              { type: "DISCORD_AUTH_SUCCESS", user: authData.user, jwt: authData.jwt },
-              window.location.origin
-            );
+          // Login completo - usuario ya tiene ambos métodos
+          alert('✅ Login completo, usuario tiene ambos métodos');
+          
+          if (window.Capacitor) {
+            // Redirigir a la app con éxito completo
+            const appUrl = `malharro://login/success?jwt=${encodeURIComponent(authData.jwt)}&user=${encodeURIComponent(JSON.stringify(authData.user))}`;
+            alert('🔧 Redirigiendo a success: ' + appUrl);
+            window.location.href = appUrl;
+          } else {
+            // En web - login completo
+            localStorage.setItem("jwt", authData.jwt);
+            localStorage.setItem("userRole", authData.user?.role?.name || "Authenticated");
+            toast.success(`¡Bienvenido ${authData.user?.username || discordUser.username}!`);
+            router.push("/");
           }
         }
 
-        setTimeout(() => window.close(), 800);
-      } catch (error) {
-        console.error("Error en callback Discord:", error);
-        if (window.opener) {
-          window.opener.postMessage(
-            { type: "DISCORD_AUTH_ERROR", error: error.message },
-            window.location.origin
-          );
+      } catch (err) {
+        console.error("❌ Discord callback error:", err);
+        alert('❌ ERROR FINAL: ' + err.message);
+        
+        if (window.Capacitor) {
+          // Redirigir a la app con error
+          const errorUrl = `malharro://login?error=${encodeURIComponent(err.message)}`;
+          window.location.href = errorUrl;
+        } else {
+          toast.error("Error en autenticación: " + err.message);
+          router.push("/login");
         }
-        setTimeout(() => window.close(), 800);
       }
     };
-    run();
-  }, []);
+
+    handleCallback();
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

@@ -14,7 +14,6 @@ export default function GoogleCallback() {
       const code = urlParams.get("code");
       
       if (!code) {
-        console.error('❌ No code received in callback');
         if (window.Capacitor) {
           window.location.href = 'malharro://login?error=no_code_received';
         } else {
@@ -25,8 +24,6 @@ export default function GoogleCallback() {
       }
 
       try {
-        console.log('🔧 Processing Google callback with code:', code.substring(0, 20) + '...');
-
         // Intercambiar code por token
         const tokenResponse = await fetch("/api/google/auth", {
           method: "POST",
@@ -82,12 +79,10 @@ export default function GoogleCallback() {
         // VERIFICAR SI NECESITA SET PASSWORD
         if (authData.user?.loginMethods !== "both") {
           // Usuario necesita configurar contraseña
-          console.log('🔧 User needs to set password');
           
           if (window.Capacitor) {
             // Redirigir a la app con información para setPassword
             const appUrl = `malharro://login/setPassword?email=${encodeURIComponent(authData.user.email)}&jwt=${encodeURIComponent(authData.jwt)}`;
-            console.log('🔧 Redirecting to setPassword:', appUrl);
             window.location.href = appUrl;
           } else {
             // En web - guardar en localStorage y redirigir a setPassword
@@ -99,7 +94,6 @@ export default function GoogleCallback() {
           }
         } else {
           // Login completo - usuario ya tiene ambos métodos
-          console.log('✅ User has both login methods, login complete');
           
           if (window.Capacitor) {
             // Redirigir a la app con éxito completo
