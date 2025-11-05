@@ -16,8 +16,9 @@
     "@capacitor/android": "^7.4.4",
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.2",
-    "@capacitor/camera": "latest",
+    "@capacitor/camera": "^7.0.2",
     "@capacitor/core": "^7.4.4",
+    "@capacitor/filesystem": "^7.1.4",
     "@capacitor/splash-screen": "latest",
     "@capgo/capacitor-social-login": "^7.14.11"
   },

@@ -4,17 +4,12 @@ import { useState, useRef, useMemo } from 'react';
 import { API_URL, URL, API_TOKEN } from '@/app/config';
 import toast from 'react-hot-toast';
 import styles from '@/styles/components/Usina/CrearUsinaModal.module.css';
+import { isNativePlatform, openMediaPicker, getCameraSourceOptions } from '@/app/utils/mediaPicker';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
 const MIN_TITLE_LEN = 5;
 
-/**
- * Helper notificaciones (ajustado a tu schema):
- * - leida: "leida" | "no-leida"
- * - usinaAfectada: relation -> api::usina.usina
- * - fechaEmision: datetime
- */
 async function crearNotificacionInline({
   jwt,
   adminToken,
@@ -98,7 +93,71 @@ export default function CrearUsinaModal({
     return '';
   };
 
-  // -------- handlers --------
+  // -------- NEW: Media selection handler --------
+  const handleMediaSelection = async (sourceType = 'photos') => {
+    if (loading) return;
+
+    try {
+      const sourceOptions = getCameraSourceOptions();
+      const source = sourceOptions[sourceType] || sourceOptions.photos;
+
+      const mediaResult = await openMediaPicker({
+        source: source,
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        return; // User cancelled
+      }
+
+      const file = mediaResult.file;
+
+      // Validar el archivo seleccionado
+      const errorMedia = validarArchivo(file);
+      if (errorMedia) {
+        setErrors((prev) => ({ ...prev, media: errorMedia }));
+        setFormData((prev) => ({ ...prev, media: null }));
+        setMediaPreview(null);
+        toast.error(errorMedia);
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, media: file }));
+      setErrors((prev) => ({ ...prev, media: '' }));
+
+      // Crear preview
+      setMediaPreview({
+        url: mediaResult.dataUrl || mediaResult.webPath,
+        type: file.type.startsWith('image/') ? 'image' : 'video'
+      });
+
+    } catch (error) {
+      console.error('Error seleccionando media:', error);
+      toast.error('Error al seleccionar el archivo');
+    }
+  };
+
+  // -------- UPDATED: Media click handler --------
+  const handleMediaClick = () => {
+    if (loading) return;
+
+    if (isNativePlatform()) {
+      // En app nativa, mostrar opciones de cámara/galería
+      handleNativeMediaSelection();
+    } else {
+      // En web, usar el input file tradicional
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleNativeMediaSelection = () => {
+    // Por ahora, vamos directo a la galería
+    handleMediaSelection('photos');
+  };
+
+  // -------- UPDATED: Change handler (keep for web) --------
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -127,10 +186,6 @@ export default function CrearUsinaModal({
       if (errorTitulo) setErrors((prev) => ({ ...prev, titulo: errorTitulo }));
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleMediaClick = () => {
-    if (!loading) fileInputRef.current?.click();
   };
 
   const handleSubmit = async (e) => {
@@ -259,7 +314,7 @@ export default function CrearUsinaModal({
           await Promise.all(
             admins.map((adminUser) =>
               crearNotificacionInline({
-                adminToken: API_TOKEN,       // usamos API_TOKEN para notificar “como sistema”
+                adminToken: API_TOKEN,       // usamos API_TOKEN para notificar "como sistema"
                 titulo: 'Nueva usina pendiente',
                 mensaje: msgAdmin,
                 receptorId: adminUser.id,
@@ -354,10 +409,9 @@ export default function CrearUsinaModal({
 
               <div className={styles.formGroup}>
                 <label className={styles.label}>Imagen o Video *</label>
-                <div
-                  className={`${styles.mediaUploadArea} ${errors.media ? styles.inputError : ''}`}
-                  onClick={handleMediaClick}
-                >
+                
+                {/* Solo mostrar input file para web */}
+                {!isNativePlatform() && (
                   <input
                     ref={fileInputRef}
                     id="media"
@@ -368,6 +422,12 @@ export default function CrearUsinaModal({
                     className={styles.fileInput}
                     disabled={loading}
                   />
+                )}
+
+                <div
+                  className={`${styles.mediaUploadArea} ${errors.media ? styles.inputError : ''}`}
+                  onClick={handleMediaClick}
+                >
                   <div className={styles.uploadPlaceholder}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -376,8 +436,20 @@ export default function CrearUsinaModal({
                       <line x1="16" y1="17" x2="8" y2="17" />
                       <polyline points="10,9 9,9 8,9" />
                     </svg>
-                    <p>Haz clic para subir imagen o video</p>
+                    <p>
+                      {isNativePlatform() 
+                        ? "Tocá para elegir de la galería o cámara" 
+                        : "Haz clic para subir imagen o video"
+                      }
+                    </p>
                     <span>Formatos soportados: JPG, PNG, MP4, MOV</span>
+                    
+                    {/* Indicador para app nativa */}
+                    {isNativePlatform() && (
+                      <div className={styles.nativeIndicator}>
+                        📱 Usando app nativa
+                      </div>
+                    )}
                   </div>
                 </div>
                 {formData.media && <p className={styles.fileName}>{formData.media.name}</p>}
