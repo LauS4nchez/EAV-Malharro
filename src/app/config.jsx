@@ -34,6 +34,9 @@ export const isNative = () => {
 };
 
 export const getDiscordRedirectUri = () => {
+  if (isNative()) {
+    return `${SITE_URL}/auth/callback/discord`;
+  }
   return process.env.NODE_ENV === "production" ? discordRedirectUriProd : discordRedirectUriDev;
 };
 
