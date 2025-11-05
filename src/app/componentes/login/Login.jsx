@@ -23,13 +23,64 @@ export default function UnifiedAuth() {
   useDeepLinks();
 
   useEffect(() => {
-    const pendingAuth = localStorage.getItem("pendingDiscordAuth");
-    if (pendingAuth) {
-      const { email } = JSON.parse(pendingAuth);
+    // Verificar auth pendiente al cargar
+    const pendingDiscordAuth = localStorage.getItem("pendingDiscordAuth");
+    const pendingGoogleAuth = localStorage.getItem("pendingGoogleAuth");
+    
+    if (pendingDiscordAuth) {
+      const { email } = JSON.parse(pendingDiscordAuth);
       setEmail(email);
       setStep("setPassword");
     }
+    
+    if (pendingGoogleAuth) {
+      const { email } = JSON.parse(pendingGoogleAuth);
+      setEmail(email);
+      setStep("setPassword");
+    }
+
+    // Verificar parámetro de URL para setPassword
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('step') === 'setPassword') {
+      const pendingAuth = localStorage.getItem("pendingGoogleAuth") || localStorage.getItem("pendingDiscordAuth");
+      if (pendingAuth) {
+        const { email } = JSON.parse(pendingAuth);
+        setEmail(email);
+        setStep("setPassword");
+      }
+    }
   }, []);
+
+  // Manejar eventos de deep links
+  useEffect(() => {
+    const handleAuthSetPassword = (event) => {
+      if (event.detail?.email) {
+        setEmail(event.detail.email);
+        setStep("setPassword");
+        // Guardar el JWT temporalmente para usarlo después
+        if (event.detail.jwt) {
+          localStorage.setItem("tempJwt", event.detail.jwt);
+        }
+      }
+    };
+
+    const handleAuthSuccess = (event) => {
+      if (event.detail?.user && event.detail?.jwt) {
+        localStorage.setItem("jwt", event.detail.jwt);
+        localStorage.setItem("userRole", event.detail.user.role?.name || "Authenticated");
+        toast.success(`¡Bienvenido ${event.detail.user.username}!`);
+        router.push("/");
+      }
+    };
+
+    window.addEventListener('authSetPassword', handleAuthSetPassword);
+    window.addEventListener('authSuccess', handleAuthSuccess);
+
+    return () => {
+      window.removeEventListener('authSetPassword', handleAuthSetPassword);
+      window.removeEventListener('authSuccess', handleAuthSuccess);
+    };
+  }, [router]);
 
   const { signIn: googleLogin } = useGoogleAuthCross({ setStep, setEmail, setLoading, router });
   const discordLogin = useDiscordAuthCross({ setStep, setEmail, setLoading, router });
@@ -120,12 +171,21 @@ export default function UnifiedAuth() {
     try {
       let data;
       const pendingDiscordAuth = localStorage.getItem("pendingDiscordAuth");
+      const pendingGoogleAuth = localStorage.getItem("pendingGoogleAuth");
+      const tempJwt = localStorage.getItem("tempJwt");
+      
       if (pendingDiscordAuth) {
         data = await authService.setPasswordWithProvider(email, username, password, "discord");
         localStorage.removeItem("pendingDiscordAuth");
+      } else if (pendingGoogleAuth || tempJwt) {
+        // Para Google, usa el JWT temporal para linkear la cuenta
+        data = await authService.setPasswordWithProvider(email, username, password, "google", tempJwt);
+        localStorage.removeItem("pendingGoogleAuth");
+        localStorage.removeItem("tempJwt");
       } else {
         data = await authService.setPassword(email, username, password);
       }
+      
       localStorage.setItem("jwt", data.jwt);
       localStorage.setItem("userRole", data.user.role?.name || "Authenticated");
       toast.success(`Cuenta configurada correctamente.`);
@@ -143,24 +203,9 @@ export default function UnifiedAuth() {
     setUsername("");
     setPassword("");
     localStorage.removeItem("pendingDiscordAuth");
+    localStorage.removeItem("pendingGoogleAuth");
+    localStorage.removeItem("tempJwt");
   };
-
-  // Manejar auth exitosa desde deep links
-  useEffect(() => {
-    const handleAuthSuccess = (event) => {
-      if (event.detail?.user && event.detail?.jwt) {
-        localStorage.setItem("jwt", event.detail.jwt);
-        localStorage.setItem("userRole", event.detail.user.role?.name || "Authenticated");
-        toast.success(`¡Bienvenido ${event.detail.user.username}!`);
-        router.push("/");
-      }
-    };
-
-    window.addEventListener('authSuccess', handleAuthSuccess);
-    return () => {
-      window.removeEventListener('authSuccess', handleAuthSuccess);
-    };
-  }, [router]);
 
   return (
     <div className={styles.container}>

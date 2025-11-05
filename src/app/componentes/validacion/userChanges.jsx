@@ -158,6 +158,30 @@ export const userService = {
     return await response.json()
   },
 
+  deleteUser: async (userId) => {
+    const jwt = getJWT()
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error?.message || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  },
+
+
   // ✅ Nueva función: Actualizar datos generales de usuario (nombre, apellido, carrera, email, etc.)
   async updateUser(userId, data) {
     const jwt = getJWT()

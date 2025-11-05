@@ -77,19 +77,27 @@ export const authService = {
   },
 
   // Configurar contraseña para proveedores OAuth
-  async setPasswordWithProvider(email, username, password, provider = 'google') {
-    const res = await fetch(`${API_URL}/set-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, username, password, provider }),
-    });
-
-    const data = await res.json();
+  setPasswordWithProvider: async (email, username, password, provider, tempJwt = null) => {
+    const headers = {
+      "Content-Type": "application/json",
+    };
     
-    if (!res.ok) {
-      throw new Error(data?.error?.message || "Error al guardar la contraseña");
+    // Si hay JWT temporal, agregarlo al header
+    if (tempJwt) {
+      headers["Authorization"] = `Bearer ${tempJwt}`;
     }
 
-    return data;
+    const response = await fetch(`${API_URL}/auth/set-password-provider`, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ email, username, password, provider }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+    
+    return await response.json();
   }
 };

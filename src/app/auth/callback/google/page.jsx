@@ -16,7 +16,6 @@ export default function GoogleCallback() {
       if (!code) {
         console.error('❌ No code received in callback');
         if (window.Capacitor) {
-          // Redirigir a la app con error
           window.location.href = 'malharro://login?error=no_code_received';
         } else {
           toast.error("No se recibió código de autorización");
@@ -78,27 +77,48 @@ export default function GoogleCallback() {
 
         const authData = await authRes.json();
         
-        console.log('✅ Google login successful:', authData.user?.username);
+        console.log('✅ Google login response:', authData);
 
-        // REDIRIGIR A LA APP
-        if (window.Capacitor) {
-          // En mobile - redirigir a la app con los datos
-          const appUrl = `malharro://login/success?jwt=${encodeURIComponent(authData.jwt)}&user=${encodeURIComponent(JSON.stringify(authData.user))}`;
-          console.log('🔧 Redirecting to app:', appUrl);
-          window.location.href = appUrl;
+        // VERIFICAR SI NECESITA SET PASSWORD
+        if (authData.user?.loginMethods !== "both") {
+          // Usuario necesita configurar contraseña
+          console.log('🔧 User needs to set password');
+          
+          if (window.Capacitor) {
+            // Redirigir a la app con información para setPassword
+            const appUrl = `malharro://login/setPassword?email=${encodeURIComponent(authData.user.email)}&jwt=${encodeURIComponent(authData.jwt)}`;
+            console.log('🔧 Redirecting to setPassword:', appUrl);
+            window.location.href = appUrl;
+          } else {
+            // En web - guardar en localStorage y redirigir a setPassword
+            localStorage.setItem("pendingGoogleAuth", JSON.stringify({
+              email: authData.user.email,
+              jwt: authData.jwt
+            }));
+            router.push("/login?step=setPassword");
+          }
         } else {
-          // En web - redirigir normalmente
-          localStorage.setItem("jwt", authData.jwt);
-          localStorage.setItem("userRole", authData.user?.role?.name || "Authenticated");
-          toast.success(`¡Bienvenido ${authData.user?.username || userData.name}!`);
-          router.push("/");
+          // Login completo - usuario ya tiene ambos métodos
+          console.log('✅ User has both login methods, login complete');
+          
+          if (window.Capacitor) {
+            // Redirigir a la app con éxito completo
+            const appUrl = `malharro://login/success?jwt=${encodeURIComponent(authData.jwt)}&user=${encodeURIComponent(JSON.stringify(authData.user))}`;
+            console.log('🔧 Redirecting to success:', appUrl);
+            window.location.href = appUrl;
+          } else {
+            // En web - login completo
+            localStorage.setItem("jwt", authData.jwt);
+            localStorage.setItem("userRole", authData.user?.role?.name || "Authenticated");
+            toast.success(`¡Bienvenido ${authData.user?.username || userData.name}!`);
+            router.push("/");
+          }
         }
 
       } catch (err) {
         console.error("❌ Google callback error:", err);
         
         if (window.Capacitor) {
-          // Redirigir a la app con error
           const errorUrl = `malharro://login?error=${encodeURIComponent(err.message)}`;
           console.log('🔧 Redirecting to app with error:', errorUrl);
           window.location.href = errorUrl;

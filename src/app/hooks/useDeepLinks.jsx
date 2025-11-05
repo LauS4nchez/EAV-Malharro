@@ -64,8 +64,8 @@ export const useDeepLinks = () => {
 
           // Manejar regreso de login exitoso desde el callback web
           if (url.protocol === 'malharro:' && url.host === 'login') {
+            // Login exitoso completo
             if (url.pathname.includes('/success')) {
-              // Login exitoso
               const jwt = url.searchParams.get('jwt');
               const userParam = url.searchParams.get('user');
               
@@ -94,8 +94,35 @@ export const useDeepLinks = () => {
                   toast.error('Error al procesar el login');
                 }
               }
-            } else {
-              // Error de login
+            } 
+            // Necesita configurar contraseña
+            else if (url.pathname.includes('/setPassword')) {
+              const email = url.searchParams.get('email');
+              const jwt = url.searchParams.get('jwt');
+              
+              console.log('🔧 SetPassword required - email:', email);
+              
+              if (email && jwt) {
+                // Guardar en localStorage para que el Login.jsx lo detecte
+                localStorage.setItem("pendingGoogleAuth", JSON.stringify({
+                  email: decodeURIComponent(email),
+                  jwt: decodeURIComponent(jwt)
+                }));
+                
+                // Disparar evento para que el Login.jsx cambie a setPassword
+                window.dispatchEvent(new CustomEvent('authSetPassword', {
+                  detail: { 
+                    email: decodeURIComponent(email), 
+                    jwt: decodeURIComponent(jwt),
+                    provider: 'google'
+                  }
+                }));
+                
+                toast.info('Configura tu usuario y contraseña');
+              }
+            }
+            // Error de login
+            else {
               const error = url.searchParams.get('error');
               if (error) {
                 console.error('❌ Error de login desde deep link:', error);
@@ -134,12 +161,19 @@ export const useDeepLinks = () => {
       // Aquí puedes agregar lógica adicional cuando hay error de login
     };
 
+    const handleAuthSetPassword = (event) => {
+      console.log('🔧 Auth setPassword event received:', event.detail);
+      // Este evento será manejado por el Login.jsx
+    };
+
     window.addEventListener('authSuccess', handleAuthSuccess);
     window.addEventListener('authError', handleAuthError);
+    window.addEventListener('authSetPassword', handleAuthSetPassword);
 
     return () => {
       window.removeEventListener('authSuccess', handleAuthSuccess);
       window.removeEventListener('authError', handleAuthError);
+      window.removeEventListener('authSetPassword', handleAuthSetPassword);
     };
   }, []);
 };
