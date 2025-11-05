@@ -1,6 +1,5 @@
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export const isNativePlatform = () => {
   return Capacitor.isNativePlatform();
@@ -10,12 +9,12 @@ export const openMediaPicker = async (options = {}) => {
   const {
     allowEditing = false,
     quality = 90,
-    source = CameraSource.Photos, // Photos, Camera, Prompt
+    source = CameraSource.Photos,
     resultType = CameraResultType.DataUrl
   } = options;
 
   if (!isNativePlatform()) {
-    // Para web, usar input file tradicional
+    // Para web - mantener igual
     return new Promise((resolve) => {
       const input = document.createElement('input');
       input.type = 'file';
@@ -40,35 +39,34 @@ export const openMediaPicker = async (options = {}) => {
     });
   }
 
+  // PARA APP NATIVA - versión simplificada
   try {
-    // Para app nativa con Capacitor
     const image = await Camera.getPhoto({
       quality,
       allowEditing,
       resultType,
       source,
-      correctOrientation: true,
-      presentationStyle: 'popover'
+      correctOrientation: true
     });
 
-    if (!image) {
-      return null;
-    }
+    if (!image) return null;
 
-    // Convertir la imagen a File object para mantener compatibilidad
+    console.log('Camera result:', image);
+
+    // Crear File object de manera más directa
     let file;
-    
-    if (resultType === CameraResultType.Uri) {
-      // Si es URI, necesitamos convertir a blob
-      const response = await fetch(image.webPath);
-      const blob = await response.blob();
-      file = new File([blob], `photo_${Date.now()}.jpg`, { type: blob.type });
-    } else if (resultType === CameraResultType.DataUrl) {
-      // Si es DataUrl, convertir a blob
+    if (image.dataUrl) {
+      // Convertir dataUrl a blob y luego a File
       const response = await fetch(image.dataUrl);
       const blob = await response.blob();
-      file = new File([blob], `photo_${Date.now()}.jpg`, { type: blob.type });
+      
+      file = new File([blob], `captured_${Date.now()}.jpg`, {
+        type: blob.type || 'image/jpeg',
+        lastModified: Date.now()
+      });
     }
+
+    console.log('File creado:', file);
 
     return {
       file,
@@ -78,19 +76,11 @@ export const openMediaPicker = async (options = {}) => {
     };
 
   } catch (error) {
-    if (error.message === 'User cancelled photos app') {
-      console.log('Usuario canceló la selección');
+    if (error.message.includes('cancelled')) {
+      console.log('Usuario canceló');
       return null;
     }
     console.error('Error en media picker:', error);
     throw error;
   }
-};
-
-export const getCameraSourceOptions = () => {
-  return {
-    photos: CameraSource.Photos,
-    camera: CameraSource.Camera,
-    prompt: CameraSource.Prompt
-  };
 };

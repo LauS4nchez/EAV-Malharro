@@ -93,49 +93,55 @@ export default function CrearUsinaModal({
     return '';
   };
 
-  // -------- NEW: Media selection handler --------
+  // -------- IMPROVED: Media selection handler --------
   const handleMediaSelection = async (sourceType = 'photos') => {
-    if (loading) return;
+  if (loading) return;
 
-    try {
-      const sourceOptions = getCameraSourceOptions();
-      const source = sourceOptions[sourceType] || sourceOptions.photos;
+  try {
+    console.log('Iniciando selección de media...');
 
-      const mediaResult = await openMediaPicker({
-        source: source,
-        allowEditing: false,
-        quality: 90,
-        resultType: 'DataUrl'
-      });
+    const mediaResult = await openMediaPicker({
+      source: getCameraSourceOptions()[sourceType],
+      allowEditing: false,
+      quality: 90,
+      resultType: 'DataUrl'
+    });
 
-      if (!mediaResult || !mediaResult.file) {
-        return; // User cancelled
-      }
+    if (!mediaResult || !mediaResult.file) {
+      console.log('Usuario canceló');
+      return;
+    }
 
-      const file = mediaResult.file;
+    const file = mediaResult.file;
+    console.log('Archivo obtenido:', file.name, file.type, file.size);
 
-      // Validar el archivo seleccionado
-      const errorMedia = validarArchivo(file);
-      if (errorMedia) {
-        setErrors((prev) => ({ ...prev, media: errorMedia }));
-        setFormData((prev) => ({ ...prev, media: null }));
-        setMediaPreview(null);
-        toast.error(errorMedia);
-        return;
-      }
+    // Validación inmediata
+    const errorMedia = validarArchivo(file);
+    if (errorMedia) {
+      toast.error(errorMedia);
+      return;
+    }
 
-      setFormData((prev) => ({ ...prev, media: file }));
-      setErrors((prev) => ({ ...prev, media: '' }));
+    // ACTUALIZAR EL ESTADO - esto es lo crucial
+    setFormData(prev => ({ 
+      ...prev, 
+      media: file 
+    }));
+    
+    setErrors(prev => ({ ...prev, media: '' }));
 
-      // Crear preview
-      setMediaPreview({
-        url: mediaResult.dataUrl || mediaResult.webPath,
-        type: file.type.startsWith('image/') ? 'image' : 'video'
-      });
+    // Para el preview, usar directamente la dataUrl de Capacitor
+    setMediaPreview({
+      url: mediaResult.dataUrl,
+      type: file.type.startsWith('image/') ? 'image' : 'video'
+    });
 
-    } catch (error) {
-      console.error('Error seleccionando media:', error);
-      toast.error('Error al seleccionar el archivo');
+    console.log('Estado actualizado - media guardado:', !!file);
+    toast.success('Imagen seleccionada: ' + file.name);
+
+  } catch (error) {
+      console.error('Error en selección:', error);
+      toast.error('Error: ' + error.message);
     }
   };
 
@@ -144,17 +150,10 @@ export default function CrearUsinaModal({
     if (loading) return;
 
     if (isNativePlatform()) {
-      // En app nativa, mostrar opciones de cámara/galería
-      handleNativeMediaSelection();
+      handleMediaSelection('photos');
     } else {
-      // En web, usar el input file tradicional
       fileInputRef.current?.click();
     }
-  };
-
-  const handleNativeMediaSelection = () => {
-    // Por ahora, vamos directo a la galería
-    handleMediaSelection('photos');
   };
 
   // -------- UPDATED: Change handler (keep for web) --------
@@ -164,13 +163,17 @@ export default function CrearUsinaModal({
 
     if (name === 'media' && files && files[0]) {
       const file = files[0];
+      console.log('Archivo seleccionado (web):', file);
+      
       const errorMedia = validarArchivo(file);
       if (errorMedia) {
         setErrors((prev) => ({ ...prev, media: errorMedia }));
         setFormData((prev) => ({ ...prev, media: null }));
         setMediaPreview(null);
+        toast.error(errorMedia);
         return;
       }
+      
       setFormData((prev) => ({ ...prev, media: file }));
 
       const reader = new FileReader();
@@ -188,6 +191,7 @@ export default function CrearUsinaModal({
     }
   };
 
+  // -------- IMPROVED: Submit handler with better error handling --------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -198,7 +202,7 @@ export default function CrearUsinaModal({
 
     const { titulo, media } = formData;
     const tituloError = validarTitulo(titulo);
-    const mediaError  = validarArchivo(media);
+    const mediaError = validarArchivo(media);
 
     if (tituloError || mediaError) {
       setErrors({ titulo: tituloError, media: mediaError });
@@ -216,23 +220,42 @@ export default function CrearUsinaModal({
     try {
       const toastId = toast.loading('Creando trabajo...');
 
+      console.log('Iniciando subida del archivo:', media);
+
       // 1) Subir media
       const uploadForm = new FormData();
       uploadForm.append('files', media);
 
+      console.log('FormData creado, enviando a Strapi...');
+
       const uploadRes = await fetch(`${API_URL}/upload`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          'Authorization': `Bearer ${token}` 
+        },
         body: uploadForm,
       });
 
+      console.log('Respuesta de upload:', uploadRes.status);
+
       if (!uploadRes.ok) {
-        const errJson = await uploadRes.json().catch(() => null);
-        console.error('Error al subir archivo:', errJson);
-        throw new Error('Error al subir el archivo');
+        const errText = await uploadRes.text();
+        console.error('Error al subir archivo. Status:', uploadRes.status, 'Response:', errText);
+        
+        let errorMessage = 'Error al subir el archivo';
+        try {
+          const errJson = JSON.parse(errText);
+          errorMessage = errJson.error?.message || errorMessage;
+        } catch (e) {
+          // Si no es JSON, usar el texto plano
+          errorMessage = errText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const uploadData = await uploadRes.json();
+      console.log('Upload exitoso:', uploadData);
+      
       const mediaId = uploadData?.[0]?.id;
       if (!mediaId) throw new Error('No se pudo obtener el ID del archivo subido');
 
@@ -243,6 +266,8 @@ export default function CrearUsinaModal({
         media: mediaId,
         ...(userId ? { creador: userId } : {}),
       };
+
+      console.log('Creando usina con payload:', usinaPayload);
 
       const res = await fetch(`${API_URL}/usinas`, {
         method: 'POST',
@@ -261,7 +286,7 @@ export default function CrearUsinaModal({
       const usinaNumericId =
         newUsina?.id ??
         created?.data?.id ??
-        null; // ← ESTE ES EL QUE USAMOS PARA notificación (relation)
+        null;
 
       // 3) URL del media (para el preview local)
       let mediaUrl = '/placeholder.jpg';
@@ -282,7 +307,7 @@ export default function CrearUsinaModal({
         mensaje: `Tu usina "${titulo.trim()}" quedó en estado pendiente el ${fecha} a las ${hora}.`,
         receptorId: userId || undefined,
         emisorId:   userId || undefined,
-        usinaId:    usinaNumericId,          // ← RELACIÓN CON ID NUMÉRICO
+        usinaId:    usinaNumericId,
         tipo: 'usina',
       });
 
@@ -295,7 +320,6 @@ export default function CrearUsinaModal({
           );
           const raw = await usersRes.json();
 
-          // v4: array; algunos setups custom: {data:[]}
           const rawUsers = Array.isArray(raw)
             ? raw
             : Array.isArray(raw?.data)
@@ -314,12 +338,12 @@ export default function CrearUsinaModal({
           await Promise.all(
             admins.map((adminUser) =>
               crearNotificacionInline({
-                adminToken: API_TOKEN,       // usamos API_TOKEN para notificar "como sistema"
+                adminToken: API_TOKEN,
                 titulo: 'Nueva usina pendiente',
                 mensaje: msgAdmin,
                 receptorId: adminUser.id,
                 emisorId: userId || undefined,
-                usinaId: usinaNumericId,     // ← ID NUMÉRICO
+                usinaId: usinaNumericId,
                 tipo: 'usina',
               })
             )
@@ -333,7 +357,7 @@ export default function CrearUsinaModal({
 
       // 6) Actualizar la galería local
       const usinaCreada = {
-        id: usinaNumericId, // devolvemos el mismo id que usa Strapi internamente
+        id: usinaNumericId,
         titulo: newUsina?.attributes?.titulo ?? 'Sin título',
         aprobado: 'pendiente',
         mediaUrl,
@@ -438,15 +462,13 @@ export default function CrearUsinaModal({
                     </svg>
                     <p>
                       {isNativePlatform() 
-                        ? "Tocá para elegir de la galería o cámara" 
+                        ? "Tocá para subir imagen o video" 
                         : "Haz clic para subir imagen o video"
                       }
                     </p>
                     <span>Formatos soportados: JPG, PNG, MP4, MOV</span>
-                    
-                    {/* Indicador para app nativa */}
                     {isNativePlatform() && (
-                      <div className={styles.nativeIndicator}>
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
                         📱 Usando app nativa
                       </div>
                     )}
