@@ -84,3 +84,12 @@ export const openMediaPicker = async (options = {}) => {
     throw error;
   }
 };
+
+// AÑADE ESTA FUNCIÓN QUE FALTABA
+export const getCameraSourceOptions = () => {
+  return {
+    photos: CameraSource.Photos,
+    camera: CameraSource.Camera,
+    prompt: CameraSource.Prompt
+  };
+};
