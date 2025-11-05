@@ -31,12 +31,14 @@ export default function UnifiedAuth() {
       const { email } = JSON.parse(pendingDiscordAuth);
       setEmail(email);
       setStep("setPassword");
+      setLoading(false);
     }
     
     if (pendingGoogleAuth) {
       const { email } = JSON.parse(pendingGoogleAuth);
       setEmail(email);
       setStep("setPassword");
+      setLoading(false);
     }
 
     // Verificar parámetro de URL para setPassword
@@ -57,6 +59,7 @@ export default function UnifiedAuth() {
       if (event.detail?.email) {
         setEmail(event.detail.email);
         setStep("setPassword");
+        setLoading(false);
         // Guardar el JWT temporalmente para usarlo después
         if (event.detail.jwt) {
           localStorage.setItem("tempJwt", event.detail.jwt);
