@@ -19,6 +19,7 @@ export default function DiscordCallback() {
         const error = urlParams.get("error");
 
         alert('🔧 PASO 2: Code recibido: ' + (code ? 'SÍ' : 'NO'));
+        alert('Code: ' + code);
 
         if (error) {
           alert('❌ ERROR de Discord: ' + error);
@@ -128,7 +129,7 @@ export default function DiscordCallback() {
 
       } catch (err) {
         console.error("❌ Discord callback error:", err);
-        alert('❌ ERROR FINAL: ' + err.message);
+        alert('❌ ERROR FINAL: ' + err);
         
         if (window.Capacitor) {
           // Redirigir a la app con error

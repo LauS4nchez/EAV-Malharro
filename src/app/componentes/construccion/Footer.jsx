@@ -106,47 +106,47 @@ export default function FooterPage() {
 
     for (const url of attempts) {
       try {
-          const res = await fetch(url, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            cache: 'no-store',
-          });
-          const text = await res.text();
+        const res = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: 'no-store',
+        });
+        const text = await res.text();
 
-          let json;
-          try {
-            json = JSON.parse(text);
-          } catch {
-            continue; // pruebo el siguiente
-          }
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch {
+          continue; // pruebo el siguiente
+        }
 
-          if (!res.ok) {
-            // si es el error que te tiró Strapi, paso al siguiente
-            if (json?.error?.message?.includes('Invalid key')) {
-              continue;
-            }
+        if (!res.ok) {
+          // si es el error que te tiró Strapi, paso al siguiente
+          if (json?.error?.message?.includes('Invalid key')) {
             continue;
           }
+          continue;
+        }
 
-          // single type
-          let attrs = null;
-          if (json?.data?.attributes) {
-            attrs = json.data.attributes;
-            if (json.data.documentId) attrs.documentId = json.data.documentId;
-          } else if (json?.data) {
-            attrs = json.data;
-          } else {
-            attrs = json;
-          }
+        // single type
+        let attrs = null;
+        if (json?.data?.attributes) {
+          attrs = json.data.attributes;
+          if (json.data.documentId) attrs.documentId = json.data.documentId;
+        } else if (json?.data) {
+          attrs = json.data;
+        } else {
+          attrs = json;
+        }
 
-          finalData = attrs;
-          break;
+        finalData = attrs;
+        break;
       } catch (err) {
         // sigo probando
         continue;
       }
     }
 
-  if (!finalData) {
+    if (!finalData) {
       setFooterData(null);
       setFetchError('No se pudo leer el footer. Revisá el GET y el populate en Strapi.');
       return null;
@@ -203,11 +203,11 @@ export default function FooterPage() {
     })();
   }, [fetchFooter]);
 
-  // rol admin
+  // rol admin/superadmin
   useEffect(() => {
     (async () => {
       try {
-        const ok = await checkUserRole(['Administrador']);
+        const ok = await checkUserRole(['Administrador', 'SuperAdministrador']);
         setCanEdit(!!ok);
       } catch {
         setCanEdit(false);
@@ -255,7 +255,7 @@ export default function FooterPage() {
   // ========= 3) ABRIR MODAL =========
   const handleEditClick = () => {
     if (!canEdit) {
-      toast.error('Solo el rol "Administrador" puede editar el footer.');
+      toast.error('Necesitás rol "Administrador" o "SuperAdministrador" para editar el footer.');
       return;
     }
 
@@ -1002,7 +1002,7 @@ export default function FooterPage() {
             </form>
 
             <p className={styles.footerEditNote}>
-              Solo el rol <strong>Administrador</strong> puede editar este footer.
+              Necesitás rol <strong>Administrador</strong> o <strong>SuperAdministrador</strong> para editar este footer.
             </p>
           </div>
         </div>
