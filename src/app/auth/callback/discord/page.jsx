@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Browser } from "@capacitor/browser";
 import { toast } from "react-hot-toast";
 import { discordService } from "@/app/services/discordService";
-import { API_URL, getDiscordRedirectUri, clientIDDiscord, clientSecretDiscord } from "@/app/config";
+import { API_URL, getDiscordRedirectUri } from "@/app/config"; // ← Solo estas
 
 export default function DiscordCallback() {
   const router = useRouter();
@@ -14,15 +14,11 @@ export default function DiscordCallback() {
       try {
         alert('🔧 PASO 1: Discord callback iniciado');
         
-        // VERIFICAR CREDENCIALES
-        alert('🔧 Credenciales Discord - Client ID: ' + (clientIDDiscord ? 'CONFIGURADO' : 'NO CONFIGURADO'));
-        alert('🔧 Credenciales Discord - Client Secret: ' + (clientSecretDiscord ? 'CONFIGURADO' : 'NO CONFIGURADO'));
-        
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
         const error = urlParams.get("error");
 
-        alert('🔧 PASO 2: Code recibido: ' + code);
+        alert('🔧 PASO 2: Code recibido: ' + (code ? 'SÍ' : 'NO'));
 
         if (error) {
           alert('❌ ERROR de Discord: ' + error);
@@ -44,28 +40,21 @@ export default function DiscordCallback() {
         // Intercambiar code por token
         alert('🔧 PASO 4: Intercambiando code por token...');
         const redirectUri = getDiscordRedirectUri();
-        alert('🔧 Redirect URI: ' + redirectUri);
         
         const tokenData = await discordService.getAccessToken(code, redirectUri);
         
         alert('🔧 PASO 4.1: Token recibido: ' + (tokenData.access_token ? 'SÍ' : 'NO'));
 
         if (!tokenData.access_token) {
-          alert('❌ NO hay access token en la respuesta: ' + JSON.stringify(tokenData));
-          throw new Error("No access token received from Discord: " + JSON.stringify(tokenData));
+          alert('❌ NO hay access token en la respuesta');
+          throw new Error("No access token received from Discord");
         }
 
         // Obtener info del usuario
         alert('🔧 PASO 5: Obteniendo info del usuario de Discord...');
         const discordUser = await discordService.getUserInfo(tokenData.access_token);
         
-        alert('🔧 PASO 5.1: Info de usuario recibida - Email: ' + (discordUser.email ? discordUser.email : 'NO'));
-        alert('🔧 PASO 5.2: Info completa: ' + JSON.stringify({
-          id: discordUser.id,
-          username: discordUser.username,
-          global_name: discordUser.global_name,
-          email: discordUser.email
-        }));
+        alert('🔧 PASO 5.1: Info de usuario recibida: ' + (discordUser.email ? 'SÍ' : 'NO'));
 
         if (!discordUser.email) {
           alert('❌ NO hay email en la info del usuario');
@@ -91,7 +80,7 @@ export default function DiscordCallback() {
         alert('🔧 PASO 6.1: Respuesta de Strapi - Status: ' + authRes.status);
         
         const responseText = await authRes.text();
-        alert('🔧 PASO 6.2: Texto de respuesta Strapi: ' + responseText);
+        alert('🔧 PASO 6.2: Texto de respuesta Strapi: ' + responseText.substring(0, 100));
         
         if (!authRes.ok) {
           alert('❌ ERROR de Strapi: ' + responseText);
@@ -100,7 +89,6 @@ export default function DiscordCallback() {
 
         const authData = JSON.parse(responseText);
         alert('🔧 PASO 6.3: JWT recibido: ' + (authData.jwt ? 'SÍ' : 'NO'));
-        alert('🔧 PASO 6.4: Login Methods: ' + (authData.user?.loginMethods || 'NO'));
 
         // VERIFICAR SI NECESITA SET PASSWORD
         if (authData.user?.loginMethods !== "both") {
@@ -140,14 +128,14 @@ export default function DiscordCallback() {
 
       } catch (err) {
         console.error("❌ Discord callback error:", err);
-        alert('❌ ERROR FINAL: ' + (err.message || 'Error sin mensaje - Revisa la consola'));
+        alert('❌ ERROR FINAL: ' + err.message);
         
         if (window.Capacitor) {
           // Redirigir a la app con error
-          const errorUrl = `malharro://login?error=${encodeURIComponent(err.message || 'Error desconocido')}`;
+          const errorUrl = `malharro://login?error=${encodeURIComponent(err.message)}`;
           window.location.href = errorUrl;
         } else {
-          toast.error("Error en autenticación: " + (err.message || 'Error desconocido'));
+          toast.error("Error en autenticación: " + err.message);
           router.push("/login");
         }
       }
