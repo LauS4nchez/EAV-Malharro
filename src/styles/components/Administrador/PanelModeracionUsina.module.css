@@ -823,6 +823,57 @@
   color: #000;
 }
 
+/* ========== Textarea del modal "Rechazar" ========== */
+.textareaRechazo,
+.confirmModal textarea.textareaRechazo {
+  background: #ffffff !important;
+  color: #0f172a !important;    /* texto oscuro */
+  -webkit-text-fill-color: #0f172a !important; /* Safari/Chrome */
+  caret-color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+  transition: border 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  color-scheme: light; /* evita que el SO/tema invierta colores */
+}
+
+.textareaRechazo:focus {
+  border: 1px solid #c7005a;
+  box-shadow: 0 0 0 3px rgba(199, 0, 90, 0.15);
+}
+
+.textareaRechazo::placeholder {
+  color: rgba(15, 23, 42, 0.45) !important; /* placeholder visible */
+}
+
+/* por si algún global fuerza blanco en todos los textareas */
+.confirmModal textarea {
+  color: #0f172a !important;
+  background: #ffffff !important;
+}
+
+/* ===== Fix: texto del creador en el modal de confirmación ===== */
+.confirmModal {
+  color: #0f172a;            /* color base oscuro para todo el modal */
+  color-scheme: light;       /* evita inversión de colores por tema SO */
+}
+
+.confirmModal .modalUsinaInfo {
+  color: #0f172a !important; /* texto dentro del recuadro */
+  background: #f8f9fa;
+}
+
+.confirmModal .modalUsinaInfo strong,
+.confirmModal .modalUsinaInfo span {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important; /* Safari/Chrome */
+}
+
+
 /* Responsive para paginación */
 @media (max-width: 768px) {
   .paginationControls {
@@ -841,4 +892,39 @@
     font-size: 0.8rem;
     min-width: 35px;
   }
+}
+
+/* ===== Fix: fecha + descripción en las cards ===== */
+.usinaCard {
+  color: #0f172a; /* color base legible para todo el contenido de la card */
+}
+
+.estado {
+  color: #0f172a !important;         /* asegura texto visible */
+  background: #eef2ff;               /* pill suave por defecto */
+  border: 1px solid #e5e7eb;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  -webkit-text-fill-color: #0f172a;  /* Safari/Chrome */
+}
+
+/* Si usás .pendiente / .aprobada / .rechazada, sus colores seguirán
+   ganando porque también definen color/background */
+.pendiente,
+.aprobada,
+.rechazada {
+  -webkit-text-fill-color: inherit;  /* respeta el color que definen */
+}
+
+.descripcion {
+  color: #0f172a !important;
+  line-height: 1.5;
+  -webkit-text-fill-color: #0f172a;  /* Safari/Chrome */
+  /* opcional: limitar 3 líneas */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
