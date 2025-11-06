@@ -347,34 +347,12 @@
   }
 }
 
-/* ====== STICKY-ABAJO sin tocar JSX ======
-   Forzamos que el contenedor raíz sea flex-col para que
-   .footerMalharro pueda usar margin-top:auto y quedar abajo.
-   Cubrimos #__next (Next.js), #root (CRA), y divs raíz típicos. */
-:global(html), :global(body) { min-height: 100dvh; }
-:global(body > #__next),
-:global(body > #root),
-:global(body > .app-root),
-:global(body > .layout-root),
-:global(body > .pageWrapper),
-:global(body > div:first-child) {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
 /* El footer se “pega” abajo en el flujo normal */
 .footerMalharro {
   margin-top: auto;
   position: relative; /* importante: no fixed */
   z-index: 0;
 }
-
-/* ====== ANTI-SALTO DE PAGINACIÓN ======
-   1) Si alguna navegación pone hash al footer (#footer),
-      no dejes que el navegador lo “pegue” al borde.
-   2) Si cualquier ancla hace target, el scroll deja margen superior
-      (útil si hay header fijo). Ajustá 72px a tu header. */
 
 /* Si el footer es target (#footer), desplaza el anclaje fuera de vista */
 .footerMalharro:target {
