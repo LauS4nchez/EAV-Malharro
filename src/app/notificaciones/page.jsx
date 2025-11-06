@@ -96,7 +96,13 @@ export default function NotificacionesPage() {
   const [loading, setLoading] = useState(true);
 
   const [notificaciones, setNotificaciones] = useState([]);
+
+  // Filtro por tipo (todas/usina/agenda/sistema)
   const [filtro, setFiltro] = useState('todas');
+
+  // Filtro por estado de lectura (todas/no-leidas/leidas)
+  const [filtroEstado, setFiltroEstado] = useState('todas');
+
   const [marcando, setMarcando] = useState(false);
 
   /* ------------------------- 1) JWT + usuario --------------------------- */
@@ -140,30 +146,36 @@ export default function NotificacionesPage() {
       titulo: attr.titulo ?? 'Notificación',
       mensaje: attr.mensaje ?? '',
       tipo: attr.tipo ?? 'sistema',
-      leido: attr.leida ?? 'no-leida',
+      leido: attr.leida ?? 'no-leida', // backend usa "leida"
       createdAt: attr.createdAt ?? null,
       fechaEmision: attr.fechaEmision ?? null,
 
-      emisor: emisor ? {
-        id: emisor.id,
-        username: emisorAttrs?.username,
-        name: emisorAttrs?.name,
-        surname: emisorAttrs?.surname,
-      } : null,
+      emisor: emisor
+        ? {
+            id: emisor.id,
+            username: emisorAttrs?.username,
+            name: emisorAttrs?.name,
+            surname: emisorAttrs?.surname,
+          }
+        : null,
 
       receptor: receptor ? { id: receptor.id } : null,
 
-      usina: usina ? {
-        id: usina.id,
-        titulo: usinaAttrs?.titulo,
-        estado: usinaAttrs?.aprobado,
-      } : null,
+      usina: usina
+        ? {
+            id: usina.id,
+            titulo: usinaAttrs?.titulo,
+            estado: usinaAttrs?.aprobado,
+          }
+        : null,
 
-      agenda: agenda ? {
-        id: agenda.id,
-        tituloActividad: agendaAttrs?.tituloActividad,
-        fecha: agendaAttrs?.fecha,
-      } : null,
+      agenda: agenda
+        ? {
+            id: agenda.id,
+            tituloActividad: agendaAttrs?.tituloActividad,
+            fecha: agendaAttrs?.fecha,
+          }
+        : null,
     };
   }
 
@@ -241,14 +253,32 @@ export default function NotificacionesPage() {
   useEffect(() => {
     if (jwt && user?.id) {
       fetchNotis(jwt, user.id).catch(() => toast.error('No se pudieron cargar las notificaciones'));
+      fetchNotis(jwt, user.id).catch(() => toast.error('No se pudieron cargar las notificaciones'));
     }
   }, [jwt, user]);
 
-  /* --------------------------- 3) Filtro local --------------------------- */
+  /* ---------------------- Contadores para tabs estado -------------------- */
+  const countNoLeidas = useMemo(
+    () => notificaciones.filter((n) => n.leido !== 'leida').length,
+    [notificaciones]
+  );
+  const countLeidas = useMemo(
+    () => notificaciones.filter((n) => n.leido === 'leida').length,
+    [notificaciones]
+  );
+
+  /* ----------- Filtro combinado: tipo (filtro) + estado (filtroEstado) --- */
   const notisFiltradas = useMemo(() => {
-    if (filtro === 'todas') return notificaciones;
-    return notificaciones.filter((n) => n.tipo === filtro);
-  }, [filtro, notificaciones]);
+    let base =
+      filtro === 'todas' ? notificaciones : notificaciones.filter((n) => n.tipo === filtro);
+
+    if (filtroEstado === 'no-leidas') {
+      base = base.filter((n) => n.leido !== 'leida');
+    } else if (filtroEstado === 'leidas') {
+      base = base.filter((n) => n.leido === 'leida');
+    }
+    return base;
+  }, [filtro, filtroEstado, notificaciones]);
 
   /* --------- Resolver id real por documentId / título / ventana ---------- */
   async function resolveRealId(noti, token, userId) {
@@ -447,17 +477,10 @@ export default function NotificacionesPage() {
             <h1 className={styles.title}>Notificaciones</h1>
             <p className={styles.subtitle}>Hola {user?.name || user?.username}, acá tenés todo lo que pasó.</p>
           </div>
-          <div className={styles.headActions}>
-            <button
-              className={styles.markAllBtn}
-              onClick={marcarTodas}
-              disabled={marcando || !notificaciones.length}
-            >
-              Marcar todas como leídas
-            </button>
-          </div>
+          {/* Botón de "Marcar todas" removido */}
         </div>
 
+        {/* Tabs por TIPO */}
         <div className={styles.tabs}>
           <button className={`${styles.tab} ${filtro === 'todas' ? styles.tabActive : ''}`} onClick={() => setFiltro('todas')}>
             Todas ({notificaciones.length})
@@ -511,16 +534,17 @@ export default function NotificacionesPage() {
                             });
                           }
                           setNotificaciones((prev) =>
-                            prev.filter((x) =>
-                              x.id ? x.id !== n.id : x.documentId !== n.documentId
-                            )
+                            prev.filter((x) => (x.id ? x.id !== n.id : x.documentId !== n.documentId))
                           );
                         } catch (err) {
                           if (is403(err)) toast.error('Sin permisos para eliminar.');
-                          else if (is404(err)) toast.error('No se encontró la notificación en este entorno.');
+                          else if (is404(err))
+                            toast.error('No se encontró la notificación en este entorno.');
                           else toast.error('Error al eliminar notificación');
                         }
                       }}
+                      aria-label="Eliminar notificación"
+                      title="Eliminar notificación"
                     >
                       ✕
                     </button>
@@ -556,7 +580,7 @@ export default function NotificacionesPage() {
             ))
           ) : (
             <div className={styles.empty}>
-              <p>No tenés notificaciones todavía 👀</p>
+              <p>No hay notificaciones que coincidan con el filtro</p>
             </div>
           )}
         </div>

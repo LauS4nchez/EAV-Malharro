@@ -12,6 +12,14 @@ import {
   getFieldValue,
   canModifyUser,
   getModificationWarning
+import {
+  userService,
+  getCurrentUserId,
+  formatDate,
+  getRoleDisplayName,
+  getFieldValue,
+  canModifyUser,
+  getModificationWarning
 } from '../componentes/validacion/userChanges'
 import { checkUserRole } from '../componentes/validacion/checkRole'
 import { applyAllFilters } from '../componentes/validacion/userFilters'
@@ -20,6 +28,7 @@ import styles from '@/styles/components/Perfil/GestorUsuarios.module.css'
 import Link from 'next/link'
 import Header from '../componentes/construccion/Header'
 import Footer from '../componentes/construccion/Footer'
+import { API_URL, API_TOKEN } from '@/app/config'
 import { API_URL, API_TOKEN } from '@/app/config'
 
 export default function GestorUsuarios() {
@@ -38,6 +47,7 @@ export default function GestorUsuarios() {
   const [deletingUser, setDeletingUser] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
+  const [jwt, setJwt] = useState(null)
   const [jwt, setJwt] = useState(null)
   const router = useRouter()
 
@@ -58,13 +68,19 @@ export default function GestorUsuarios() {
         const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
         setJwt(token || null)
 
+
+        const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
+        setJwt(token || null)
+
         const userRole = await checkUserRole()
         setCurrentUserRole(userRole)
+
 
         if (userRole !== 'Administrador' && userRole !== 'SuperAdministrador') {
           router.push('/')
           return
         }
+
 
         await fetchUsers()
         await fetchRoles()
@@ -91,6 +107,7 @@ export default function GestorUsuarios() {
   const fetchRoles = async () => {
     try {
       const rolesData = await userService.getRoles()
+      const filteredRoles = rolesData.filter(role =>
       const filteredRoles = rolesData.filter(role =>
         role.name !== 'Public' && role.name !== 'SuperAdministrador'
       )
@@ -197,12 +214,72 @@ export default function GestorUsuarios() {
 
   /* ========================= Guardar campo editable ========================= */
 
+  /* ========================= Helpers de Notificación ========================= */
+
+  const humanFieldName = (field) => {
+    switch (field) {
+      case 'username': return 'usuario'
+      case 'name': return 'nombre'
+      case 'surname': return 'apellido'
+      case 'email': return 'email'
+      case 'Carrera': return 'carrera'
+      default: return field
+    }
+  }
+
+  const getActorName = () => {
+    const admin = users.find(u => u.id === currentUserId)
+    if (!admin) return 'Administrador'
+    if (admin.name || admin.surname) return `${admin.name || ''} ${admin.surname || ''}`.trim()
+    return admin.username || 'Administrador'
+  }
+
+  async function crearNotificacionCambioUsuario({ receptorId, titulo, mensaje }) {
+    // Si no hay token de sesión, intentamos con API_TOKEN (solo si existe y tiene permisos)
+    const bearerChain = [jwt, API_TOKEN].filter(Boolean)
+
+    const data = {
+      titulo,
+      mensaje,
+      tipo: 'sistema',
+      leida: 'no-leida',
+      fechaEmision: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+      receptor: Number(receptorId),
+      emisor: Number(currentUserId)
+    }
+
+    for (const bearer of bearerChain) {
+      try {
+        const res = await fetch(`${API_URL}/notificaciones`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${bearer}`
+          },
+          body: JSON.stringify({ data })
+        })
+        if (res.ok) return true
+        // Log mínimo en consola; no interrumpimos el flujo principal
+        const j = await res.json().catch(() => null)
+        console.warn('[noti:cambio-usuario] fallo POST', res.status, j?.error || j)
+      } catch (e) {
+        console.warn('[noti:cambio-usuario] error POST', e)
+      }
+    }
+    return false
+  }
+
+  /* ========================= Guardar campo editable ========================= */
+
   const saveField = async (userId, field) => {
     try {
       setUpdatingUser(userId)
 
+
       const userToUpdate = users.find(user => user.id === userId)
       const currentUser = users.find(user => user.id === currentUserId)
+
 
       if (userId === currentUserId) {
         toast.error('No puedes modificar tu propia información')
@@ -220,22 +297,28 @@ export default function GestorUsuarios() {
 
       const newValue = (editValues[userId]?.[field] ?? '').trim()
       const oldValue = (userToUpdate?.[field] ?? '').toString()
+      const newValue = (editValues[userId]?.[field] ?? '').trim()
+      const oldValue = (userToUpdate?.[field] ?? '').toString()
 
+      if (field === 'username' && !newValue) {
       if (field === 'username' && !newValue) {
         toast.error('El nombre de usuario no puede estar vacío')
         setUpdatingUser(null)
         return
       }
       if (field === 'name' && !newValue) {
+      if (field === 'name' && !newValue) {
         toast.error('El nombre no puede estar vacío')
         setUpdatingUser(null)
         return
       }
       if (field === 'surname' && !newValue) {
+      if (field === 'surname' && !newValue) {
         toast.error('El apellido no puede estar vacío')
         setUpdatingUser(null)
         return
       }
+      if (field === 'email' && !newValue) {
       if (field === 'email' && !newValue) {
         toast.error('El email no puede estar vacío')
         setUpdatingUser(null)
@@ -244,7 +327,10 @@ export default function GestorUsuarios() {
 
       const updateData = { [field]: newValue }
 
+      const updateData = { [field]: newValue }
+
       const updatePromise = userService.updateUser(userId, updateData)
+
 
       toast.promise(updatePromise, {
         loading: 'Actualizando información...',
@@ -253,6 +339,11 @@ export default function GestorUsuarios() {
       })
 
       await updatePromise
+
+      // Actualizar UI
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, [field]: newValue }
 
       // Actualizar UI
       setUsers(users.map(user =>
@@ -279,6 +370,24 @@ export default function GestorUsuarios() {
         if (!ok) console.warn('[noti] No se pudo notificar el cambio de campo.')
       })
 
+
+      // Notificación al usuario modificado
+      const actor = getActorName()
+      const niceField = humanFieldName(field)
+      const when = new Date().toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const titulo = `Tu ${niceField} fue actualizado`
+      const mensaje =
+        `Se actualizó tu **${niceField}**: "${oldValue || '—'}" → "${newValue || '—'}". ` +
+        `Realizado por **${actor}** a las ${when}.`
+
+      crearNotificacionCambioUsuario({
+        receptorId: userId,
+        titulo,
+        mensaje
+      }).then(ok => {
+        if (!ok) console.warn('[noti] No se pudo notificar el cambio de campo.')
+      })
+
     } catch (err) {
       console.error('Error updating user field:', err)
     } finally {
@@ -287,9 +396,11 @@ export default function GestorUsuarios() {
   }
 
   // Modal eliminar
+  // Modal eliminar
   const openDeleteModal = (userId) => {
     const user = users.find(user => user.id === userId)
     const currentUser = users.find(user => user.id === currentUserId)
+
 
     if (userId === currentUserId) {
       toast.error('No puedes eliminar tu propia cuenta')
@@ -302,11 +413,13 @@ export default function GestorUsuarios() {
     }
 
     if (currentUser?.role?.name === 'Administrador' &&
+    if (currentUser?.role?.name === 'Administrador' &&
         user?.role?.name === 'Administrador') {
       toast.error('No puedes eliminar a otro administrador')
       return
     }
 
+    if (currentUser?.role?.name === 'Administrador' &&
     if (currentUser?.role?.name === 'Administrador' &&
         user?.role?.name === 'SuperAdministrador') {
       toast.error('No puedes eliminar a un Super Administrador')
@@ -328,7 +441,9 @@ export default function GestorUsuarios() {
     try {
       setDeletingUser(userToDelete.id)
 
+
       const deletePromise = userService.deleteUser(userToDelete.id)
+
 
       toast.promise(deletePromise, {
         loading: 'Eliminando usuario...',
@@ -338,14 +453,19 @@ export default function GestorUsuarios() {
 
       await deletePromise
 
+
       setUsers(users.filter(user => user.id !== userToDelete.id))
+
 
       if (expandedUserId === userToDelete.id) {
         setExpandedUserId(null)
       }
 
       // Nota: no enviamos notificación porque el usuario ya no existirá.
+
+      // Nota: no enviamos notificación porque el usuario ya no existirá.
       closeDeleteModal()
+
 
     } catch (err) {
       console.error('Error deleting user:', err)
@@ -358,9 +478,11 @@ export default function GestorUsuarios() {
     try {
       setUpdatingUser(userId)
 
+
       const selectedRole = roles.find(role => role.id === parseInt(newRoleId))
       const userToUpdate = users.find(user => user.id === userId)
       const currentUser = users.find(user => user.id === currentUserId)
+
 
       if (userId === currentUserId) {
         toast.error('No puedes modificar tu propio rol')
@@ -370,11 +492,16 @@ export default function GestorUsuarios() {
 
       if (currentUser?.role?.name === 'Administrador' &&
           userToUpdate?.role?.name === 'Administrador' &&
+      if (currentUser?.role?.name === 'Administrador' &&
+          userToUpdate?.role?.name === 'Administrador' &&
           selectedRole?.name !== 'Administrador') {
         toast.error('No puedes quitar el rol de Administrador a otro administrador')
         setUpdatingUser(null)
         return
       }
+
+      if (currentUser?.role?.name === 'Administrador' &&
+          userToUpdate?.role?.name === 'SuperAdministrador' &&
 
       if (currentUser?.role?.name === 'Administrador' &&
           userToUpdate?.role?.name === 'SuperAdministrador' &&
@@ -392,6 +519,7 @@ export default function GestorUsuarios() {
 
       const updatePromise = userService.updateUserRole(userId, newRoleId)
 
+
       toast.promise(updatePromise, {
         loading: 'Actualizando rol...',
         success: 'Rol actualizado correctamente',
@@ -406,12 +534,38 @@ export default function GestorUsuarios() {
               ...user,
               role: {
                 id: selectedRole?.id,
+
+      setUsers(users.map(user =>
+        user.id === userId
+          ? {
+              ...user,
+              role: {
+                id: selectedRole?.id,
                 name: selectedRole?.name,
+                type: selectedRole?.type
+              }
                 type: selectedRole?.type
               }
             }
           : user
       ))
+
+      // Notificación de cambio de rol
+      const actor = getActorName()
+      const when = new Date().toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const titulo = 'Tu rol fue actualizado'
+      const mensaje =
+        `Tu **rol** ahora es **${getRoleDisplayName(selectedRole?.name)}**. ` +
+        `Realizado por **${actor}** a las ${when}.`
+
+      crearNotificacionCambioUsuario({
+        receptorId: userId,
+        titulo,
+        mensaje
+      }).then(ok => {
+        if (!ok) console.warn('[noti] No se pudo notificar el cambio de rol.')
+      })
+
 
       // Notificación de cambio de rol
       const actor = getActorName()
@@ -440,8 +594,10 @@ export default function GestorUsuarios() {
     try {
       setUpdatingUser(userId)
 
+
       const userToUpdate = users.find(user => user.id === userId)
       const currentUser = users.find(user => user.id === currentUserId)
+
 
       if (userId === currentUserId) {
         toast.error('No puedes bloquear tu propia cuenta')
@@ -450,12 +606,14 @@ export default function GestorUsuarios() {
       }
 
       if (currentUser?.role?.name === 'Administrador' &&
+      if (currentUser?.role?.name === 'Administrador' &&
           userToUpdate?.role?.name === 'Administrador') {
         toast.error('No puedes bloquear a otro administrador')
         setUpdatingUser(null)
         return
       }
 
+      if (currentUser?.role?.name === 'Administrador' &&
       if (currentUser?.role?.name === 'Administrador' &&
           userToUpdate?.role?.name === 'SuperAdministrador') {
         toast.error('No puedes bloquear a otro Superadministrador')
@@ -465,6 +623,7 @@ export default function GestorUsuarios() {
 
       const action = block ? 'bloquear' : 'desbloquear'
       const updatePromise = userService.updateUserBlockStatus(userId, block)
+
 
       toast.promise(updatePromise, {
         loading: `${block ? 'Bloqueando' : 'Desbloqueando'} usuario...`,
@@ -476,9 +635,28 @@ export default function GestorUsuarios() {
 
       setUsers(users.map(user =>
         user.id === userId
+      setUsers(users.map(user =>
+        user.id === userId
           ? { ...user, blocked: block }
           : user
       ))
+
+      // Notificación de bloqueo/desbloqueo
+      const actor = getActorName()
+      const when = new Date().toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const titulo = block ? 'Tu cuenta fue bloqueada' : 'Tu cuenta fue desbloqueada'
+      const mensaje = block
+        ? `Tu cuenta fue **bloqueada** por **${actor}** a las ${when}.`
+        : `Tu cuenta fue **desbloqueada** por **${actor}** a las ${when}.`
+
+      crearNotificacionCambioUsuario({
+        receptorId: userId,
+        titulo,
+        mensaje
+      }).then(ok => {
+        if (!ok) console.warn('[noti] No se pudo notificar el cambio de estado (bloqueo).')
+      })
+
 
       // Notificación de bloqueo/desbloqueo
       const actor = getActorName()
@@ -508,6 +686,7 @@ export default function GestorUsuarios() {
     const isCurrentUser = user.id === currentUserId
     const canModify = canModifyUser(currentUserId, currentUser, user)
     const modificationWarning = getModificationWarning(currentUserId, currentUser, user)
+
 
     return {
       isCurrentUser,
@@ -656,6 +835,9 @@ export default function GestorUsuarios() {
                 const {
                   isCurrentUser,
                   canModify,
+                const {
+                  isCurrentUser,
+                  canModify,
                   modificationWarning,
                   isRoleChangeDisabled,
                   isBlockActionDisabled,
@@ -663,8 +845,10 @@ export default function GestorUsuarios() {
                   isDeleteDisabled
                 } = getUserModificationStatus(user)
 
+
                 return (
                   <React.Fragment key={user.id}>
+                    <tr
                     <tr
                       className={`${styles.userRow} ${expandedUserId === user.id ? styles.expanded : ''}`}
                       onClick={() => handleUserClick(user.id)}
@@ -694,6 +878,7 @@ export default function GestorUsuarios() {
                       <td className={styles.dateCell}>{formatDate(user.updatedAt)}</td>
                     </tr>
 
+
                     {expandedUserId === user.id && (
                       <tr className={styles.expandedRow}>
                         <td colSpan="8" className={styles.expandedContent}>
@@ -704,6 +889,7 @@ export default function GestorUsuarios() {
                                 <span className={styles.youIndicator}>¡Este sos vos!</span>
                               )}
                             </div>
+
 
                             <div className={styles.detailsGrid}>
                               <div className={styles.detailItem}>
@@ -961,6 +1147,7 @@ export default function GestorUsuarios() {
                               <div className={styles.actionGroup}>
                                 <label>Cambiar Rol:</label>
                                 <select
+                                <select
                                   value={user.role?.id || ''}
                                   onChange={(e) => handleRoleChange(user.id, e.target.value)}
                                   disabled={isRoleChangeDisabled}
@@ -975,6 +1162,9 @@ export default function GestorUsuarios() {
                                 </select>
                                 {isRoleChangeDisabled && !updatingUser && (
                                   <span className={styles.disabledReason}>
+                                    {isCurrentUser
+                                      ? "No puedes modificar tu propio rol"
+                                      : !canModify
                                     {isCurrentUser
                                       ? "No puedes modificar tu propio rol"
                                       : !canModify
@@ -1008,6 +1198,9 @@ export default function GestorUsuarios() {
                                     {isCurrentUser
                                       ? "No puedes bloquear tu propia cuenta"
                                       : !canModify
+                                    {isCurrentUser
+                                      ? "No puedes bloquear tu propia cuenta"
+                                      : !canModify
                                         ? "No tienes permisos para bloquear este usuario"
                                         : "No disponible"
                                     }
@@ -1026,6 +1219,9 @@ export default function GestorUsuarios() {
                                 </button>
                                 {isDeleteDisabled && !deletingUser && (
                                   <span className={styles.disabledReason}>
+                                    {isCurrentUser
+                                      ? "No puedes eliminar tu propia cuenta"
+                                      : !canModify
                                     {isCurrentUser
                                       ? "No puedes eliminar tu propia cuenta"
                                       : !canModify
@@ -1051,6 +1247,45 @@ export default function GestorUsuarios() {
               })}
             </tbody>
           </table>
+        </div>
+
+        <div className={styles.paginationContainer}>
+          <div className={styles.itemsPerPage}>
+            <span className={styles.paginationText}>Mostrar </span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(e.target.value)}
+              className={styles.pageSelect}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className={styles.paginationText}> entradas por página</span>
+          </div>
+
+          <div className={styles.pagination}>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={styles.pageButton}
+            >
+              ‹
+            </button>
+
+            <span className={styles.pageInfo}>
+              Página {currentPage} de {totalPages}
+            </span>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={styles.pageButton}
+            >
+              ›
+            </button>
+          </div>
         </div>
 
         {filteredUsers.length === 0 && (
@@ -1102,3 +1337,4 @@ export default function GestorUsuarios() {
     </div>
   )
 }
+

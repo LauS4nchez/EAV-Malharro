@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { API_URL, API_TOKEN, URL } from '@/app/config';
+import { createPortal } from 'react-dom';
+import { API_URL, API_TOKEN, URL } from '@/app/config';
 import usinaStyles from '@/styles/components/Usina/Usina.module.css';
 import styles from '@/styles/components/Perfil/PerfilPublico.module.css';
 import toast from 'react-hot-toast';
@@ -94,13 +96,93 @@ async function notificarRolesVuelveAPendiente({ usinaTitulo, usinaId, editorId }
   }
 }
 
+/* =========================================================
+   Helpers de notificaciones
+========================================================= */
+async function crearNotificacionInline({
+  token,
+  titulo,
+  mensaje,
+  receptorId,
+  emisorId,
+  usinaId,
+}) {
+  if (!token) return;
+  try {
+    const data = {
+      titulo,
+      mensaje,
+      tipo: 'usina',
+      leida: 'no-leida',
+      fechaEmision: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+    };
+    if (receptorId) data.receptor = Number(receptorId);
+    if (emisorId) data.emisor = Number(emisorId);
+    if (usinaId) data.usinaAfectada = Number(usinaId);
+
+    const res = await fetch(`${API_URL}/notificaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ data }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      console.error('[noti] error creando notificación:', err);
+    }
+  } catch (e) {
+    console.error('[noti] exception:', e);
+  }
+}
+
+/**
+ * Notifica a todos los usuarios con rol Admin/Profesor/SuperAdmin que una usina volvió a "pendiente".
+ * Usa API_TOKEN para actuar como sistema.
+ */
+async function notificarRolesVuelveAPendiente({ usinaTitulo, usinaId, editorId }) {
+  if (!API_TOKEN) return;
+  try {
+    const usersRes = await fetch(
+      `${API_URL}/users?populate=role&pagination[pageSize]=1000`,
+      { headers: { Authorization: `Bearer ${API_TOKEN}` } }
+    );
+    const raw = await usersRes.json();
+
+    const usuarios = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+      ? raw.data.map((u) => ({ id: u.id, ...u.attributes }))
+      : [];
+
+    const destinatarios = usuarios.filter((u) => {
+      const r = u.role?.name || u.role?.type || u.role?.displayName || u.role;
+      return r === 'Administrador' || r === 'Profesor' || r === 'SuperAdministrador';
+    });
+
+    const titulo = 'Usina editada: quedó pendiente';
+    const mensaje = `La usina "${usinaTitulo}" fue editada y pasó a estado pendiente para revisión.`;
+
+    await Promise.all(
+      destinatarios.map((u) =>
+        crearNotificacionInline({
+          token: API_TOKEN,
+          titulo,
+          mensaje,
+          receptorId: u.id,
+          emisorId: editorId,
+          usinaId,
+        })
+      )
+    );
+  } catch (err) {
+    console.error('[noti roles] fallo al listar/notificar:', err);
+  }
+}
+
 export default function UsinaGallery({ usinas = [], loading, isCurrentUser, currentUserId }) {
   const [selectedUsina, setSelectedUsina] = useState(null);
   const [editingInModal, setEditingInModal] = useState(false);
-  const [editData, setEditData] = useState({
-    titulo: '',
-    imagen: null,
-  });
+  const [editData, setEditData] = useState({ titulo: '', imagen: null });
   const [editErrors, setEditErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -225,13 +307,92 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     };
   }, [isCurrentUser, currentUserId]);
 
-  // 🔹 normalizar texto
+  // Lista de usinas efectiva (cuando es tu perfil, sobreescribimos con fetch "full")
+  const [ownUsinas, setOwnUsinas] = useState(usinas);
+  useEffect(() => setOwnUsinas(usinas), [usinas]);
+
+  // Carga FULL de mis usinas (incluye rechazadas/pendientes) si es mi perfil
+  useEffect(() => {
+    if (!isCurrentUser || !currentUserId) return;
+    let ignore = false;
+
+    (async () => {
+      const jwt = (typeof window !== 'undefined' && localStorage.getItem('jwt')) || null;
+
+      const headers = jwt
+        ? { Authorization: `Bearer ${jwt}` }
+        : API_TOKEN
+        ? { Authorization: `Bearer ${API_TOKEN}` }
+        : {};
+
+      const qs =
+        `filters[creador][id][$eq]=${currentUserId}` +
+        `&publicationState=preview` +
+        `&sort=createdAt:desc` +
+        `&pagination[pageSize]=200` +
+        `&populate[0]=media` +
+        `&populate[1]=creador`;
+
+      try {
+        const res = await fetch(`${API_URL}/usinas?${qs}`, { headers });
+        const json = await res.json().catch(() => null);
+        const items = Array.isArray(json?.data) ? json.data : [];
+
+        // Normalización calcada al Panel de Moderación
+        const normalized = items.map((item) => {
+          const a = item.attributes ?? item;
+
+          // media
+          let mediaUrl = '/placeholder.jpg';
+          let mediaType = 'image';
+          const mediaField = a.media;
+          const mediaData = mediaField?.data ?? mediaField;
+          const mediaAttrs = mediaData?.attributes ?? mediaData;
+          const urlPath = mediaAttrs?.url;
+          const mime = mediaAttrs?.mime || '';
+          if (urlPath) mediaUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
+          if (mime.startsWith('video/')) mediaType = 'video';
+
+          // creador
+          const creadorField = a.creador;
+          const creadorData = creadorField?.data ?? creadorField;
+          const creadorAttrs = creadorData?.attributes ?? creadorData;
+
+          return {
+            id: item.id,
+            documentId: item.documentId ?? item.id,
+            titulo: a.titulo ?? 'Sin título',
+            aprobado: (a.aprobado ?? 'pendiente').toLowerCase(),
+            mediaUrl,
+            mediaType,
+            creador: creadorAttrs
+              ? {
+                  id: creadorData?.id,
+                  name: creadorAttrs.name || '',
+                  surname: creadorAttrs.surname || '',
+                  username: creadorAttrs.username || '',
+                  carrera: creadorAttrs.carrera || 'Sin carrera',
+                }
+              : null,
+            createdAt: a.createdAt || item.createdAt,
+            publishedAt: a.publishedAt || item.publishedAt,
+          };
+        });
+
+        if (!ignore) setOwnUsinas(normalized);
+      } catch (e) {
+        console.error('No se pudieron traer todas las usinas del usuario:', e);
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isCurrentUser, currentUserId]);
+
+  // normalizar texto
   const normalizeText = (text) =>
-    (text || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
+    (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
   // 🔹 Fuente de datos: si es tu perfil → ownUsinas; si no → props
   const sourceUsinas = isCurrentUser ? ownUsinas : usinas;
@@ -239,7 +400,20 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
   // 🔹 aplicar filtros y orden
   const filteredAndSortedUsinas = useMemo(() => {
     if (!Array.isArray(sourceUsinas) || !sourceUsinas.length) return [];
+    if (!Array.isArray(sourceUsinas) || !sourceUsinas.length) return [];
 
+    let filtered = [...sourceUsinas];
+
+    // Estado
+    if (isCurrentUser) {
+      if (filters.status && filters.status !== 'todas') {
+        filtered = filtered.filter(
+          (u) => (u.aprobado || '').toLowerCase() === filters.status
+        );
+      }
+    } else {
+      filtered = filtered.filter((u) => (u.aprobado || '').toLowerCase() === 'aprobada');
+    }
     let filtered = [...sourceUsinas];
 
     // Estado
@@ -255,48 +429,44 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
 
     // búsqueda
     if (filters.searchTerm) {
-      const searchTermNormalized = normalizeText(filters.searchTerm);
-      filtered = filtered.filter((usina) =>
-        normalizeText(usina.titulo || '').includes(searchTermNormalized)
-      );
+      const st = normalizeText(filters.searchTerm);
+      filtered = filtered.filter((u) => normalizeText(u.titulo || '').includes(st));
     }
 
     // orden
     filtered.sort((a, b) => {
-      let valueA, valueB;
+      let A, B;
       switch (filters.sortBy) {
         case 'titulo':
-          valueA = normalizeText(a.titulo || '');
-          valueB = normalizeText(b.titulo || '');
+          A = normalizeText(a.titulo || '');
+          B = normalizeText(b.titulo || '');
           break;
         case 'createdAt':
         default:
-          valueA = new Date(a.createdAt || a.publishedAt || Date.now());
-          valueB = new Date(b.createdAt || b.publishedAt || Date.now());
+          A = new Date(a.createdAt || a.publishedAt || Date.now());
+          B = new Date(b.createdAt || b.publishedAt || Date.now());
           break;
       }
-
-      if (valueA < valueB) return filters.sortOrder === 'asc' ? -1 : 1;
-      if (valueA > valueB) return filters.sortOrder === 'asc' ? 1 : -1;
+      if (A < B) return filters.sortOrder === 'asc' ? -1 : 1;
+      if (A > B) return filters.sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
 
     return filtered;
   }, [sourceUsinas, filters, isCurrentUser]);
+  }, [sourceUsinas, filters, isCurrentUser]);
 
-  // 🔹 paginación
+  // paginación
   const totalUsinas = filteredAndSortedUsinas.length;
   const totalPages = Math.ceil(totalUsinas / pagination.pageSize) || 1;
   const startIndex = (pagination.page - 1) * pagination.pageSize;
   const endIndex = startIndex + pagination.pageSize;
   const usinasPaginated = filteredAndSortedUsinas.slice(startIndex, endIndex);
 
-  // 🔹 mantener paginación en sync
   useEffect(() => {
     setPagination((prev) => ({
       ...prev,
       total: filteredAndSortedUsinas.length,
-      // si estoy en la última página y la elimino, vuelvo una página atrás
       page:
         prev.page > 1 && startIndex >= filteredAndSortedUsinas.length
           ? prev.page - 1
@@ -305,44 +475,31 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredAndSortedUsinas.length]);
 
-  // 🔹 si hay modal abierto, bloquear scroll y limpiar al desmontar
+  // bloquear scroll al abrir modal principal
   useEffect(() => {
-    if (selectedUsina) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    if (selectedUsina) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'auto';
+    return () => (document.body.style.overflow = 'auto');
   }, [selectedUsina]);
 
-  // 🔹 manejo de filtros
   const handleFiltersChange = (newFilters) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setPagination((prev) => ({ ...prev, page: newPage }));
+  const handlePageChange = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPagination((prev) => ({ ...prev, page: p }));
   };
 
-  const handlePageSizeChange = (newSize) => {
-    const size = parseInt(newSize, 10) || 8;
-    setPagination({
-      page: 1,
-      pageSize: size,
-      total: filteredAndSortedUsinas.length,
-    });
+  const handlePageSizeChange = (val) => {
+    const size = parseInt(val, 10) || 8;
+    setPagination({ page: 1, pageSize: size, total: filteredAndSortedUsinas.length });
   };
 
-  // 🔹 helper: ¿el usuario que ve puede editar esta usina?
   const canCurrentUserEdit = (usina) => {
-    if (!isCurrentUser) return false; // no está viendo su propio perfil
+    if (!isCurrentUser) return false;
     if (!currentUserId) return false;
-    // si la usina no tiene creador, igual dejo (caso raro)
     if (!usina?.creador?.id) return true;
     return usina.creador.id === currentUserId;
   };
@@ -350,10 +507,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
   const handleCardClick = (usina) => {
     setSelectedUsina(usina);
     setEditingInModal(false);
-    setEditData({
-      titulo: usina.titulo || '',
-      imagen: null,
-    });
+    setEditData({ titulo: usina.titulo || '', imagen: null });
     setEditErrors({});
   };
 
@@ -377,64 +531,43 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     setEditingInModal(false);
     setImageHovered(false);
     if (selectedUsina) {
-      setEditData({
-        titulo: selectedUsina.titulo || '',
-        imagen: null,
-      });
+      setEditData({ titulo: selectedUsina.titulo || '', imagen: null });
       setEditErrors({});
     }
   };
 
   const validateEdit = (data) => {
     const errs = {};
-    const title = (data.titulo || '').trim();
-
-    if (!title) {
-      errs.titulo = 'El título es obligatorio.';
-    } else if (title.length < 3) {
-      errs.titulo = 'El título debe tener al menos 3 caracteres.';
-    } else if (title.length > 100) {
-      errs.titulo = 'El título no puede superar los 100 caracteres.';
-    }
+    const t = (data.titulo || '').trim();
+    if (!t) errs.titulo = 'El título es obligatorio.';
+    else if (t.length < 3) errs.titulo = 'Mínimo 3 caracteres.';
+    else if (t.length > 100) errs.titulo = 'Máximo 100 caracteres.';
 
     if (data.imagen) {
-      const file = data.imagen;
-      const isImage = file.type?.startsWith('image/');
-      const isVideo = file.type?.startsWith('video/');
-      if (!isImage && !isVideo) {
-        errs.imagen = 'Formato no soportado. Solo imagen o video.';
-      } else if (isImage && file.size > MAX_IMAGE_SIZE) {
-        errs.imagen = 'La imagen es muy pesada (máx. 5 MB).';
-      } else if (isVideo && file.size > MAX_VIDEO_SIZE) {
-        errs.imagen = 'El video es muy pesado (máx. 50 MB).';
-      }
+      const f = data.imagen;
+      const isImage = f.type?.startsWith('image/');
+      const isVideo = f.type?.startsWith('video/');
+      if (!isImage && !isVideo) errs.imagen = 'Formato no soportado.';
+      else if (isImage && f.size > MAX_IMAGE_SIZE) errs.imagen = 'Imagen > 5MB.';
+      else if (isVideo && f.size > MAX_VIDEO_SIZE) errs.imagen = 'Video > 50MB.';
     }
-
     return errs;
   };
 
   const handleEditChange = (e) => {
     const { name, value, files } = e.target;
-    const nextData = {
-      ...editData,
-      [name]: files ? files[0] : value,
-    };
-    setEditData(nextData);
-
-    // validación on-change
-    const errs = validateEdit(nextData);
-    setEditErrors(errs);
+    const next = { ...editData, [name]: files ? files[0] : value };
+    setEditData(next);
+    setEditErrors(validateEdit(next));
   };
 
   const handleImageEditClick = (e) => {
     e.stopPropagation();
-    const fileInput = document.getElementById('modal-image-input');
-    if (fileInput) {
-      fileInput.click();
-    }
+    const inp = document.getElementById('modal-image-input');
+    if (inp) inp.click();
   };
 
-  // 🔹 borrar
+  // eliminar
   const handleDeleteClick = () => {
     if (!selectedUsina) return;
     if (!canCurrentUserEdit(selectedUsina)) {
@@ -444,13 +577,8 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     setShowDeleteConfirm(true);
   };
 
-  const closeDeleteConfirm = () => {
-    if (!deleting) setShowDeleteConfirm(false);
-  };
-
   const handleDeleteUsina = async () => {
     if (!selectedUsina) return;
-
     if (!canCurrentUserEdit(selectedUsina)) {
       toast.error('No tenés permisos para eliminar este trabajo.');
       return;
@@ -465,7 +593,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     const usinaId = selectedUsina.documentId || selectedUsina.id;
 
     if (!token) {
-      toast.error('No hay sesión para eliminar la usina.', { id: toastId });
+      toast.error('No hay sesión.', { id: toastId });
       setDeleting(false);
       return;
     }
@@ -473,29 +601,19 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     try {
       const res = await fetch(`${API_URL}/usinas/${usinaId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
-
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error?.message || 'Error al eliminar usina');
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error?.message || 'Error al eliminar usina');
       }
-
-      closeDeleteConfirm();
+      setShowDeleteConfirm(false);
       closeModal();
-
-      toast.success('Usina eliminada correctamente', { id: toastId });
-
-      // para refrescar la vista
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
+      toast.success('Usina eliminada correctamente.', { id: toastId });
+      if (typeof window !== 'undefined') window.location.reload();
     } catch (err) {
-      console.error('Error al eliminar usina:', err);
-      toast.error('Error al eliminar la usina: ' + err.message, { id: toastId });
+      console.error(err);
+      toast.error('Error: ' + err.message, { id: toastId });
     } finally {
       setDeleting(false);
     }
@@ -505,69 +623,52 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
   const guardarCambios = async (e) => {
     e?.preventDefault();
     if (!selectedUsina) return;
-    if (!canCurrentUserEdit(selectedUsina)) {
-      toast.error('No tenés permisos para editar este trabajo.');
-      return;
-    }
+    if (!canCurrentUserEdit(selectedUsina)) return toast.error('Sin permisos.');
 
-    // validación previa
     const errs = validateEdit(editData);
-    if (Object.keys(errs).length > 0) {
+    if (Object.keys(errs).length) {
       setEditErrors(errs);
-      toast.error('Revisá los campos marcados.');
-      return;
+      return toast.error('Revisá los campos.');
     }
 
     setSaving(true);
-    const toastId = toast.loading('Guardando cambios...');
+    const toastId = toast.loading('Guardando...');
     const token =
       (typeof window !== 'undefined' && localStorage.getItem('jwt')) ||
       API_TOKEN ||
       null;
     let mediaId = null;
     const usinaIdParaPUT = selectedUsina.documentId || selectedUsina.id;
+    const usinaIdParaPUT = selectedUsina.documentId || selectedUsina.id;
 
     if (!token) {
-      toast.error('No hay sesión para editar la usina.', { id: toastId });
+      toast.error('No hay sesión.', { id: toastId });
       setSaving(false);
       return;
     }
 
     try {
-      // subir nueva media si hay
+      // subir media nueva si corresponde
       if (editData.imagen) {
-        const uploadForm = new FormData();
-        uploadForm.append('files', editData.imagen);
-
-        const uploadRes = await fetch(`${API_URL}/upload`, {
+        const fd = new FormData();
+        fd.append('files', editData.imagen);
+        const up = await fetch(`${API_URL}/upload`, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: uploadForm,
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
         });
-
-        if (!uploadRes.ok) {
-          throw new Error('Error al subir imagen o video');
-        }
-
-        const uploadData = await uploadRes.json();
-        if (!uploadData?.[0]?.id) {
-          throw new Error('No se pudo obtener el ID de la media subida');
-        }
-
-        mediaId = uploadData[0].id;
+        if (!up.ok) throw new Error('Error al subir imagen/video');
+        const upJson = await up.json();
+        if (!upJson?.[0]?.id) throw new Error('No se obtuvo el ID de la media');
+        mediaId = upJson[0].id;
       }
 
+      // actualizar usina → vuelve a "pendiente"
       const updateData = {
         titulo: editData.titulo.trim(),
-        // cuando se edita vuelve a pendiente
         aprobado: 'pendiente',
+        ...(mediaId ? { media: mediaId } : {}),
       };
-
-      if (mediaId) {
-        updateData.media = mediaId;
-      }
 
       const res = await fetch(`${API_URL}/usinas/${usinaIdParaPUT}`, {
         method: 'PUT', // si tu Strapi es v5 y solo acepta PATCH, cambiá acá
@@ -601,13 +702,10 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         { id: toastId }
       );
       closeModal();
-
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
+      if (typeof window !== 'undefined') window.location.reload();
     } catch (err) {
-      console.error('Error al modificar usina:', err);
-      toast.error('Error al modificar la usina: ' + err.message, { id: toastId });
+      console.error(err);
+      toast.error('Error: ' + err.message, { id: toastId });
     } finally {
       setSaving(false);
     }
@@ -656,6 +754,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
           filters={filters}
           onFiltersChange={handleFiltersChange}
           totalUsinas={sourceUsinas.length}
+          totalUsinas={sourceUsinas.length}
           filteredCount={filteredAndSortedUsinas.length}
         />
       )}
@@ -664,9 +763,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
       {Array.isArray(sourceUsinas) && sourceUsinas.length > 0 && (
         <div className={styles.paginationControls}>
           <div className={styles.pageSizeSelector}>
-            <label htmlFor="pageSize" className={styles.textSizeSelector}>
-              Mostrar:
-            </label>
+            <label htmlFor="pageSize" className={styles.textSizeSelector}>Mostrar:</label>
             <select
               id="pageSize"
               value={pagination.pageSize}
@@ -705,86 +802,24 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         </div>
       )}
 
-      {/* 🔹 Controles de paginación - abajo */}
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
-          <button
-            className={styles.paginationBtn}
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
-          >
-            Anterior
-          </button>
-
-          <div className={styles.paginationNumbers}>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (page) =>
-                  page === 1 ||
-                  page === totalPages ||
-                  Math.abs(page - pagination.page) <= 1
-              )
-              .map((page, index, array) => {
-                const showEllipsis = index > 0 && page - array[index - 1] > 1;
-                return (
-                  <span key={page}>
-                    {showEllipsis && (
-                      <span className={styles.paginationEllipsis}>...</span>
-                    )}
-                    <button
-                      className={`${styles.paginationBtn} ${
-                        pagination.page === page ? styles.paginationBtnActive : ''
-                      }`}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  </span>
-                );
-              })}
-          </div>
-
-          <button
-            className={styles.paginationBtn}
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === totalPages}
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
-
-      {/* 🔹 Galería */}
+      {/* Galería */}
       <div className={usinaStyles.usinaGaleria}>
         {usinasPaginated.length > 0 ? (
-          usinasPaginated.map((usina) => (
+          usinasPaginated.map((u) => (
             <div
-              key={usina.documentId || usina.id}
+              key={u.documentId || u.id}
               className={usinaStyles.usinaCard}
-              onClick={() => handleCardClick(usina)}
+              onClick={() => handleCardClick(u)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' ? handleCardClick(usina) : null)}
+              onKeyDown={(e) => (e.key === 'Enter' ? handleCardClick(u) : null)}
             >
-              <img
-                src={getCardImage(usina)}
-                alt={usina.titulo || 'Trabajo sin título'}
-                className={usinaStyles.usinaImage}
-              />
+              <img src={getCardImage(u)} alt={u.titulo || 'Trabajo sin título'} className={usinaStyles.usinaImage} />
               <div className={usinaStyles.usinaContenido}>
-                <h3 className={usinaStyles.usinaTitulo}>
-                  {usina.titulo || 'Sin título'}
-                </h3>
-                <p className={usinaStyles.usinaCarrera}>
-                  {usina.creador?.carrera || 'Sin carrera especificada'}
-                </p>
-                {usina.link && (
-                  <a
-                    href={usina.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={usinaStyles.usinaLink}
-                  >
+                <h3 className={usinaStyles.usinaTitulo}>{u.titulo || 'Sin título'}</h3>
+                <p className={usinaStyles.usinaCarrera}>{u.creador?.carrera || 'Sin carrera especificada'}</p>
+                {u.link && (
+                  <a href={u.link} target="_blank" rel="noopener noreferrer" className={usinaStyles.usinaLink}>
                     Contactar
                   </a>
                 )}
@@ -797,25 +832,54 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
               ? 'No se encontraron trabajos que coincidan con tu búsqueda.'
               : isCurrentUser
               ? 'No tenés trabajos con el estado seleccionado.'
+              : isCurrentUser
+              ? 'No tenés trabajos con el estado seleccionado.'
               : 'Este usuario aún no ha publicado trabajos aprobados.'}
           </p>
         )}
       </div>
 
-      {/* 🔹 Modal de vista detallada */}
+      {/* Paginación abajo */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button className={styles.paginationBtn} onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1}>
+            Anterior
+          </button>
+
+          <div className={styles.paginationNumbers}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - pagination.page) <= 1)
+              .map((p, idx, arr) => {
+                const ellipsis = idx > 0 && p - arr[idx - 1] > 1;
+                return (
+                  <span key={p}>
+                    {ellipsis && <span className={styles.paginationEllipsis}>...</span>}
+                    <button
+                      className={`${styles.paginationBtn} ${pagination.page === p ? styles.paginationBtnActive : ''}`}
+                      onClick={() => handlePageChange(p)}
+                    >
+                      {p}
+                    </button>
+                  </span>
+                );
+              })}
+          </div>
+
+          <button className={styles.paginationBtn} onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === totalPages}>
+            Siguiente
+          </button>
+        </div>
+      )}
+
+      {/* Modal principal */}
       {selectedUsina && (
         <div className={usinaStyles.modalOverlay} onClick={closeModal}>
-          <div
-            className={usinaStyles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className={usinaStyles.closeButton} onClick={closeModal}>
-              ✕
-            </button>
+          <div className={usinaStyles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={usinaStyles.closeButton} onClick={closeModal}>✕</button>
 
             <div className={usinaStyles.modalImageContainer}>
               <div
-                className={styles.imageWrapper}
+                className={usinaStyles.imageWrapper}
                 onMouseEnter={() => setImageHovered(true)}
                 onMouseLeave={() => setImageHovered(false)}
               >
@@ -823,58 +887,37 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
                   const { url, type } = getModalMedia(selectedUsina);
                   if (type === 'video') {
                     return (
-                      <video
-                        src={url}
-                        className={usinaStyles.modalImage}
-                        controls
-                        autoPlay
-                        muted
-                        playsInline
-                      >
+                      <video src={url} className={usinaStyles.modalImage} controls autoPlay muted playsInline>
                         Tu navegador no soporta el elemento de video.
                       </video>
                     );
                   }
-                  return (
-                    <img
-                      src={url}
-                      alt={selectedUsina.titulo}
-                      className={usinaStyles.modalImage}
-                    />
-                  );
+                  return <img src={url} alt={selectedUsina.titulo} className={usinaStyles.modalImage} />;
                 })()}
 
-                {/* overlay de edición */}
-                {editingInModal &&
-                  imageHovered &&
-                  selectedUsina.mediaType !== 'video' && (
-                    <div className={styles.imageOverlay}>
-                      <input
-                        id="modal-image-input"
-                        type="file"
-                        accept="image/*,video/*"
-                        style={{ display: 'none' }}
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const file = e.target.files[0];
-                            const nextData = { ...editData, imagen: file };
-                            const errs = validateEdit(nextData);
-                            setEditData(nextData);
-                            setEditErrors(errs);
-                          }
-                        }}
-                      />
-                      <button
-                        className={styles.editImageButton}
-                        onClick={handleImageEditClick}
-                      >
-                        Cambiar media
-                      </button>
-                      {editErrors.imagen && (
-                        <p className={styles.errorText}>{editErrors.imagen}</p>
-                      )}
-                    </div>
-                  )}
+                {/* Overlay de edición SOLO si está en modo edición y no es video */}
+                {editingInModal && imageHovered && selectedUsina.mediaType !== 'video' && (
+                  <div className={usinaStyles.imageOverlay}>
+                    <input
+                      id="modal-image-input"
+                      type="file"
+                      accept="image/*,video/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          const next = { ...editData, imagen: file };
+                          setEditData(next);
+                          setEditErrors(validateEdit(next));
+                        }
+                      }}
+                    />
+                    <button className={usinaStyles.editImageButton} onClick={handleImageEditClick}>
+                      Cambiar media
+                    </button>
+                    {editErrors.imagen && <p className={usinaStyles.errorText}>{editErrors.imagen}</p>}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -882,7 +925,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
               {editingInModal ? (
                 <>
                   <textarea
-                    className={styles.editTextarea}
+                    className={usinaStyles.editTextarea}
                     value={editData.titulo}
                     name="titulo"
                     onChange={handleEditChange}
@@ -890,23 +933,17 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
                     maxLength={100}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  {editErrors.titulo && (
-                    <p className={styles.errorText}>{editErrors.titulo}</p>
-                  )}
+                  {editErrors.titulo && <p className={usinaStyles.errorText}>{editErrors.titulo}</p>}
                 </>
               ) : (
-                <h2 className={usinaStyles.modalTitulo}>
-                  {selectedUsina.titulo}
-                </h2>
+                <h2 className={usinaStyles.modalTitulo}>{selectedUsina.titulo}</h2>
               )}
 
               {selectedUsina.creador && (
                 <p className={usinaStyles.modalText}>
                   <b className={usinaStyles.modalStrong}>Creador:</b>{' '}
                   {selectedUsina.creador.name} {selectedUsina.creador.surname}{' '}
-                  <span className={usinaStyles.username}>
-                    @{selectedUsina.creador.username}
-                  </span>
+                  <span className={usinaStyles.username}>@{selectedUsina.creador.username}</span>
                 </p>
               )}
 
@@ -926,35 +963,18 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
                 {isCurrentUser && canCurrentUserEdit(selectedUsina) && (
                   <>
                     {!editingInModal ? (
-                      <div className={styles.actionButtons}>
-                        <button
-                          className={styles.editButton}
-                          onClick={handleEditClick}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className={styles.deleteButton}
-                          onClick={handleDeleteClick}
-                          disabled={deleting}
-                        >
+                      <div className={usinaStyles.actionButtons}>
+                        <button className={usinaStyles.editButton} onClick={handleEditClick}>Editar</button>
+                        <button className={usinaStyles.deleteButton} onClick={handleDeleteClick} disabled={deleting}>
                           Eliminar
                         </button>
                       </div>
                     ) : (
-                      <div className={styles.editActionButtons}>
-                        <button
-                          className={styles.saveButton}
-                          onClick={guardarCambios}
-                          disabled={saving}
-                        >
+                      <div className={usinaStyles.editActionButtons}>
+                        <button className={usinaStyles.saveButton} onClick={guardarCambios} disabled={saving}>
                           {saving ? 'Guardando...' : 'Guardar'}
                         </button>
-                        <button
-                          className={styles.cancelButton}
-                          onClick={handleCancelEdit}
-                          disabled={saving}
-                        >
+                        <button className={usinaStyles.cancelButton} onClick={handleCancelEdit} disabled={saving}>
                           Cancelar
                         </button>
                       </div>

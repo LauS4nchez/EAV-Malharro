@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
-import { API_URL, API_TOKEN } from "@/app/config";
+import { useState, useEffect } from 'react';
+import { API_URL, API_TOKEN, URL } from "@/app/config";
 import styles from "@/styles/components/Perfil/PerfilPublico.module.css";
 import agendaStyles from "@/styles/components/Agenda/Agenda.module.css";
 import InformacionPersonal from './InformacionPersonal';
@@ -10,314 +10,168 @@ import Header from '@/app/componentes/construccion/Header';
 import UsinaGallery from './usina/UsinaGallery';
 import CrearUsinaModal from './usina/CrearUsinaModal';
 import { Toaster } from 'react-hot-toast';
-import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
-
-/* =========================================================
-   Funciones para manejar media (imágenes y videos)
-========================================================= */
-const getPreviewUrl = (media) => {
-  if (!media) return '/img/placeholder.jpg';
-  
-  // Para imágenes - usar la URL original
-  if (media.mime?.startsWith('image/')) {
-    return media.url;
-  }
-  
-  // Para videos - usar el preview GIF si existe
-  if (media.mime?.startsWith('video/') && media.previewUrl) {
-    return media.previewUrl;
-  }
-  
-  // Fallback
-  return media.url || '/img/placeholder.jpg';
-};
-
-const getMediaUrl = (media) => {
-  if (!media) return '/img/placeholder.jpg';
-  
-  // Para ambos casos (imágenes y videos) usar la URL original
-  return media.url || '/img/placeholder.jpg';
-};
-
-const getMediaType = (media) => {
-  if (!media) return 'image';
-  return media.mime?.startsWith('video/') ? 'video' : 'image';
-};
 
 export default function PerfilPublicoPage({ params }) {
-  const { username } = use(params);
+  // 🚫 No usar `use(params)` aquí
+  const username = params?.username;
+
   const [userData, setUserData] = useState(null);
-  const [usinas, setUsinas] = useState([]);
+  const [usinas, setUsinas] = useState([]);                 // solo aprobadas para mostrar a terceros
+  const [usinasTotalCount, setUsinasTotalCount] = useState(0); // 🔢 TODAS las usinas (cualquier estado)
   const [agendas, setAgendas] = useState([]);
+  const [agendasWithImages, setAgendasWithImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imagesLoading, setImagesLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+
   const [activeTab, setActiveTab] = useState('trabajos');
-  const [agendasWithImages, setAgendasWithImages] = useState([]);
-  const [imagesLoading, setImagesLoading] = useState(true);
   const [showCrearUsinaModal, setShowCrearUsinaModal] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showAvatarOverlay, setShowAvatarOverlay] = useState(false);
 
-  /* =================== NUEVO: Manejo de selección de avatar con Capacitor =================== */
-  const handleAvatarSelect = async () => {
-    if (uploadingAvatar) return;
+  // Helpers para media (normaliza URL absoluta)
+  const withBase = (u) => (u?.startsWith('http') ? u : (u ? `${URL}${u}` : '/img/placeholder.jpg'));
 
+  const getPreviewUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    // v4/v5: media puede venir como {data:{attributes:{url,mime,previewUrl}}} o plano
+    const m = media?.data?.attributes || media;
+    if (m?.mime?.startsWith('image/')) return withBase(m.url);
+    if (m?.mime?.startsWith('video/')) return withBase(m.previewUrl || m.url);
+    return withBase(m?.url);
+  };
+
+  const getMediaUrl = (media) => {
+    if (!media) return '/img/placeholder.jpg';
+    const m = media?.data?.attributes || media;
+    return withBase(m?.url);
+  };
+
+  // 🔢 Fallback para contar TODAS las usinas (por si la relación viene paginada)
+  const fetchTotalUsinasCount = async (userId) => {
     try {
-      setUploadingAvatar(true);
-
-      const mediaResult = await openMediaPicker({
-        source: 'photos',
-        allowEditing: true,
-        quality: 90,
-        resultType: 'DataUrl'
-      });
-
-      if (!mediaResult || !mediaResult.file) {
-        console.log('Usuario canceló la selección');
-        return;
+      const res = await fetch(
+        `${API_URL}/usinas?filters[creador][id][$eq]=${userId}` +
+          `&publicationState=preview&fields[0]=id&pagination[page]=1&pagination[pageSize]=1`,
+        { headers: { Authorization: `Bearer ${API_TOKEN}` } }
+      );
+      const json = await res.json();
+      const total = json?.meta?.pagination?.total;
+      if (Number.isInteger(total)) {
+        setUsinasTotalCount(total);
       }
-
-      const file = mediaResult.file;
-
-      // Validaciones para avatar
-      const okImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
-      const maxMB = 2;
-
-      if (!file.type.startsWith('image/')) {
-        toast.error('Solo se permiten imágenes para el avatar.');
-        return;
-      }
-
-      if (!okImageTypes.includes(file.type)) {
-        toast.error('Formato de imagen inválido (JPG, PNG, WEBP o AVIF).');
-        return;
-      }
-
-      if (file.size > maxMB * 1024 * 1024) {
-        toast.error(`La imagen supera ${maxMB} MB.`);
-        return;
-      }
-
-      // Subir avatar
-      const token = localStorage.getItem('jwt');
-      if (!token) {
-        toast.error('No hay token. Iniciá sesión.');
-        return;
-      }
-
-      const fd = new FormData();
-      fd.append('files', file);
-      
-      const uploadRes = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error('Error al subir la imagen');
-      }
-
-      const uploadData = await uploadRes.json();
-      const avatarId = uploadData?.[0]?.id;
-
-      if (!avatarId) {
-        throw new Error('No se pudo obtener el ID del avatar');
-      }
-
-      // Actualizar usuario con nuevo avatar
-      const updateRes = await fetch(`${API_URL}/users/${currentUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          avatar: avatarId
-        }),
-      });
-
-      if (!updateRes.ok) {
-        throw new Error('Error al actualizar el avatar');
-      }
-
-      // Actualizar estado local con la nueva imagen
-      const updatedAvatar = {
-        id: avatarId,
-        url: uploadData[0].url,
-      };
-
-      setUserData(prev => ({
-        ...prev,
-        avatar: updatedAvatar
-      }));
-
-      toast.success('Avatar actualizado correctamente');
-
-    } catch (err) {
-      console.error('Error actualizando avatar:', err);
-      toast.error('Error al actualizar el avatar: ' + err.message);
-    } finally {
-      setUploadingAvatar(false);
+    } catch (e) {
+      // si falla, nos quedamos con el conteo de la relación
+      console.warn('No se pudo obtener meta.pagination.total de usinas:', e);
     }
   };
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash === '#trabajos') {
-      setActiveTab('trabajos');
-    } else if (hash === '#agendas') {
-      setActiveTab('agendas');
-    } else if (hash === '#informacion') {
-      setActiveTab('informacion');
-    }
-    
+    // Sincronizar tab con hash
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (hash === '#trabajos') setActiveTab('trabajos');
+    else if (hash === '#agendas') setActiveTab('agendas');
+    else if (hash === '#informacion') setActiveTab('informacion');
+
     const fetchData = async () => {
       try {
-        // Obtener usuario logueado
-        const token = localStorage.getItem('jwt');
+        // Usuario logueado
+        const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
         if (token) {
           try {
             const userRes = await fetch(`${API_URL}/users/me`, {
-              headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             });
-            
-            if (userRes.ok) {
-              const userData = await userRes.json();
-              console.log('Usuario logueado:', userData);
-              setCurrentUser(userData);
-            }
+            if (userRes.ok) setCurrentUser(await userRes.json());
           } catch (err) {
             console.error('Error al obtener usuario logueado:', err);
           }
         }
 
-        // Obtener datos del usuario
+        // Datos del perfil (populate usinas + agendas con imagen)
         const usersResponse = await fetch(
-          `${API_URL}/users?filters[username][$eq]=${username}&populate[0]=role&populate[1]=avatar&populate[2]=usinas_creadas.media&populate[3]=agendas_creadas.imagen`,
-          {
-            headers: {
-              'Authorization': `Bearer ${API_TOKEN}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          `${API_URL}/users?filters[username][$eq]=${encodeURIComponent(username)}` +
+            `&populate[0]=role&populate[1]=avatar&populate[2]=usinas_creadas.media&populate[3]=agendas_creadas.imagen`,
+          { headers: { Authorization: `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' } }
         );
-        
         if (!usersResponse.ok) throw new Error('Error al cargar el usuario');
 
         const usersData = await usersResponse.json();
-        const users = usersData.data || usersData;
-
+        const users = usersData?.data || usersData;
         if (!users || users.length === 0) throw new Error('Usuario no encontrado');
 
         const user = users[0];
         setUserData(user);
 
-        // Procesar usinas
-        let approvedUsinas = [];
-        if (user.usinas_creadas) {
-          const uniqueUsinas = user.usinas_creadas.filter((usina, index, self) => 
-            index === self.findIndex(u => u.documentId === usina.documentId)
+        // USINAS: contamos TODAS (sin importar estado) y además preparamos "aprobadas" para la vista pública
+        if (Array.isArray(user.usinas_creadas)) {
+          // Unique por documentId
+          const uniqueAll = user.usinas_creadas.filter(
+            (u, i, self) => i === self.findIndex((x) => x.documentId === u.documentId)
           );
-          
-          approvedUsinas = uniqueUsinas.filter(usina => {
-            return usina.aprobado === 'aprobada';
-          });
-          
-          // Procesar media de usinas aquí mismo
-          const usinasWithMedia = approvedUsinas.map(usina => {
-            const media = usina.media;
-            const previewUrl = getPreviewUrl(media);
-            const mediaUrl = getMediaUrl(media);
-            
-            return {
-              ...usina,
-              previewUrl,
-              mediaUrl,
-              mediaType: media?.mime?.startsWith('video/') ? 'video' : 'image',
-              mimeType: media?.mime,
-              creador: {
-                name: user.name || '',
-                surname: user.surname || '',
-                username: user.username || '',
-                carrera: user.carrera || '',
-              }
-            };
-          });
-          
-          setUsinas(usinasWithMedia);
+
+          // 🔢 Conteo total (independiente del estado)
+          setUsinasTotalCount(uniqueAll.length);
+
+          // Para mostrar en la galería de terceros: solo aprobadas (tu componente UsinaGallery ya carga todas para el propio dueño)
+          const approvedUsinas = uniqueAll
+            .filter((u) => (u.aprobado || '').toLowerCase() === 'aprobada')
+            .map((usina) => {
+              const media = usina.media;
+              const previewUrl = getPreviewUrl(media);
+              const mediaUrl = getMediaUrl(media);
+              return {
+                ...usina,
+                previewUrl,
+                mediaUrl,
+                mediaType:
+                  (media?.data?.attributes?.mime || media?.mime || '').startsWith('video/')
+                    ? 'video'
+                    : 'image',
+                creador: {
+                  name: user.name || '',
+                  surname: user.surname || '',
+                  username: user.username || '',
+                  carrera: user.carrera || '',
+                },
+              };
+            });
+
+          setUsinas(approvedUsinas);
+
+          // Fallback para conteo exacto desde Strapi (por si la relación viniera recortada)
+          if (user?.id) {
+            fetchTotalUsinasCount(user.id);
+          }
+        } else {
+          setUsinas([]);
+          setUsinasTotalCount(0);
         }
 
-        // Procesar agendas
-        let approvedAgendas = [];
-        if (user.agendas_creadas) {
-          const uniqueAgendas = user.agendas_creadas.filter((agenda, index, self) => 
-            index === self.findIndex(a => a.documentId === agenda.documentId)
+        // AGENDAS (ya vienen populateadas con imagen → NO volver a pedir por /agendas/:id)
+        if (Array.isArray(user.agendas_creadas)) {
+          const uniqueAgendas = user.agendas_creadas.filter(
+            (a, i, self) => i === self.findIndex((x) => x.documentId === a.documentId)
           );
-          
-          approvedAgendas = uniqueAgendas.filter(agenda => {
-            return agenda.aprobado === 'aprobada';
+
+          const agendasMapped = uniqueAgendas.map((agenda) => {
+            const img = agenda?.imagen?.data?.attributes || agenda?.imagen;
+            const imageUrl = withBase(img?.url);
+            return { ...agenda, imageUrl };
           });
-          
-          setAgendas(approvedAgendas);
+
+          setAgendas(agendasMapped);
+          setAgendasWithImages(agendasMapped);
+        } else {
+          setAgendas([]);
+          setAgendasWithImages([]);
         }
-
-        // Cargar imágenes para agendas
-        await fetchAgendasImages(approvedAgendas);
-
       } catch (err) {
-        setError(err.message);
+        console.error(err);
+        setError(err.message || 'Error desconocido');
       } finally {
         setLoading(false);
         setImagesLoading(false);
-      }
-    };
-
-    const fetchAgendasImages = async (agendas) => {
-      try {
-        const agendasWithImagesData = await Promise.all(
-          agendas.map(async (agenda) => {
-            try {
-              const response = await fetch(
-                `${API_URL}/agendas/${agenda.documentId}?populate=imagen`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${API_TOKEN}`,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-              
-              if (response.ok) {
-                const agendaData = await response.json();
-                const agendaWithImage = agendaData.data || agendaData;
-                
-                let imageUrl = '/placeholder.jpg';
-                const imagen = agendaWithImage.imagen;
-                
-                if (imagen?.url) {
-                  imageUrl = imagen.url;
-                }
-                
-                return {
-                  ...agenda,
-                  imageUrl
-                };
-              }
-              return { ...agenda, imageUrl: '/placeholder.jpg' };
-            } catch (error) {
-              return { ...agenda, imageUrl: '/placeholder.jpg' };
-            }
-          })
-        );
-
-        setAgendasWithImages(agendasWithImagesData);
-
-      } catch (error) {
-        setAgendasWithImages(agendas.map(a => ({ ...a, imageUrl: '/placeholder.jpg' })));
       }
     };
 
@@ -325,27 +179,22 @@ export default function PerfilPublicoPage({ params }) {
   }, [username]);
 
   const handleUsinaCreada = (nuevaUsina) => {
-    console.log('Nueva usina creada:', nuevaUsina);
+    // Al crear, normalmente queda "pendiente": sumamos al contador total.
+    setUsinasTotalCount((c) => c + 1);
+    // Si querés, podés optimizar agregando al estado visible si viene aprobada.
   };
 
-  // Función para actualizar el avatar desde InformacionPersonal
+  // Update desde InformacionPersonal
   const handleAvatarUpdate = (newAvatarData) => {
-    setUserData(prev => ({
-      ...prev,
-      avatar: newAvatarData
-    }));
+    setUserData((prev) => ({ ...prev, avatar: newAvatarData }));
   };
-
-  // Función para actualizar datos del usuario desde InformacionPersonal
   const handleUserDataUpdate = (updatedData) => {
-    setUserData(prev => ({
-      ...prev,
-      ...updatedData
-    }));
+    setUserData((prev) => ({ ...prev, ...updatedData }));
   };
-
+  const handleAvatarOverlayChange = (show) => setShowAvatarOverlay(show);
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    if (tab !== 'informacion') setShowAvatarOverlay(false);
   };
 
   if (loading) {
@@ -362,10 +211,7 @@ export default function PerfilPublicoPage({ params }) {
       <div className={styles.errorContainer}>
         <h2>Error</h2>
         <p>{error}</p>
-        <button 
-          onClick={() => window.location.href = "/"}
-          className={styles.backButton}
-        >
+        <button onClick={() => (window.location.href = '/')} className={styles.backButton}>
           Volver al inicio
         </button>
       </div>
@@ -376,10 +222,7 @@ export default function PerfilPublicoPage({ params }) {
     return (
       <div className={styles.errorContainer}>
         <h2>Usuario no encontrado</h2>
-        <button 
-          onClick={() => window.location.href = "/"}
-          className={styles.backButton}
-        >
+        <button onClick={() => (window.location.href = '/')} className={styles.backButton}>
           Volver al inicio
         </button>
       </div>
@@ -387,24 +230,32 @@ export default function PerfilPublicoPage({ params }) {
   }
 
   const userRole = userData.role?.type || userData.role?.name;
-  const isCurrentUser = currentUser && currentUser.username === userData.username;
+  const isCurrent = currentUser && currentUser.username === userData.username;
 
-  const showUsinas = userRole === 'estudiante' || ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
-  const showAgendas = ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
+  const showUsinas =
+    userRole === 'estudiante' ||
+    ['profesor', 'administrador', 'superadministrador'].includes(userRole?.toLowerCase());
 
-  // 🔥 NUEVA LÓGICA: Calcular si hay tabs para mostrar
-  const hasTabsToShow = showUsinas || showAgendas || isCurrentUser;
-  const forceInfoTab = !hasTabsToShow && isCurrentUser;
+  const showAgendas = ['profesor', 'administrador', 'superadministrador'].includes(
+    userRole?.toLowerCase()
+  );
+
+  const hasTabsToShow = showUsinas || showAgendas || isCurrent;
+  const forceInfoTab = !hasTabsToShow && isCurrent;
+
+  // Agendas visibles: si es tu perfil → todas; si no → solo aprobadas
+  const agendasVisibles = (isCurrent ? agendasWithImages : agendasWithImages.filter(a => (a.aprobado || '').toLowerCase() === 'aprobada'))
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   const renderContent = () => {
     switch (activeTab) {
       case 'trabajos':
         return (
           <>
-            {isCurrentUser && (
+            {isCurrent && (
               <div className={styles.crearUsinaHeader}>
                 <h2 className={styles.sectionTitle}>Mis Trabajos</h2>
-                <button 
+                <button
                   className={styles.crearUsinaButton}
                   onClick={() => setShowCrearUsinaModal(true)}
                 >
@@ -412,10 +263,10 @@ export default function PerfilPublicoPage({ params }) {
                 </button>
               </div>
             )}
-            <UsinaGallery 
+            <UsinaGallery
               usinas={usinas}
               loading={imagesLoading}
-              isCurrentUser={isCurrentUser}
+              isCurrentUser={isCurrent}
               currentUserId={currentUser?.id}
             />
           </>
@@ -424,10 +275,10 @@ export default function PerfilPublicoPage({ params }) {
       case 'agendas':
         return (
           <div className={styles.agendasGridContainer}>
-            {agendasWithImages.length > 0 ? (
+            {agendasVisibles.length > 0 ? (
               <div className={styles.agendasGrid}>
-                {agendasWithImages.map((agenda) => (
-                  <div key={agenda.id} className={styles.agendaCard}>
+                {agendasVisibles.map((agenda) => (
+                  <div key={agenda.documentId || agenda.id} className={styles.agendaCard}>
                     {agenda.imageUrl && (
                       <img
                         src={agenda.imageUrl}
@@ -435,22 +286,18 @@ export default function PerfilPublicoPage({ params }) {
                         className={styles.imagenAgenda}
                       />
                     )}
-                    
-                    {/* Vista compacta (siempre visible) */}
+
+                    {/* Vista compacta */}
                     <div className={styles.agendaContenido}>
                       <div className={styles.fecha}>
-                        <p>{new Date(agenda.fecha).toLocaleDateString("es-AR")}</p>
+                        <p>{agenda.fecha ? new Date(agenda.fecha).toLocaleDateString('es-AR') : ''}</p>
                       </div>
-                      <p className={styles.textoRegular}>
-                        {agenda.tituloActividad}
-                      </p>
+                      <p className={styles.textoRegular}>{agenda.tituloActividad}</p>
                     </div>
 
-                    {/* Overlay con detalle (aparece en hover) */}
+                    {/* Hover detalle */}
                     <div className={styles.agendaContenidoHover}>
-                      <p className={styles.textoRegular}>
-                        {agenda.tituloActividad}
-                      </p>
+                      <p className={styles.textoRegular}>{agenda.tituloActividad}</p>
                       <div className={styles.textoContenidoActividad}>
                         <p>{agenda.contenidoActividad}</p>
                       </div>
@@ -460,7 +307,9 @@ export default function PerfilPublicoPage({ params }) {
               </div>
             ) : (
               <p className={styles.noPublicaciones}>
-                Este usuario aún no ha publicado agendas aprobadas.
+                {isCurrent
+                  ? 'Todavía no creaste agendas.'
+                  : 'Este usuario aún no ha publicado agendas aprobadas.'}
               </p>
             )}
           </div>
@@ -468,11 +317,12 @@ export default function PerfilPublicoPage({ params }) {
 
       case 'informacion':
         return (
-          <InformacionPersonal 
+          <InformacionPersonal
             userData={userData}
-            isCurrentUser={isCurrentUser}
+            isCurrentUser={isCurrent}
             onAvatarUpdate={handleAvatarUpdate}
             onUserDataUpdate={handleUserDataUpdate}
+            onAvatarOverlayChange={handleAvatarOverlayChange}
           />
         );
 
@@ -485,22 +335,32 @@ export default function PerfilPublicoPage({ params }) {
     <div className={styles.bodyPerfil}>
       <div className={styles.perfilPublicoContainer}>
         <div className={`${styles.header} mb-5`}>
-          <Header variant='dark'/>
+          <Header variant="dark" />
         </div>
 
         <div className={styles.perfilContent}>
-          {/* Bloque izquierdo con avatar y datos */}
+          {/* Izquierda: avatar + datos */}
           <div className={styles.leftBlock}>
             <div className={styles.avatarContainer}>
               {userData.avatar?.url ? (
-                <img 
-                  src={userData.avatar.url} 
-                  alt={`Avatar de ${userData.username}`} 
+                <img
+                  src={withBase(userData.avatar.url)}
+                  alt={`Avatar de ${userData.username}`}
                   className={styles.avatar}
                 />
               ) : (
                 <div className={styles.avatarPlaceholder}>
                   {userData.username?.charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              {isCurrent && activeTab === 'informacion' && showAvatarOverlay && (
+                <div className={styles.avatarEditOverlay}>
+                  <label htmlFor="avatar-upload" className={styles.avatarUploadLabel}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                  </label>
                 </div>
               )}
             </div>
@@ -511,60 +371,58 @@ export default function PerfilPublicoPage({ params }) {
               </h2>
             )}
             <p className={styles.username}>@{userData.username}</p>
-            {userData.carrera && (
-              <span className={styles.carrera}>{userData.carrera}</span>
-            )}
+            {userData.carrera && <span className={styles.carrera}>{userData.carrera}</span>}
 
-            {isCurrentUser && (
-              <p className={styles.sosVos}>Este es tu perfíl</p>
-            )}
+            {isCurrent && <p className={styles.sosVos}>Este es tu perfíl</p>}
           </div>
 
-          {/* Bloque derecho: contenido según rol */}
+          {/* Derecha: tabs + contenido */}
           <div className={styles.rightBlock}>
-            {/* Navegación con tabs */}
             <div className={styles.navigation}>
               {showUsinas && (
-                <button 
+                <button
                   className={`${styles.navButton} ${activeTab === 'trabajos' ? styles.active : ''}`}
-                  onClick={() => handleTabChange('trabajos')}
+                  onClick={() => setActiveTab('trabajos')}
                 >
-                  Trabajos ({usinas.length})
+                  {/* 🔢 ahora muestra el total real de usinas, sin importar estado */}
+                  Trabajos ({usinasTotalCount})
                 </button>
               )}
               {showAgendas && (
-                <button 
+                <button
                   className={`${styles.navButton} ${activeTab === 'agendas' ? styles.active : ''}`}
-                  onClick={() => handleTabChange('agendas')}
+                  onClick={() => setActiveTab('agendas')}
                 >
-                  Agendas ({agendas.length})
+                  Agendas ({
+                    (isCurrent
+                      ? agendasWithImages
+                      : agendasWithImages.filter(a => (a.aprobado || '').toLowerCase() === 'aprobada')
+                    ).length
+                  })
                 </button>
               )}
-              {(isCurrentUser || forceInfoTab) && (
-                <button 
+              {(isCurrent || forceInfoTab) && (
+                <button
                   className={`${styles.navButton} ${activeTab === 'informacion' ? styles.active : ''}`}
-                  onClick={() => handleTabChange('informacion')}
+                  onClick={() => setActiveTab('informacion')}
                 >
                   Información Personal
                 </button>
               )}
             </div>
 
-            {/* Contenido de la pestaña activa */}
             {!hasTabsToShow && !forceInfoTab ? (
               <div className={styles.noContent}>
                 <p>Este perfil no tiene contenido público disponible.</p>
               </div>
             ) : (
-              <div className={styles.tabContent}>
-                {renderContent()}
-              </div>
+              <div className={styles.tabContent}>{renderContent()}</div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Modal para crear usina */}
+      {/* Modal crear usina */}
       <CrearUsinaModal
         isOpen={showCrearUsinaModal}
         onClose={() => setShowCrearUsinaModal(false)}
@@ -574,9 +432,8 @@ export default function PerfilPublicoPage({ params }) {
       />
 
       <Footer />
-      
-      {/* Toaster para notificaciones */}
-      <Toaster 
+
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
