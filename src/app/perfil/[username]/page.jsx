@@ -10,6 +10,39 @@ import Header from '@/app/componentes/construccion/Header';
 import UsinaGallery from './usina/UsinaGallery';
 import CrearUsinaModal from './usina/CrearUsinaModal';
 import { Toaster } from 'react-hot-toast';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
+
+/* =========================================================
+   Funciones para manejar media (imágenes y videos)
+========================================================= */
+const getPreviewUrl = (media) => {
+  if (!media) return '/img/placeholder.jpg';
+  
+  // Para imágenes - usar la URL original
+  if (media.mime?.startsWith('image/')) {
+    return media.url;
+  }
+  
+  // Para videos - usar el preview GIF si existe
+  if (media.mime?.startsWith('video/') && media.previewUrl) {
+    return media.previewUrl;
+  }
+  
+  // Fallback
+  return media.url || '/img/placeholder.jpg';
+};
+
+const getMediaUrl = (media) => {
+  if (!media) return '/img/placeholder.jpg';
+  
+  // Para ambos casos (imágenes y videos) usar la URL original
+  return media.url || '/img/placeholder.jpg';
+};
+
+const getMediaType = (media) => {
+  if (!media) return 'image';
+  return media.mime?.startsWith('video/') ? 'video' : 'image';
+};
 
 export default function PerfilPublicoPage({ params }) {
   const { username } = use(params);
@@ -24,25 +57,112 @@ export default function PerfilPublicoPage({ params }) {
   const [imagesLoading, setImagesLoading] = useState(true);
   const [showCrearUsinaModal, setShowCrearUsinaModal] = useState(false);
   const [showAvatarOverlay, setShowAvatarOverlay] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Funciones para manejar media
-  const getPreviewUrl = (media) => {
-    if (!media) return '/img/placeholder.jpg';
-    
-    if (media.mime?.startsWith('image/')) {
-      return media.url;
-    }
-    
-    if (media.mime?.startsWith('video/') && media.previewUrl) {
-      return media.previewUrl;
-    }
-    
-    return media.url || '/img/placeholder.jpg';
-  };
+  /* =================== NUEVO: Manejo de selección de avatar con Capacitor =================== */
+  const handleAvatarSelect = async () => {
+    if (uploadingAvatar) return;
 
-  const getMediaUrl = (media) => {
-    if (!media) return '/img/placeholder.jpg';
-    return media.url || '/img/placeholder.jpg';
+    try {
+      setUploadingAvatar(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: true,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones para avatar
+      const okImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+      const maxMB = 2;
+
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes para el avatar.');
+        return;
+      }
+
+      if (!okImageTypes.includes(file.type)) {
+        toast.error('Formato de imagen inválido (JPG, PNG, WEBP o AVIF).');
+        return;
+      }
+
+      if (file.size > maxMB * 1024 * 1024) {
+        toast.error(`La imagen supera ${maxMB} MB.`);
+        return;
+      }
+
+      // Subir avatar
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        toast.error('No hay token. Iniciá sesión.');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('files', file);
+      
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Error al subir la imagen');
+      }
+
+      const uploadData = await uploadRes.json();
+      const avatarId = uploadData?.[0]?.id;
+
+      if (!avatarId) {
+        throw new Error('No se pudo obtener el ID del avatar');
+      }
+
+      // Actualizar usuario con nuevo avatar
+      const updateRes = await fetch(`${API_URL}/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          avatar: avatarId
+        }),
+      });
+
+      if (!updateRes.ok) {
+        throw new Error('Error al actualizar el avatar');
+      }
+
+      // Actualizar estado local con la nueva imagen
+      const updatedAvatar = {
+        id: avatarId,
+        url: uploadData[0].url,
+        // Agregar otros campos que pueda necesitar
+      };
+
+      setUserData(prev => ({
+        ...prev,
+        avatar: updatedAvatar
+      }));
+
+      toast.success('Avatar actualizado correctamente');
+
+    } catch (err) {
+      console.error('Error actualizando avatar:', err);
+      toast.error('Error al actualizar el avatar: ' + err.message);
+    } finally {
+      setUploadingAvatar(false);
+      setShowAvatarOverlay(false);
+    }
   };
 
   useEffect(() => {
@@ -212,7 +332,7 @@ export default function PerfilPublicoPage({ params }) {
   };
 
   // Función para actualizar el avatar desde InformacionPersonal
-    const handleAvatarUpdate = (newAvatarData) => {
+  const handleAvatarUpdate = (newAvatarData) => {
     setUserData(prev => ({
       ...prev,
       avatar: newAvatarData
@@ -396,11 +516,20 @@ export default function PerfilPublicoPage({ params }) {
               )}
               {isCurrentUser && activeTab === 'informacion' && showAvatarOverlay && (
                 <div className={styles.avatarEditOverlay}>
-                  <label htmlFor="avatar-upload" className={styles.avatarUploadLabel}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                    </svg>
-                  </label>
+                  <button 
+                    type="button"
+                    onClick={handleAvatarSelect}
+                    className={styles.avatarUploadButton}
+                    disabled={uploadingAvatar}
+                  >
+                    {uploadingAvatar ? (
+                      'Subiendo...'
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                      </svg>
+                    )}
+                  </button>
                 </div>
               )}
             </div>
