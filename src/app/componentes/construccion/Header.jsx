@@ -122,7 +122,7 @@ export default function Header({ variant = 'light' }) {
     if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="mis-agendas">
-          <Link href={`/perfil/${user.username}#agendas`} onClick={closeMenu}>
+          <Link href={`/mis-agendas`} onClick={closeMenu}>
             Mis agendas
           </Link>
         </li>

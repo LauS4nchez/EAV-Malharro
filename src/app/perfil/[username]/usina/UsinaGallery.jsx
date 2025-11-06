@@ -470,52 +470,6 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         </div>
       )}
 
-      {/* 🔹 Galería */}
-      <div className={usinaStyles.usinaGaleria}>
-        {usinasPaginated.length > 0 ? (
-          usinasPaginated.map((usina) => (
-            <div
-              key={usina.documentId || usina.id}
-              className={usinaStyles.usinaCard}
-              onClick={() => handleCardClick(usina)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' ? handleCardClick(usina) : null)}
-            >
-              <img
-                src={getCardImage(usina)}
-                alt={usina.titulo || 'Trabajo sin título'}
-                className={usinaStyles.usinaImage}
-              />
-              <div className={usinaStyles.usinaContenido}>
-                <h3 className={usinaStyles.usinaTitulo}>
-                  {usina.titulo || 'Sin título'}
-                </h3>
-                <p className={usinaStyles.usinaCarrera}>
-                  {usina.creador?.carrera || 'Sin carrera especificada'}
-                </p>
-                {usina.link && (
-                  <a
-                    href={usina.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={usinaStyles.usinaLink}
-                  >
-                    Contactar
-                  </a>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className={styles.noPublicaciones}>
-            {filters.searchTerm
-              ? 'No se encontraron trabajos que coincidan con tu búsqueda.'
-              : 'Este usuario aún no ha publicado trabajos aprobados.'}
-          </p>
-        )}
-      </div>
-
       {/* 🔹 Controles de paginación - abajo */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
@@ -564,6 +518,52 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
           </button>
         </div>
       )}
+
+      {/* 🔹 Galería */}
+      <div className={usinaStyles.usinaGaleria}>
+        {usinasPaginated.length > 0 ? (
+          usinasPaginated.map((usina) => (
+            <div
+              key={usina.documentId || usina.id}
+              className={usinaStyles.usinaCard}
+              onClick={() => handleCardClick(usina)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' ? handleCardClick(usina) : null)}
+            >
+              <img
+                src={getCardImage(usina)}
+                alt={usina.titulo || 'Trabajo sin título'}
+                className={usinaStyles.usinaImage}
+              />
+              <div className={usinaStyles.usinaContenido}>
+                <h3 className={usinaStyles.usinaTitulo}>
+                  {usina.titulo || 'Sin título'}
+                </h3>
+                <p className={usinaStyles.usinaCarrera}>
+                  {usina.creador?.carrera || 'Sin carrera especificada'}
+                </p>
+                {usina.link && (
+                  <a
+                    href={usina.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={usinaStyles.usinaLink}
+                  >
+                    Contactar
+                  </a>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className={styles.noPublicaciones}>
+            {filters.searchTerm
+              ? 'No se encontraron trabajos que coincidan con tu búsqueda.'
+              : 'Este usuario aún no ha publicado trabajos aprobados.'}
+          </p>
+        )}
+      </div>
 
       {/* 🔹 Modal de vista detallada */}
       {selectedUsina && (

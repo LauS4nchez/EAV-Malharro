@@ -11,7 +11,6 @@ export default function InformacionPersonal({
   isCurrentUser,
   onAvatarUpdate,
   onUserDataUpdate,
-  onAvatarOverlayChange,
 }) {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
@@ -86,6 +85,8 @@ export default function InformacionPersonal({
     // Carrera (opcional, pero si elige, que sea una de la lista)
     if (carrera && !CARRERAS_VALIDAS.includes(carrera)) {
       errors.carrera = 'Seleccioná una carrera válida';
+    } else if (!carrera) {
+      errors.carrera = 'Seleccioná una carrera';
     }
 
     return {
@@ -96,14 +97,12 @@ export default function InformacionPersonal({
 
   const handleEdit = () => {
     setEditing(true);
-    onAvatarOverlayChange && onAvatarOverlayChange(true);
     setSuccessMessage('');
     setError('');
   };
 
   const handleCancel = () => {
     setEditing(false);
-    onAvatarOverlayChange && onAvatarOverlayChange(false);
     setFormData({
       name: userData?.name || '',
       surname: userData?.surname || '',
@@ -118,7 +117,17 @@ export default function InformacionPersonal({
     if (!isValid) {
       setFieldErrors(errors);
       setError('Revisá los campos marcados.');
-      toast.error('Revisá los campos marcados.');
+      
+      // Mostrar toast de error con mensaje específico del primer error encontrado
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError || 'Revisá los campos marcados.', {
+        duration: 4000,
+        style: {
+          background: '#fef2f2',
+          color: '#dc2626',
+          border: '1px solid #fecaca'
+        }
+      });
       return;
     }
 
@@ -130,7 +139,14 @@ export default function InformacionPersonal({
       const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
       if (!jwt) {
         setError('No se encontró la sesión del usuario. Volvé a iniciar sesión.');
-        toast.error('No se encontró la sesión del usuario.');
+        toast.error('No se encontró la sesión del usuario.', {
+          duration: 4000,
+          style: {
+            background: '#fef2f2',
+            color: '#dc2626',
+            border: '1px solid #fecaca'
+          }
+        });
         return;
       }
 
@@ -164,9 +180,15 @@ export default function InformacionPersonal({
       onUserDataUpdate && onUserDataUpdate(updateData);
 
       setEditing(false);
-      onAvatarOverlayChange && onAvatarOverlayChange(false);
       setSuccessMessage('Perfil actualizado correctamente');
-      toast.success('Perfil actualizado correctamente');
+      toast.success('Perfil actualizado correctamente', {
+        duration: 4000,
+        style: {
+          background: '#f0fdf4',
+          color: '#16a34a',
+          border: '1px solid #bbf7d0'
+        }
+      });
 
       setTimeout(() => {
         setSuccessMessage('');
@@ -174,13 +196,20 @@ export default function InformacionPersonal({
     } catch (err) {
       setError(err.message);
       console.error('Error updating user data:', err);
-      toast.error('No se pudo actualizar el perfil');
+      toast.error('No se pudo actualizar el perfil', {
+        duration: 4000,
+        style: {
+          background: '#fef2f2',
+          color: '#dc2626',
+          border: '1px solid #fecaca'
+        }
+      });
     } finally {
       setSaveLoading(false);
     }
   };
 
-  // ========== NUEVO: Manejo de avatar con Capacitor ==========
+  // ========== Manejo de avatar con Capacitor ==========
   const handleAvatarChange = async () => {
     if (avatarUploading) return;
 
@@ -426,9 +455,6 @@ export default function InformacionPersonal({
                   disabled={saveLoading}
                   maxLength={20}
                 />
-                {fieldErrors.name && (
-                  <p className={styles.fieldErrorText}>{fieldErrors.name}</p>
-                )}
               </>
             ) : (
               <div className={styles.infoValue}>
@@ -450,9 +476,6 @@ export default function InformacionPersonal({
                   disabled={saveLoading}
                   maxLength={30}
                 />
-                {fieldErrors.surname && (
-                  <p className={styles.fieldErrorText}>{fieldErrors.surname}</p>
-                )}
               </>
             ) : (
               <div className={styles.infoValue}>
@@ -468,7 +491,7 @@ export default function InformacionPersonal({
                 <select
                   value={formData.carrera}
                   onChange={(e) => handleInputChange('carrera', e.target.value)}
-                  className={`${styles.editInput} ${fieldErrors.carrera ? styles.inputError : ''}`}
+                  className={`${styles.editInput}`}
                   disabled={saveLoading}
                 >
                   <option className={styles.options} value="">

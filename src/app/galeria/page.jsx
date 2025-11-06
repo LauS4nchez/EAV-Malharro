@@ -256,7 +256,35 @@ export default function GaleriaPage() {
             </div>
 
             <div>
-                {/* Galería */}
+              {/* Paginación - Inferior */}
+                {totalPages > 1 && (
+                  <div className={styles.pagination}>
+                   <button
+                    className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                   >
+                    Anterior
+                  </button>
+                  {getPageNumbers().map(page => (
+                  <button
+                    key={page}
+                    className={`${styles.pageButton} ${currentPage === page ? styles.active : ''}`}
+                    onClick={() => goToPage(page)}
+                  >
+                    {page}
+                  </button>
+                  ))}
+
+                  <button
+                    className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+                )}
                     <div className={styles.galeriaGrid}>
                     {currentUsinas.length > 0 ? (
                         currentUsinas.map((usina) => (
@@ -292,37 +320,6 @@ export default function GaleriaPage() {
                         </div>
                     )}
                     </div>
-
-                    {/* Paginación - Inferior */}
-                    {totalPages > 1 && (
-                      <div className={styles.pagination}>
-                        <button
-                          className={`${styles.pageButton} ${currentPage === 1 ? styles.disabled : ''}`}
-                          onClick={() => goToPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          Anterior
-                        </button>
-
-                        {getPageNumbers().map(page => (
-                          <button
-                            key={page}
-                            className={`${styles.pageButton} ${currentPage === page ? styles.active : ''}`}
-                            onClick={() => goToPage(page)}
-                          >
-                            {page}
-                          </button>
-                        ))}
-
-                        <button
-                          className={`${styles.pageButton} ${currentPage === totalPages ? styles.disabled : ''}`}
-                          onClick={() => goToPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Siguiente
-                        </button>
-                      </div>
-                    )}
                 </div>
             </div>
 

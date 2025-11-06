@@ -1007,3 +1007,318 @@
   background-color: #6c757d;
   cursor: not-allowed;
 }
+
+/* 🔹 Estilos para el modal de confirmación de eliminación */
+.confirmModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.confirmModalContent {
+  background: white;
+  border-radius: clamp(0.75rem, 2vw, 1rem);
+  padding: 0;
+  max-width: min(500px, 95vw);
+  width: 100%;
+  box-shadow: 0 clamp(4px, 1vw, 8px) clamp(2rem, 6vw, 3rem) rgba(0, 0, 0, 0.3);
+  animation: modalAppear 0.2s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.confirmModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.confirmModalTitle {
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.confirmCloseButton {
+  background: none;
+  border: none;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.confirmCloseButton:hover {
+  background: #f5f5f5;
+  color: #000;
+}
+
+.confirmModalBody {
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  text-align: center;
+}
+
+.warningIcon {
+  font-size: clamp(2rem, 6vw, 3rem);
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+}
+
+.confirmModalText {
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  color: #000;
+  margin: 0 0 clamp(0.5rem, 1.5vw, 0.75rem) 0;
+  line-height: 1.5;
+}
+
+.confirmationTitulo {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.warningText {
+  font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.confirmModalActions {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border-top: 1px solid #e5e5e5;
+  justify-content: flex-end;
+}
+
+.cancelConfirmButton {
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.cancelConfirmButton:hover:not(:disabled) {
+  background: #545b62;
+  transform: translateY(-1px);
+}
+
+.cancelConfirmButton:disabled {
+  background: #a0a4a8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.confirmDeleteButton {
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.confirmDeleteButton:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.confirmDeleteButton:disabled {
+  background: #e35d6a;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 🔹 Estilos para el textarea de edición */
+.editTextarea {
+  width: 100%;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  border: 2px solid #007bff;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  font-family: inherit;
+  background: white;
+  color: #000;
+  resize: vertical;
+  min-height: clamp(3rem, 8vw, 4rem);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.editTextarea:focus {
+  outline: none;
+  border-color: #0056b3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.editTextarea::placeholder {
+  color: #999;
+}
+
+/* 🔹 Estilos para los botones de guardar y cancelar en edición */
+.editActionButtons {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  margin-top: clamp(0.75rem, 2vw, 1rem);
+  flex-wrap: wrap;
+}
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #545b62;
+  transform: translateY(-1px);
+}
+
+.cancelButton:disabled {
+  background: #a0a4a8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 🔹 Estilos para el overlay de edición de imagen */
+.imageWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 1;
+  transition: opacity 0.2s;
+  border-radius: clamp(0.5rem, 1.5vw, 0.75rem);
+}
+
+.editImageButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 2.5vw, 1.25rem);
+  border-radius: clamp(0.4rem, 1vw, 0.5rem);
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.editImageButton:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+/* 🔹 Estilos para mensajes de error */
+.errorText {
+  color: #dc3545;
+  font-size: clamp(0.75rem, 2vw, 0.85rem);
+  margin: 0.25rem 0 0 0;
+  font-weight: 500;
+}
+
+/* 🔹 Responsive para los botones de acción */
+@media (max-width: 480px) {
+  .confirmModalActions {
+    flex-direction: column;
+  }
+  
+  .cancelConfirmButton,
+  .confirmDeleteButton {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .editActionButtons {
+    flex-direction: column;
+  }
+  
+  .saveButton,
+  .cancelButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 🔹 Asegurar que los textos sean visibles */
+.confirmModalText,
+.warningText,
+.editTextarea {
+  color: #000;
+}

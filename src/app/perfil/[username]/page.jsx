@@ -56,7 +56,6 @@ export default function PerfilPublicoPage({ params }) {
   const [agendasWithImages, setAgendasWithImages] = useState([]);
   const [imagesLoading, setImagesLoading] = useState(true);
   const [showCrearUsinaModal, setShowCrearUsinaModal] = useState(false);
-  const [showAvatarOverlay, setShowAvatarOverlay] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   /* =================== NUEVO: Manejo de selección de avatar con Capacitor =================== */
@@ -146,7 +145,6 @@ export default function PerfilPublicoPage({ params }) {
       const updatedAvatar = {
         id: avatarId,
         url: uploadData[0].url,
-        // Agregar otros campos que pueda necesitar
       };
 
       setUserData(prev => ({
@@ -161,7 +159,6 @@ export default function PerfilPublicoPage({ params }) {
       toast.error('Error al actualizar el avatar: ' + err.message);
     } finally {
       setUploadingAvatar(false);
-      setShowAvatarOverlay(false);
     }
   };
 
@@ -347,15 +344,8 @@ export default function PerfilPublicoPage({ params }) {
     }));
   };
 
-  const handleAvatarOverlayChange = (show) => {
-    setShowAvatarOverlay(show);
-  };
-
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (tab !== 'informacion') {
-      setShowAvatarOverlay(false);
-    }
   };
 
   if (loading) {
@@ -483,7 +473,6 @@ export default function PerfilPublicoPage({ params }) {
             isCurrentUser={isCurrentUser}
             onAvatarUpdate={handleAvatarUpdate}
             onUserDataUpdate={handleUserDataUpdate}
-            onAvatarOverlayChange={handleAvatarOverlayChange}
           />
         );
 
@@ -512,24 +501,6 @@ export default function PerfilPublicoPage({ params }) {
               ) : (
                 <div className={styles.avatarPlaceholder}>
                   {userData.username?.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {isCurrentUser && activeTab === 'informacion' && showAvatarOverlay && (
-                <div className={styles.avatarEditOverlay}>
-                  <button 
-                    type="button"
-                    onClick={handleAvatarSelect}
-                    className={styles.avatarUploadButton}
-                    disabled={uploadingAvatar}
-                  >
-                    {uploadingAvatar ? (
-                      'Subiendo...'
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                      </svg>
-                    )}
-                  </button>
                 </div>
               )}
             </div>
