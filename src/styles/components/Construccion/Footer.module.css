@@ -387,9 +387,3 @@
   height: 100vh;     /* crea colchón de una pantalla */
   margin-top: -100vh;/* neutraliza el “salto” */
 }
-
-/* Para cualquier #hash en la página, deja margen arriba (header fijo, etc.) */
-:global(:target) { scroll-margin-top: 72px; }
-
-/* Suavizá los desplazamientos en general (opcional) */
-:global(html) { scroll-behavior: smooth; }
