@@ -17,13 +17,27 @@ async function safeFetchJson(url, options = {}) {
   try {
     const res = await fetch(url, options);
     let data = null;
-    try { data = await res.json(); } catch { /* ignore */ }
+    try {
+      data = await res.json();
+    } catch {
+      /* ignore empty body */
+    }
 
     if (!res.ok) {
       const msg = data?.error?.message || res.statusText || 'HTTP error';
-      const bodyPreview = data ? JSON.stringify(data) : '<no body>';
-      if (DEBUG_NOTIS) console.error('❌ Fetch error', { url, status: res.status, statusText: res.statusText, body: bodyPreview });
-      throw new Error(`${res.status} ${msg}`);
+      if (DEBUG_NOTIS) {
+        console.error('❌ Fetch error', {
+          url,
+          options,
+          status: res.status,
+          statusText: res.statusText,
+          body: data || '<no body>',
+        });
+      }
+      const err = new Error(`${res.status} ${msg}`);
+      err.status = res.status;
+      err.payload = data;
+      throw err;
     }
     return data;
   } catch (err) {
@@ -32,8 +46,9 @@ async function safeFetchJson(url, options = {}) {
   }
 }
 
-const is404 = (e) => String(e?.message || '').trim().startsWith('404');
-const is403 = (e) => String(e?.message || '').trim().startsWith('403');
+const is404 = (e) => (e?.status ? e.status === 404 : String(e?.message || '').trim().startsWith('404'));
+const is403 = (e) => (e?.status ? e.status === 403 : String(e?.message || '').trim().startsWith('403'));
+const is405 = (e) => (e?.status ? e.status === 405 : String(e?.message || '').trim().startsWith('405'));
 
 function fechaLinda(iso) {
   if (!iso) return '';
@@ -63,7 +78,13 @@ export default function NotificacionesPage() {
   const [loading, setLoading] = useState(true);
 
   const [notificaciones, setNotificaciones] = useState([]);
+
+  // Filtro por tipo (todas/usina/agenda/sistema)
   const [filtro, setFiltro] = useState('todas');
+
+  // Filtro por estado de lectura (todas/no-leidas/leidas)
+  const [filtroEstado, setFiltroEstado] = useState('todas');
+
   const [marcando, setMarcando] = useState(false);
 
   /* ------------------------- 1) JWT + usuario --------------------------- */
@@ -72,7 +93,10 @@ export default function NotificacionesPage() {
     setJwt(token);
 
     const fetchUser = async () => {
-      if (!token) { setLoading(false); return; }
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       try {
         const data = await safeFetchJson(`${API_URL}/users/me?populate=role`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -109,30 +133,36 @@ export default function NotificacionesPage() {
       titulo: attr.titulo ?? 'Notificación',
       mensaje: attr.mensaje ?? '',
       tipo: attr.tipo ?? 'sistema',
-      leido: attr.leida ?? 'no-leida',
+      leido: attr.leida ?? 'no-leida', // backend usa "leida"
       createdAt: attr.createdAt ?? null,
       fechaEmision: attr.fechaEmision ?? null,
 
-      emisor: emisor ? {
-        id: emisor.id,
-        username: emisorAttrs?.username,
-        name: emisorAttrs?.name,
-        surname: emisorAttrs?.surname,
-      } : null,
+      emisor: emisor
+        ? {
+            id: emisor.id,
+            username: emisorAttrs?.username,
+            name: emisorAttrs?.name,
+            surname: emisorAttrs?.surname,
+          }
+        : null,
 
       receptor: receptor ? { id: receptor.id } : null,
 
-      usina: usina ? {
-        id: usina.id,
-        titulo: usinaAttrs?.titulo,
-        estado: usinaAttrs?.aprobado,
-      } : null,
+      usina: usina
+        ? {
+            id: usina.id,
+            titulo: usinaAttrs?.titulo,
+            estado: usinaAttrs?.aprobado,
+          }
+        : null,
 
-      agenda: agenda ? {
-        id: agenda.id,
-        tituloActividad: agendaAttrs?.tituloActividad,
-        fecha: agendaAttrs?.fecha,
-      } : null,
+      agenda: agenda
+        ? {
+            id: agenda.id,
+            tituloActividad: agendaAttrs?.tituloActividad,
+            fecha: agendaAttrs?.fecha,
+          }
+        : null,
     };
   }
 
@@ -143,8 +173,9 @@ export default function NotificacionesPage() {
     qA.set('sort', 'createdAt:desc');
     qA.set('pagination[page]', '1');
     qA.set('pagination[pageSize]', '200');
-    ['id','documentId','titulo','mensaje','tipo','leida','createdAt','fechaEmision']
-      .forEach((f, i) => qA.set(`fields[${i}]`, f));
+    ['id', 'documentId', 'titulo', 'mensaje', 'tipo', 'leida', 'createdAt', 'fechaEmision'].forEach(
+      (f, i) => qA.set(`fields[${i}]`, f)
+    );
     qA.set('populate[emisor][fields][0]', 'id');
     qA.set('populate[emisor][fields][1]', 'username');
     qA.set('populate[emisor][fields][2]', 'name');
@@ -215,27 +246,58 @@ export default function NotificacionesPage() {
 
   useEffect(() => {
     if (jwt && user?.id) {
-      fetchNotis(jwt, user.id).catch(() =>
-        toast.error('No se pudieron cargar las notificaciones')
-      );
+      fetchNotis(jwt, user.id).catch(() => toast.error('No se pudieron cargar las notificaciones'));
     }
   }, [jwt, user]);
 
-  /* --------------------------- 3) Filtro local --------------------------- */
+  /* ---------------------- Contadores para tabs estado -------------------- */
+  const countNoLeidas = useMemo(
+    () => notificaciones.filter((n) => n.leido !== 'leida').length,
+    [notificaciones]
+  );
+  const countLeidas = useMemo(
+    () => notificaciones.filter((n) => n.leido === 'leida').length,
+    [notificaciones]
+  );
+
+  /* ----------- Filtro combinado: tipo (filtro) + estado (filtroEstado) --- */
   const notisFiltradas = useMemo(() => {
-    if (filtro === 'todas') return notificaciones;
-    return notificaciones.filter((n) => n.tipo === filtro);
-  }, [filtro, notificaciones]);
+    let base =
+      filtro === 'todas' ? notificaciones : notificaciones.filter((n) => n.tipo === filtro);
+
+    if (filtroEstado === 'no-leidas') {
+      base = base.filter((n) => n.leido !== 'leida');
+    } else if (filtroEstado === 'leidas') {
+      base = base.filter((n) => n.leido === 'leida');
+    }
+    return base;
+  }, [filtro, filtroEstado, notificaciones]);
 
   /* ------------------- helpers update (id / documentId) ------------------ */
+  async function putOrPatchNoti(id, token, payload) {
+    try {
+      return await safeFetchJson(`${API_URL}/notificaciones/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      if (is405(err)) {
+        if (DEBUG_NOTIS) console.warn('↩️ Reintentando con PATCH para notificaciones/', id);
+        return await safeFetchJson(`${API_URL}/notificaciones/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload),
+        });
+      }
+      throw err;
+    }
+  }
+
   async function updateNotiCoreById(id, token) {
-    const payload = { data: { leida: 'leida' } };
-    if (DEBUG_NOTIS) console.log('📝 PUT notificaciones/', id, payload);
-    return safeFetchJson(`${API_URL}/notificaciones/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
+    const payload = { data: { leida: 'leida' } }; // campo en Strapi = "leida"
+    if (DEBUG_NOTIS) console.log('📝 UPDATE notificaciones/', id, payload);
+    return putOrPatchNoti(id, token, payload);
   }
 
   async function deleteNotiCoreById(id, token) {
@@ -246,14 +308,18 @@ export default function NotificacionesPage() {
     });
   }
 
-  // Resolver id real:
-  // 1) documentId
-  // 2) receptor + titulo + ventana de tiempo por createdAt (±60 min)
-  // 3) fallback: últimas 200 por receptor y mismo titulo en el mismo día
+  // Resolver id real
   async function resolveRealId(noti, token, userId) {
-    if (DEBUG_NOTIS) console.log('🔎 resolveRealId for', { id: noti.id, documentId: noti.documentId, titulo: noti.titulo, createdAt: noti.createdAt, userId });
+    if (DEBUG_NOTIS)
+      console.log('🔎 resolveRealId for', {
+        id: noti.id,
+        documentId: noti.documentId,
+        titulo: noti.titulo,
+        createdAt: noti.createdAt,
+        userId,
+      });
 
-    // 1) documentId (Strapi v5 Document Service)
+    // 1) documentId (Strapi v5)
     if (noti.documentId) {
       const q = new URLSearchParams();
       q.set('filters[documentId][$eq]', noti.documentId);
@@ -269,8 +335,8 @@ export default function NotificacionesPage() {
     // 2) receptor + titulo + ventana de tiempo
     if (userId && noti.titulo && noti.createdAt) {
       const created = new Date(noti.createdAt);
-      const from = new Date(created.getTime() - 60 * 60 * 1000); // -60 min
-      const to   = new Date(created.getTime() + 60 * 60 * 1000); // +60 min
+      const from = new Date(created.getTime() - 60 * 60 * 1000);
+      const to = new Date(created.getTime() + 60 * 60 * 1000);
 
       const q2 = new URLSearchParams();
       q2.set('filters[$and][0][receptor][id][$eq]', userId);
@@ -287,7 +353,7 @@ export default function NotificacionesPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const candidates = Array.isArray(res2?.data) ? res2.data : [];
-      if (DEBUG_NOTIS) console.log('🔎 by window candidates ->', candidates.map(c => c?.id));
+      if (DEBUG_NOTIS) console.log('🔎 by window candidates ->', candidates.map((c) => c?.id));
       if (candidates[0]?.id != null) return candidates[0].id;
     }
 
@@ -311,7 +377,7 @@ export default function NotificacionesPage() {
         a.getUTCMonth() === b.getUTCMonth() &&
         a.getUTCDate() === b.getUTCDate();
 
-      const match = rows.find(r => {
+      const match = rows.find((r) => {
         const ca = new Date((r.attributes ?? r).createdAt);
         const ti = (r.attributes ?? r).titulo;
         return ti === noti.titulo && sameDay(ca, d0);
@@ -325,19 +391,16 @@ export default function NotificacionesPage() {
   }
 
   async function updateNotiByAnyIdentifier(noti, token, userId) {
-    // Primero intento con el id que vino
     if (noti.id != null) {
       try {
         return await updateNotiCoreById(noti.id, token);
       } catch (err) {
         if (!is404(err)) throw err;
-        // 404 -> resolvemos y reintentamos
         const realId = await resolveRealId(noti, token, userId);
         if (!realId) throw err;
         return await updateNotiCoreById(realId, token);
       }
     }
-    // No teníamos id -> resolver
     const realId = await resolveRealId(noti, token, userId);
     if (!realId) throw new Error('No se pudo resolver el id real de la notificación');
     return await updateNotiCoreById(realId, token);
@@ -367,10 +430,9 @@ export default function NotificacionesPage() {
     setMarcando(true);
     try {
       await updateNotiByAnyIdentifier(noti, jwt, user?.id);
-
       setNotificaciones((prev) =>
         prev.map((n) =>
-          (n.id === noti.id) || (noti.documentId && n.documentId === noti.documentId)
+          n.id === noti.id || (noti.documentId && n.documentId === noti.documentId)
             ? { ...n, leido: 'leida' }
             : n
         )
@@ -379,33 +441,11 @@ export default function NotificacionesPage() {
       if (is403(err)) {
         toast.error('Sin permisos de UPDATE en Strapi (habilitá UPDATE para Authenticated).');
       } else if (is404(err)) {
-        toast.error('No encontrada en el backend (id/docId no coincide en este entorno).');
+        toast.error('No se encontró en el backend (id/docId no coincide en este entorno).');
       } else {
         toast.error('No se pudo marcar como leída');
       }
       if (DEBUG_NOTIS) console.error('marcarLeida error:', err);
-    } finally {
-      setMarcando(false);
-    }
-  };
-
-  /* --------------------------- 5) Marcar todas --------------------------- */
-  const marcarTodas = async () => {
-    if (!jwt) return;
-    const pendientes = notificaciones.filter((n) => n.leido !== 'leida');
-    if (!pendientes.length) return;
-
-    setMarcando(true);
-    try {
-      await Promise.all(
-        pendientes.map((n) => updateNotiByAnyIdentifier(n, jwt, user?.id).catch(() => null))
-      );
-
-      setNotificaciones((prev) => prev.map((n) => ({ ...n, leido: 'leida' })));
-      toast.success('Todas marcadas como leídas');
-    } catch (err) {
-      if (DEBUG_NOTIS) console.error(err);
-      toast.error('No se pudieron marcar todas');
     } finally {
       setMarcando(false);
     }
@@ -450,17 +490,10 @@ export default function NotificacionesPage() {
               Hola {user?.name || user?.username}, acá tenés todo lo que pasó.
             </p>
           </div>
-          <div className={styles.headActions}>
-            <button
-              className={styles.markAllBtn}
-              onClick={marcarTodas}
-              disabled={marcando || !notificaciones.length}
-            >
-              Marcar todas como leídas
-            </button>
-          </div>
+          {/* Botón de "Marcar todas" removido */}
         </div>
 
+        {/* Tabs por TIPO */}
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${filtro === 'todas' ? styles.tabActive : ''}`}
@@ -488,6 +521,28 @@ export default function NotificacionesPage() {
           </button>
         </div>
 
+        {/* Tabs por ESTADO DE LECTURA */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${filtroEstado === 'todas' ? styles.tabActive : ''}`}
+            onClick={() => setFiltroEstado('todas')}
+          >
+            Todas
+          </button>
+          <button
+            className={`${styles.tab} ${filtroEstado === 'no-leidas' ? styles.tabActive : ''}`}
+            onClick={() => setFiltroEstado('no-leidas')}
+          >
+            No leídas ({countNoLeidas})
+          </button>
+          <button
+            className={`${styles.tab} ${filtroEstado === 'leidas' ? styles.tabActive : ''}`}
+            onClick={() => setFiltroEstado('leidas')}
+          >
+            Leídas ({countLeidas})
+          </button>
+        </div>
+
         <div className={styles.list}>
           {notisFiltradas.length ? (
             notisFiltradas.map((n) => (
@@ -511,16 +566,17 @@ export default function NotificacionesPage() {
                         try {
                           await deleteNotiByAnyIdentifier(n, jwt, user?.id);
                           setNotificaciones((prev) =>
-                            prev.filter((x) =>
-                              x.id ? x.id !== n.id : x.documentId !== n.documentId
-                            )
+                            prev.filter((x) => (x.id ? x.id !== n.id : x.documentId !== n.documentId))
                           );
                         } catch (err) {
                           if (is403(err)) toast.error('Sin permisos para eliminar.');
-                          else if (is404(err)) toast.error('No se encontró la notificación en este entorno.');
+                          else if (is404(err))
+                            toast.error('No se encontró la notificación en este entorno.');
                           else toast.error('Error al eliminar notificación');
                         }
                       }}
+                      aria-label="Eliminar notificación"
+                      title="Eliminar notificación"
                     >
                       ✕
                     </button>
@@ -556,7 +612,7 @@ export default function NotificacionesPage() {
             ))
           ) : (
             <div className={styles.empty}>
-              <p>No tenés notificaciones todavía 👀</p>
+              <p>No hay notificaciones que coincidan con el filtro</p>
             </div>
           )}
         </div>

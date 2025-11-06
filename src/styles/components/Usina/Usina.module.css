@@ -395,3 +395,243 @@
     font-size: 0.85rem;
   }
 }
+
+/* ========================= */
+/* Overlay y edición interna */
+/* ========================= */
+
+/* Asegura stacking para el overlay */
+.modalImageContainer {
+  position: relative;
+}
+
+.imageWrapper {
+  position: relative;
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(1px);
+  z-index: 5;
+}
+
+.editImageButton {
+  padding: 10px 16px;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+.editImageButton:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-1px);
+}
+
+/* =============== */
+/* Área de edición */
+/* =============== */
+.modalInfo .editTextarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1.4;
+  background: #fff;
+  color: #000;
+  resize: vertical;
+  transition: box-shadow .2s ease, border-color .2s ease, transform .1s ease;
+}
+.modalInfo .editTextarea:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13,110,253,.15);
+}
+.modalInfo .errorText {
+  color: #d62828;
+  font-size: .9rem;
+  margin-top: 6px;
+}
+
+.modalInfo .actionButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.modalInfo .editButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #0d6efd;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(13,110,253,.2);
+}
+.modalInfo .editButton:hover { background: #0b5ed7; transform: translateY(-1px); }
+.modalInfo .editButton:disabled { opacity: .6; cursor: not-allowed; }
+
+.modalInfo .deleteButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #dc3545;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(220,53,69,.2);
+}
+.modalInfo .deleteButton:hover { background: #b02a37; transform: translateY(-1px); }
+.modalInfo .deleteButton:disabled { opacity: .6; cursor: not-allowed; }
+
+.modalInfo .editActionButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.modalInfo .saveButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #198754;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(25,135,84,.2);
+}
+.modalInfo .saveButton:hover { background: #157347; transform: translateY(-1px); }
+.modalInfo .saveButton:disabled { opacity: .6; cursor: not-allowed; }
+
+.modalInfo .cancelButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #6c757d;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow: 0 6px 18px rgba(108,117,125,.2);
+}
+.modalInfo .cancelButton:hover { background: #5a6268; transform: translateY(-1px); }
+.modalInfo .cancelButton:disabled { opacity: .6; cursor: not-allowed; }
+
+/* =========================== */
+/* Modal de confirmación (PORTAL + FIX) */
+/* =========================== */
+
+.confirmModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.confirmModalContent {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 30px 90px rgba(0,0,0,.45);
+  padding: 18px;
+  overflow: hidden;
+}
+
+.confirmModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.confirmModalTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #000;
+}
+.confirmCloseButton {
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #666;
+  padding: 6px;
+  border-radius: 8px;
+}
+.confirmCloseButton:hover { background: #f2f2f2; }
+
+.confirmModalBody {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  margin: 10px 0 16px;
+}
+.warningIcon { font-size: 1.1rem; }
+.confirmModalText { margin: 0; color: #333; }
+.confirmationTitulo { color: #000; }
+.warningText { 
+  margin: 6px 0 0;
+  text-align: center;
+  width: max-content;
+  color: #9a6a00; }
+
+.confirmModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cancelConfirmButton {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #6c757d;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cancelConfirmButton:hover { background: #5a6268; }
+.confirmDeleteButton {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #dc3545;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.confirmDeleteButton:hover { background: #b02a37; }
+
+/* ======================= */
+/* Responsive <= 360px     */
+/* ======================= */
+@media (max-width: 360px) {
+  .confirmModalContent { max-width: 480px; width: calc(100% - 24px); padding: 14px; }
+  .confirmModalTitle { font-size: 1.05rem; }
+  .confirmModalBody { grid-template-columns: 24px 1fr; gap: 10px; }
+  .modalInfo .editButton,
+  .modalInfo .deleteButton,
+  .modalInfo .saveButton,
+  .modalInfo .cancelButton,
+  .cancelConfirmButton,
+  .confirmDeleteButton { padding: 9px 14px; border-radius: 9px; font-size: .95rem; }
+  .modalInfo .editTextarea { font-size: .95rem; padding: 10px 12px; }
+}

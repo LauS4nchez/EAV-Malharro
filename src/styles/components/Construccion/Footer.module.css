@@ -40,7 +40,6 @@
   width: 40px;
   transition: transform 0.3s ease;
 }
-
 .footerScrollBtn:hover img {
   transform: translateY(-5px);
 }
@@ -51,13 +50,11 @@
   text-transform: uppercase;
   color: #fff;
 }
-
 .footerCampusLink {
   color: #fff;
   text-decoration: none;
   font-weight: 700;
 }
-
 .footerCampusLink:hover {
   color: #1DA1F2;
 }
@@ -67,7 +64,6 @@
   max-width: 120px;
   margin-right: 1rem;
 }
-
 .footerLogo {
   max-height: 50px;
   margin: 0.5rem;
@@ -80,7 +76,6 @@
   margin-right: 1rem;
   font-size: 0.95rem;
 }
-
 .footerLinks a:hover {
   text-decoration: underline;
 }
@@ -98,12 +93,10 @@
   gap: 1rem;
   margin: 1rem 0;
 }
-
 .footerSocial img {
   width: 30px;
   transition: transform 0.3s ease;
 }
-
 .footerSocial img:hover {
   transform: scale(1.1);
 }
@@ -115,56 +108,12 @@
   margin-top: 2rem;
 }
 
-/* ====== RESPONSIVE ====== */
+/* ====== RESPONSIVE FOOTER ====== */
 @media (max-width: 768px) {
-  .footerMalharro {
-    clip-path: none !important;
-  }
-  .footerFrase {
-    font-size: 1.5rem;
-  }
-
-  .footerCampusLogo {
-    max-width: 100px;
-    margin-bottom: 20px;
-  }
-
-  .footerSocial img {
-    width: 25px;
-  }
-}
-
-.footerEditOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.footerEditModal {
-  background: #fff;
-  width: min(600px, 95vw);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.footerEditHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.footerEditClose {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
+  .footerMalharro { clip-path: none !important; }
+  .footerFrase { font-size: 1.5rem; }
+  .footerCampusLogo { max-width: 100px; margin-bottom: 20px; }
+  .footerSocial img { width: 25px; }
 }
 
 /* ====== BOTÓN EDITAR (arriba del footer) ====== */
@@ -184,316 +133,263 @@
   box-shadow: 0 8px 18px rgba(199, 0, 90, 0.35);
 }
 
-/* ====== OVERLAY ====== */
+/* ================================
+   MODAL FOOTER — FIX RESPONSIVE
+   (pegar al final para override)
+   ================================ */
+
+/* Overlay centrado, sin scroll horizontal */
 .footerEditOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;           /* centrado vertical */
+  justify-content: center;       /* centrado horizontal */
+  background: rgba(0,0,0,.55);
   z-index: 9999;
   backdrop-filter: blur(2px);
-}
-
-/* ====== MODAL ====== */
-.footerEditModal {
-  background: #ffffff;
-  width: min(620px, 94vw);
-  border-radius: 1.25rem;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-  padding: 1.5rem 1.5rem 1.25rem;
-  max-height: 90vh;
+  padding: 12px;                 /* margen interno p/espacios laterales */
   overflow-y: auto;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  animation: footerModalIn 0.18s ease-out;
+  overflow-x: hidden;            /* evita “barra” horizontal */
+  overscroll-behavior: contain;
 }
 
-@keyframes footerModalIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Modal con márgenes laterales visibles, sin ocupar todo el ancho */
+.footerEditModal {
+  background: #fff;
+  width: min(560px, 92vw);       /* deja ~4vw de margen por lado en mobile */
+  max-width: 560px;
+  border-radius: 16px;
+  padding: 16px 16px 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  border: 1px solid rgba(0,0,0,.05);
+  max-height: 86dvh;             /* no ocupa toda la altura */
+  overflow-y: auto;              /* solo scroll interno si hace falta */
+  overflow-x: hidden;            /* nada se sale a lo ancho */
+  animation: footerModalIn .18s ease-out;
 }
 
-/* ====== HEADER DEL MODAL ====== */
+/* Header compacto */
 .footerEditHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  gap: .5rem;
+  margin-bottom: 1rem;
 }
 .footerEditHeader h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
   margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
   color: #1b1b1b;
 }
 .footerEditClose {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
   color: #444;
-  transition: transform 0.12s ease-out;
-}
-.footerEditClose:hover {
-  transform: rotate(5deg);
-  color: #000;
+  padding: .3rem;
+  border-radius: .4rem;
 }
 
-/* ====== FORM ====== */
-.footerEditForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
+/* Form más denso */
+.footerEditForm { display: flex; flex-direction: column; gap: .8rem; }
+.footerEditLabel { font-size: .84rem; gap: .3rem; }
 
-.footerEditLabel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-weight: 500;
-  color: #111;
-  font-size: 0.85rem;
-}
-
-.footerEditTextarea,
-.footerEditInput {
-  border: 1px solid #d8d8d8;
-  border-radius: 0.7rem;
-  padding: 0.55rem 0.65rem;
-  font-size: 0.85rem;
-  font-family: inherit;
-  outline: none;
-  transition: border 0.12s ease-out, box-shadow 0.12s ease-out;
-  background: #fff;
-}
-.footerEditTextarea:focus,
-.footerEditInput:focus {
-  border: 1px solid #c7005a;
-  box-shadow: 0 0 0 3px rgba(199, 0, 90, 0.12);
-}
-
+.footerEditInput,
 .footerEditTextarea {
-  resize: vertical;
-  min-height: 85px;
-  max-height: 180px;
+  width: 100%;
+  font-size: .84rem;
+  padding: .5rem .6rem;
+  border: 1px solid #d8d8d8;
+  border-radius: .6rem;
+  background: #fff;
+  outline: none;
+  transition: border .12s, box-shadow .12s;
+  word-break: break-word;        /* evita desbordes por URLs largas */
+}
+.footerEditInput:focus,
+.footerEditTextarea:focus {
+  border-color: #c7005a;
+  box-shadow: 0 0 0 3px rgba(199,0,90,.12);
+}
+.footerEditTextarea { min-height: 80px; max-height: 160px; resize: vertical; }
+
+/* Media (ilustración/logo) en rejilla que colapsa bien */
+.footerEditMediaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+}
+.footerEditMediaPreview { max-width: 100%; height: auto; border-radius: .5rem; }
+.footerEditMediaPlaceholder {
+  display: inline-block;
+  font-size: .74rem;
+  color: #666;
+  background: #eee;
+  padding: .3rem .5rem;
+  border-radius: .45rem;
 }
 
-/* ====== ERRORES ====== */
-.footerEditError {
-  color: #c7005a;
-  font-size: 0.7rem;
-  margin: 0;
-}
-
-/* ====== ACCIONES ====== */
+/* Acciones: sin sticky (para que no “suba” una barra) y sin botones gigantes */
 .footerEditActions {
+  position: static;              /* quita el sticky que se “mueve” */
   display: flex;
+  flex-wrap: wrap;               /* si no entran, saltan de línea */
+  gap: .5rem;
   justify-content: flex-end;
-  gap: 0.6rem;
-  margin-top: 0.3rem;
+  margin-top: .4rem;
+  padding-top: .4rem;
+  border-top: 1px solid rgba(0,0,0,.06);
+  background: transparent;
 }
-
 .footerEditCancel,
 .footerEditSave {
   border: none;
   border-radius: 999px;
-  padding: 0.5rem 1.2rem;
+  padding: .45rem .9rem;         /* botones más cortos */
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: .8rem;
   cursor: pointer;
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+  transition: transform .12s, box-shadow .12s;
+  white-space: nowrap;           /* mantiene corto el botón */
 }
+.footerEditCancel { background: #f2f2f2; color: #111; }
+.footerEditCancel:hover { transform: translateY(-1px); }
+.footerEditSave { background: #c7005a; color: #fff; box-shadow: 0 8px 20px rgba(199,0,90,.28); }
+.footerEditSave:hover { transform: translateY(-1px); }
+.footerEditSave:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
 
-.footerEditCancel {
-  background: #f2f2f2;
-  color: #111;
-}
-.footerEditCancel:hover {
-  transform: translateY(-1px);
-}
+/* Reducción de “Redes” para que nada sobresalga */
+.footerEditRedesBox { margin-top: 1.1rem; padding: .8rem; gap: .6rem; }
+.footerEditRedesHeader h4 { font-size: .88rem; }
+.footerEditAddRed { padding: .3rem .7rem; font-size: .72rem; border-radius: 999px; }
 
-.footerEditSave {
-  background: #c7005a;
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(199, 0, 90, 0.35);
-}
-.footerEditSave:hover {
-  transform: translateY(-1px);
-}
-.footerEditSave:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* ====== NOTA ====== */
-.footerEditNote {
-  margin-top: 1rem;
-  font-size: 0.73rem;
-  color: #666;
-  line-height: 1.35;
-}
-
-/* ====== RESPONSIVE ====== */
-@media (max-width: 540px) {
-  .footerEditModal {
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-  }
-  .footerEditActions {
-    justify-content: space-between;
-  }
-}
-
-.footerEditRedesBox {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: #fafafa;
-  border-radius: 1rem;
-  border: 1px solid rgba(0,0,0,0.03);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.footerEditRedesHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: .5rem;
-}
-
-.footerEditRedesHeader h4 {
-  margin: 0;
-  font-size: .9rem;
-  font-weight: 600;
-}
-
-.footerEditAddRed {
-  background: #c7005a;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: .35rem .8rem;
-  cursor: pointer;
-  font-size: .75rem;
-}
-
-.footerEditRedesEmpty {
-  font-size: .75rem;
-  color: #666;
-}
-
-.footerEditRedItem {
-  background: #fff;
-  border-radius: .75rem;
-  padding: .5rem .6rem .6rem;
-  border: 1px solid rgba(0,0,0,0.04);
-  display: flex;
-  flex-direction: column;
-  gap: .4rem;
-}
-
+.footerEditRedItem { padding: .45rem .55rem .55rem; gap: .35rem; }
 .footerEditRedRow {
   display: flex;
-  gap: .5rem;
+  gap: .45rem;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: wrap;               /* inputs saltan de línea sin desbordar */
+}
+.footerEditRedIconPreview { width: 28px; height: 28px; object-fit: contain; }
+.footerEditRedIconPlaceholder { font-size: .7rem; padding: .3rem .45rem; }
+.footerEditRemoveRed { padding: .3rem .55rem; font-size: .7rem; border-radius: .6rem; }
+
+/* Inputs de archivo más chicos para que no “estiren” el layout */
+.footerEditModal input[type="file"] {
+  font-size: .72rem;
+  max-width: 100%;
 }
 
-.footerEditRedIconPreview {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
+/* Nota */
+.footerEditNote { font-size: .72rem; color: #666 !important; }
+
+/* Forzar colores del modal (sin afectar layout) */
+.footerEditModal, .footerEditModal * { color: #111 !important; }
+.footerEditInput::placeholder, .footerEditTextarea::placeholder { color: #777 !important; }
+
+/* ===== Breakpoints finos ===== */
+
+/* <= 540px: más compacto, pero con márgenes laterales */
+@media (max-width: 540px) {
+  .footerEditOverlay { padding: 12px; }
+  .footerEditModal {
+    width: min(520px, 92vw);     /* nunca 100vw */
+    max-height: 86dvh;
+    border-radius: 14px;
+    padding: 14px 14px 10px;
+  }
+  .footerEditMediaRow { grid-template-columns: 1fr; } /* apilar media */
 }
 
-.footerEditRedIconPlaceholder {
-  font-size: .7rem;
-  color: #999;
-  background: #eee;
-  padding: .35rem .5rem;
-  border-radius: .4rem;
+/* <= 400px: tipografías y paddings más chicos */
+@media (max-width: 400px) {
+  .footerEditModal { width: 92vw; padding: 12px 12px 10px; }
+  .footerEditHeader h3 { font-size: .98rem; }
+  .footerEditLabel { font-size: .82rem; }
+  .footerEditInput, .footerEditTextarea { font-size: .82rem; padding: .48rem .56rem; }
+  .footerEditRedIconPreview { width: 26px; height: 26px; }
+  .footerEditAddRed { font-size: .7rem; padding: .28rem .6rem; }
 }
 
-.footerEditRemoveRed {
-  background: #ffe3e3;
-  color: #9e1a1a;
-  border: none;
-  border-radius: .7rem;
-  padding: .35rem .6rem;
-  font-size: .7rem;
-  cursor: pointer;
+/* <= 360px: inputs en columna donde haga falta, sin desbordes */
+@media (max-width: 360px) {
+  .footerEditRedRow { flex-direction: column; align-items: stretch; }
+  .footerEditActions { gap: .45rem; }
+  .footerEditCancel, .footerEditSave { font-size: .78rem; padding: .45rem .8rem; }
 }
 
-.footerEditRedDeleted {
+/* <= 320px: aún más compacto, lado a lado con margen, sin ocupar toda la pantalla */
+@media (max-width: 320px) {
+  .footerEditOverlay { padding: 10px; }                 /* espacio lateral visible */
+  .footerEditModal {
+    width: 92vw;                                        /* margen a los costados */
+    max-height: 82dvh;                                  /* nunca pantalla completa */
+    border-radius: 12px;
+    padding: 10px 10px 8px;
+  }
+  .footerEditHeader h3 { font-size: .94rem; }
+  .footerEditLabel { font-size: .8rem; }
+  .footerEditInput, .footerEditTextarea { font-size: .8rem; padding: .45rem .52rem; }
+  .footerEditRedIconPreview { width: 24px; height: 24px; }
+  .footerEditAddRed { font-size: .68rem; padding: .26rem .5rem; }
+  .footerEditActions {
+    justify-content: flex-end;                           /* sin botón a 100% */
+    flex-wrap: wrap;
+  }
+  .footerEditCancel, .footerEditSave {
+    width: auto;                                         /* ¡no a lo ancho! */
+    font-size: .78rem;
+    padding: .42rem .75rem;
+  }
+}
+
+/* ====== STICKY-ABAJO sin tocar JSX ======
+   Forzamos que el contenedor raíz sea flex-col para que
+   .footerMalharro pueda usar margin-top:auto y quedar abajo.
+   Cubrimos #__next (Next.js), #root (CRA), y divs raíz típicos. */
+:global(html), :global(body) { min-height: 100dvh; }
+:global(body > #__next),
+:global(body > #root),
+:global(body > .app-root),
+:global(body > .layout-root),
+:global(body > .pageWrapper),
+:global(body > div:first-child) {
+  min-height: 100dvh;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff5f6;
-  border: 1px solid rgba(219, 45, 76, 0.2);
-  border-radius: .6rem;
-  padding: .45rem .7rem;
-  font-size: .75rem;
+  flex-direction: column;
 }
 
-.footerEditUndo {
-  background: none;
-  border: none;
-  color: #c7005a;
-  cursor: pointer;
-  font-size: .7rem;
+/* El footer se “pega” abajo en el flujo normal */
+.footerMalharro {
+  margin-top: auto;
+  position: relative; /* importante: no fixed */
+  z-index: 0;
 }
 
-/* ===== FORZAR COLOR OSCURO EN EL MODAL DEL FOOTER ===== */
-.footerEditModal,
-.footerEditModal * {
-  color: #111 !important;
+/* ====== ANTI-SALTO DE PAGINACIÓN ======
+   1) Si alguna navegación pone hash al footer (#footer),
+      no dejes que el navegador lo “pegue” al borde.
+   2) Si cualquier ancla hace target, el scroll deja margen superior
+      (útil si hay header fijo). Ajustá 72px a tu header. */
+
+/* Si el footer es target (#footer), desplaza el anclaje fuera de vista */
+.footerMalharro:target {
+  scroll-margin-top: 200vh;
+}
+/* Extra: truco compatible con navegadores más viejos */
+.footerMalharro:target::before {
+  content: "";
+  display: block;
+  height: 100vh;     /* crea colchón de una pantalla */
+  margin-top: -100vh;/* neutraliza el “salto” */
 }
 
-/* inputs y textareas */
-.footerEditInput,
-.footerEditTextarea {
-  color: #111 !important;
-  background: #fff;
-}
+/* Para cualquier #hash en la página, deja margen arriba (header fijo, etc.) */
+:global(:target) { scroll-margin-top: 72px; }
 
-/* placeholders también */
-.footerEditInput::placeholder,
-.footerEditTextarea::placeholder {
-  color: #777 !important;
-}
-
-/* títulos dentro de redes */
-.footerEditRedesBox h4,
-.footerEditRedItem input,
-.footerEditRedItem span,
-.footerEditRedDeleted span {
-  color: #111 !important;
-}
-
-/* botón eliminar red */
-.footerEditRemoveRed {
-  color: #9e1a1a !important;
-}
-
-/* cajita "sin icono" */
-.footerEditRedIconPlaceholder {
-  color: #555 !important;
-}
-
-/* nota de abajo */
-.footerEditNote {
-  color: #666 !important;
-}
+/* Suavizá los desplazamientos en general (opcional) */
+:global(html) { scroll-behavior: smooth; }
