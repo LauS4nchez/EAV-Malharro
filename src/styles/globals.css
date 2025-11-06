@@ -86,3 +86,11 @@ select option{
 main {
   flex: 1 0 auto;
 }
+
+textarea {
+  resize: none;
+  overflow: hidden;
+  min-height: 60px;
+  max-height: 300px;
+  transition: height 0.2s ease;
+}

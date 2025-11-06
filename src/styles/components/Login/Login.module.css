@@ -179,26 +179,25 @@
 
 /* Estilos para el botón de Google (si los necesitas) */
 .googleButton {
-  background-color: #2d2d2d;
-  color: white;
-  border: 1px solid #444;
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
   border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-inter);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
+  gap: 10px;
+  transition: background-color 0.2s;
+  margin-top: 10px;
 }
 
-.googleButton:hover {
-  background-color: #3d3d3d;
-  border-color: #555;
+.googleButton:hover:not(:disabled) {
+  background: #afafaf;
 }
 
 /* Responsive */

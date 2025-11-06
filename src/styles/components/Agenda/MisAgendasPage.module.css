@@ -274,3 +274,241 @@
     padding: 22px;
   }
 }
+
+/* === MODAL === */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Permite que el modal siga centrado pero con margen interno en pantallas chicas */
+  padding: 16px;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+  overflow: auto; /* Si todo es muy alto, se scrollea la overlay */
+}
+
+/* === CAJA DEL MODAL === */
+.modalBox {
+  background: #fff;
+  color: #000;
+  border-radius: 16px;
+  /* Ancho fluido: nunca toca los bordes en móvil */
+  width: min(520px, calc(100vw - 32px));
+  /* Alto controlado: que nunca desborde la pantalla */
+  max-height: min(88dvh, 680px);
+  overflow: hidden; /* Ocultamos desbordes del contenedor */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  border: 1px solid #ececec;
+  /* Padding adaptable */
+  padding: clamp(18px, 2vw + 10px, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: popUp 0.22s ease-out;
+}
+
+.modalBox * {
+  color: #000 !important;
+}
+
+@keyframes popUp {
+  from { transform: scale(0.97); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modalBox { animation: none; }
+}
+
+.modalBox h3 {
+  text-align: center;
+  font-size: clamp(18px, 1.8vw + 14px, 22px);
+  font-weight: 600;
+  margin: 0 0 6px 0;
+}
+
+/* === FORMULARIO EN MODAL === */
+/* El form es el área scrollable interna del modal */
+.modalBox form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+  /* Restamos un poquito para dejar respirar el header y botones */
+  max-height: 100%;
+  padding-right: 2px; /* evita que el scroll tape contenido */
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalBox label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 14px;
+}
+
+.modalBox input,
+.modalBox textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background-color: #f8f8f8;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.modalBox textarea {
+  min-height: 96px;
+  resize: vertical;
+  max-height: 50dvh; /* evita crecer demasiado en móvil */
+}
+
+.modalBox input:focus,
+.modalBox textarea:focus {
+  border-color: #000;
+  background-color: #fff;
+}
+
+/* === BOTONES DEL MODAL === */
+.modalButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  /* En pantallas chicas, que puedan “wrapear” */
+  flex-wrap: wrap;
+  justify-content: stretch;
+}
+
+.modalButtons button {
+  flex: 1 1 130px;     /* se adaptan y no desbordan */
+  min-width: 0;        /* permite achicarse por debajo de 130px si hace falta */
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.modalButtons .btnModificar {
+  background: #000;
+  color: #fff !important;
+}
+
+.modalButtons .btnModificar:hover { background: #222; }
+
+.modalButtons .btnAprobar {
+  background: #e0e0e0;
+}
+
+.modalButtons .btnAprobar:hover { background: #ccc; }
+
+/* === Botón para seleccionar imagen (nativo o web) === */
+.imageSelectButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #d8d8d8;
+  background: #f6f6f6;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.imageSelectButton:hover {
+  background: #efefef;
+  border-color: #cfcfcf;
+}
+
+.imageSelectButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* === Preview de imagen === */
+.imagePreviewContainer {
+  margin-top: 10px;
+}
+
+.imagePreview {
+  width: 100%;
+  max-height: 40vh;     /* limitada en móvil */
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ececec;
+  display: block;
+}
+
+.fileInfo {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #333 !important;
+}
+
+/* === RESPONSIVE DEL MODAL === */
+@media (max-width: 480px) {
+  .modalBox {
+    width: calc(100vw - 28px);
+    max-height: 90dvh;  /* más aire en pantallas muy bajas */
+    padding: 18px;
+    gap: 12px;
+  }
+  .modalBox input,
+  .modalBox textarea {
+    font-size: 14px;
+    padding: 9px 10px;
+  }
+  .modalButtons button {
+    height: 38px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .modalOverlay { padding: 12px; }
+  .modalBox {
+    width: calc(100vw - 24px);
+    border-radius: 14px;
+    padding: 16px;
+    gap: 10px;
+  }
+  .modalBox h3 { font-size: 18px; }
+  .modalBox label { font-size: 13px; }
+  .modalButtons { gap: 8px; }
+  .modalButtons button {
+    height: 36px;
+    font-size: 13.5px;
+    border-radius: 9px;
+  }
+}
+
+/* Ajuste fino para 320px reales */
+@media (max-width: 320px) {
+  .modalOverlay { padding: 10px; }
+  .modalBox {
+    width: calc(100vw - 20px); /* deja bordes laterales */
+    padding: 14px;
+    gap: 8px;
+  }
+  .modalBox input,
+  .modalBox textarea {
+    padding: 8px 9px;
+    font-size: 13.5px;
+  }
+  .modalButtons button {
+    height: 34px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+}

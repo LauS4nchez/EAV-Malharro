@@ -11,6 +11,12 @@ import { useDeepLinks } from "@/app/hooks/useDeepLinks";
 import { authService, validateEmail, validateUsername, validatePassword } from "@/app/services/authService";
 import styles from "@/styles/components/Login/Login.module.css";
 
+// Función para normalizar emails
+const normalizeEmail = (email) => {
+  if (!email || typeof email !== 'string') return '';
+  return email.toLowerCase().trim().replace(/\s+/g, '');
+};
+
 export default function UnifiedAuth() {
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
@@ -29,14 +35,14 @@ export default function UnifiedAuth() {
     
     if (pendingDiscordAuth) {
       const { email } = JSON.parse(pendingDiscordAuth);
-      setEmail(email);
+      setEmail(normalizeEmail(email));
       setStep("setPassword");
       setLoading(false);
     }
     
     if (pendingGoogleAuth) {
       const { email } = JSON.parse(pendingGoogleAuth);
-      setEmail(email);
+      setEmail(normalizeEmail(email));
       setStep("setPassword");
       setLoading(false);
     }
@@ -47,7 +53,7 @@ export default function UnifiedAuth() {
       const pendingAuth = localStorage.getItem("pendingGoogleAuth") || localStorage.getItem("pendingDiscordAuth");
       if (pendingAuth) {
         const { email } = JSON.parse(pendingAuth);
-        setEmail(email);
+        setEmail(normalizeEmail(email));
         setStep("setPassword");
       }
     }
@@ -57,7 +63,7 @@ export default function UnifiedAuth() {
   useEffect(() => {
     const handleAuthSetPassword = (event) => {
       if (event.detail?.email) {
-        setEmail(event.detail.email);
+        setEmail(normalizeEmail(event.detail.email));
         setStep("setPassword");
         setLoading(false);
         // Guardar el JWT temporalmente para usarlo después
@@ -90,13 +96,16 @@ export default function UnifiedAuth() {
 
   const checkEmail = async (e) => {
     e.preventDefault();
-    if (!validateEmail(email)) {
+    const normalizedEmail = normalizeEmail(email);
+    
+    if (!validateEmail(normalizedEmail)) {
       toast.error("Por favor, ingresa un email válido.");
       return;
     }
+    
     setLoading(true);
     try {
-      const userExists = await authService.checkEmail(email);
+      const userExists = await authService.checkEmail(normalizedEmail);
       if (userExists) {
         setStep("login");
         toast.success("Usuario encontrado. Ingresa tu contraseña.");
@@ -114,9 +123,11 @@ export default function UnifiedAuth() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const normalizedEmail = normalizeEmail(email);
+    
     setLoading(true);
     try {
-      const data = await authService.login(email, password);
+      const data = await authService.login(normalizedEmail, password);
       localStorage.setItem("jwt", data.jwt);
       const meData = await authService.getMe(data.jwt);
       localStorage.setItem("userRole", meData.role?.name || "Authenticated");
@@ -131,6 +142,8 @@ export default function UnifiedAuth() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const normalizedEmail = normalizeEmail(email);
+    
     if (!validateUsername(username)) {
       toast.error("Usuario inválido. Usa 3-20 caracteres válidos.");
       return;
@@ -141,7 +154,7 @@ export default function UnifiedAuth() {
     }
     setLoading(true);
     try {
-      const data = await authService.register(username, email, password);
+      const data = await authService.register(username, normalizedEmail, password);
       localStorage.setItem("jwt", data.jwt);
       localStorage.setItem("userRole", data.user.role?.name || "Authenticated");
       toast.success(`¡Cuenta creada! Bienvenido, ${data.user.username}`);
@@ -162,6 +175,8 @@ export default function UnifiedAuth() {
   };
 
   const handleSetPassword = async () => {
+    const normalizedEmail = normalizeEmail(email);
+    
     if (!validateUsername(username)) {
       toast.error("Usuario inválido. Usa 3-20 caracteres válidos.");
       return;
@@ -178,15 +193,14 @@ export default function UnifiedAuth() {
       const tempJwt = localStorage.getItem("tempJwt");
       
       if (pendingDiscordAuth) {
-        data = await authService.setPasswordWithProvider(email, username, password, "discord");
+        data = await authService.setPasswordWithProvider(normalizedEmail, username, password, "discord");
         localStorage.removeItem("pendingDiscordAuth");
       } else if (pendingGoogleAuth || tempJwt) {
-        // Para Google, usa el JWT temporal para linkear la cuenta
-        data = await authService.setPasswordWithProvider(email, username, password, "google", tempJwt);
+        data = await authService.setPasswordWithProvider(normalizedEmail, username, password, "google", tempJwt);
         localStorage.removeItem("pendingGoogleAuth");
         localStorage.removeItem("tempJwt");
       } else {
-        data = await authService.setPassword(email, username, password);
+        data = await authService.setPassword(normalizedEmail, username, password);
       }
       
       localStorage.setItem("jwt", data.jwt);
@@ -210,6 +224,10 @@ export default function UnifiedAuth() {
     localStorage.removeItem("tempJwt");
   };
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -222,9 +240,9 @@ export default function UnifiedAuth() {
           </h2>
           <p className={styles.stepIndicator}>
             {step === "email" && "Ingresa tu email para continuar"}
-            {step === "login" && `Ingresa tu contraseña para ${email}`}
-            {step === "register" && `Completa tu registro para ${email}`}
-            {step === "setPassword" && `Establece tu usuario y contraseña para ${email}`}
+            {step === "login" && `Ingresa tu contraseña para ${normalizeEmail(email)}`}
+            {step === "register" && `Completa tu registro para ${normalizeEmail(email)}`}
+            {step === "setPassword" && `Establece tu usuario y contraseña para ${normalizeEmail(email)}`}
           </p>
         </div>
 
@@ -250,7 +268,7 @@ export default function UnifiedAuth() {
                   placeholder="tu@email.com"
                   className={styles.formControl}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   required
                   autoFocus
                 />
@@ -351,7 +369,6 @@ export default function UnifiedAuth() {
               <div className={styles.divider}><span>o continuar con</span></div>
 
               <button className={styles.googleButton} onClick={() => googleLogin()} type="button" disabled={loading}>
-                {/* SVG Google */}
                 <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                   <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
                   <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
@@ -362,7 +379,6 @@ export default function UnifiedAuth() {
               </button>
 
               <button className={styles.discordButton} onClick={() => discordLogin()} type="button" disabled={loading}>
-                {/* SVG Discord */}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09c-.01-.02-.04-.03-.07-.03c-1.5.26-2.93.71-4.27 1.33c-.01 0-.02.01-.03.02c-2.72 4.07-3.47 8.03-3.1 11.95c0 .02.01.04.03.05c1.8 1.32 3.53 2.12 5.24 2.65c.03.01.06 0 .07-.02c.4-.55.76-1.13 1.07-1.74c.02-.04 0-.08-.04-.09c-.57-.22-1.11-.48-1.64-.78c-.04-.02-.04-.08-.01-.11c.11-.08.22-.17.33-.25c.02-.02.05-.02.07-.01c3.44 1.57 7.15 1.57 10.55 0c.02-.01.05-.01.07.01c.11.09.22.17.33.25c.04.03.04.09-.01.11c-.52.31-1.07.56-1.64.78c-.04.01-.05.06-.04.09c.32.61.68 1.19 1.07 1.74c.03.01.06.02.09.01c1.72-.53 3.45-1.33 5.25-2.65c.02-.01.03-.03.03-.05c.44-4.53-.73-8.46-3.1-11.95c-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.83 2.12-1.89 2.12z"/>
                 </svg>

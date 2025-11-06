@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { API_URL, API_TOKEN, URL } from "@/app/config";
 import styles from "@/styles/components/Perfil/PerfilPublico.module.css";
 import agendaStyles from "@/styles/components/Agenda/Agenda.module.css";
@@ -12,12 +12,11 @@ import CrearUsinaModal from './usina/CrearUsinaModal';
 import { Toaster } from 'react-hot-toast';
 
 export default function PerfilPublicoPage({ params }) {
-  // 🚫 No usar `use(params)` aquí
-  const username = params?.username;
+  const { username } = use(params);
 
   const [userData, setUserData] = useState(null);
-  const [usinas, setUsinas] = useState([]);                 // solo aprobadas para mostrar a terceros
-  const [usinasTotalCount, setUsinasTotalCount] = useState(0); // 🔢 TODAS las usinas (cualquier estado)
+  const [usinas, setUsinas] = useState([]);
+  const [usinasTotalCount, setUsinasTotalCount] = useState(0);
   const [agendas, setAgendas] = useState([]);
   const [agendasWithImages, setAgendasWithImages] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -6,6 +6,7 @@ import Slider from 'react-slick';
 import ReactMarkdown from 'react-markdown';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { checkUserRole } from '@/app/componentes/validacion/checkRole';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import toast from 'react-hot-toast';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -16,7 +17,6 @@ const COLLECTION_PATH = '/carrusels';
 
 export default function Carrusel() {
   const sliderRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const [imagenesCarrusel, setImagenesCarrusel] = useState([]);
   const [title, setTitle] = useState('');
@@ -250,15 +250,89 @@ export default function Carrusel() {
     }
   };
 
-  // ========== SUBIR IMG DESDE DISPOSITIVO ==========
-  const handleOpenFilePicker = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
+  // ========== SUBIR IMAGEN CON CAPACITOR ==========
+  const handleAddImage = async () => {
+    if (uploading) return;
+
+    const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+    if (!jwt) {
+      toast.error('Tenés que iniciar sesión para subir imágenes.');
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // Usar el mediaPicker para seleccionar imagen
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones básicas
+      if (!file.type.startsWith('image/')) {
+        toast.error('Solo se permiten imágenes.');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La imagen es muy grande (máx 5MB).');
+        return;
+      }
+
+      // Subir a Strapi
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${jwt}` },
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        console.error('Error upload:', errText);
+        toast.error('No se pudo subir la imagen.');
+        return;
+      }
+
+      const uploaded = await uploadRes.json();
+      const uploadedFile = uploaded[0];
+
+      // Agregar la imagen al estado de edición
+      const imageUrl = uploadedFile.url.startsWith('http')
+        ? uploadedFile.url
+        : `${API_URL}${uploadedFile.url}`;
+
+      setEditImages((prev) => [
+        ...prev,
+        {
+          id: uploadedFile.id,
+          url: imageUrl,
+        },
+      ]);
+
+      toast.success('Imagen subida correctamente.');
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+      toast.error('No se pudo subir la imagen: ' + err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleFileChange = async (e) => {
+  // ========== SUBIR IMAGEN DESDE WEB (fallback) ==========
+  const handleWebFileChange = async (e) => {
     const files = e.target.files;
     if (!files || !files.length) return;
 
@@ -450,23 +524,37 @@ export default function Carrusel() {
                 </div>
               ))}
 
-              {/* input oculto */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-              />
-
+              {/* Botón principal para agregar imágenes */}
               <button
                 type="button"
-                onClick={handleOpenFilePicker}
+                onClick={handleAddImage}
                 className={styles.addBtn}
                 disabled={uploading}
               >
-                {uploading ? 'Subiendo...' : 'Subir imagen desde dispositivo'}
+                {uploading ? 'Subiendo...' : 
+                 isNativePlatform() ? '📱 Agregar imagen' : 'Agregar imagen'}
               </button>
+
+              {/* Input oculto para web (fallback) */}
+              {!isNativePlatform() && (
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleWebFileChange}
+                    style={{ display: 'none' }}
+                    id="web-file-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('web-file-input').click()}
+                    className={styles.addBtnSecondary}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Subiendo...' : 'Seleccionar desde archivos'}
+                  </button>
+                </>
+              )}
 
               <div className={styles.modalActions}>
                 <button type="submit" className={styles.adminBtnSave} disabled={uploading}>

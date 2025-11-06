@@ -64,11 +64,17 @@ const fetchMediaById = async (id, token) => {
   }
 };
 
+// Helper: true si el string de rol es Administrador o SuperAdministrador
+const isAdminRole = (r) => {
+  const v = (r ?? '').toString().trim().toLowerCase();
+  return v === 'administrador' || v === 'superadministrador';
+};
+
 export default function FooterPage() {
   const [footerData, setFooterData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  const [canEdit, setCanEdit] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const [editData, setEditData] = useState({
@@ -207,14 +213,17 @@ export default function FooterPage() {
 
   // rol admin/superadmin
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
-        const ok = await checkUserRole(['Administrador', 'SuperAdministrador']);
-        setCanEdit(!!ok);
+        // si checkUserRole es síncrona igual funciona: await sobre un valor no-promesa resuelve directo
+        const roleName = await checkUserRole(); // p.ej. "Administrador" | "Profesor" | "SuperAdministrador"
+        if (mounted) setIsAdmin(isAdminRole(roleName));
       } catch {
-        setCanEdit(false);
+        if (mounted) setIsAdmin(false);
       }
     })();
+    return () => { mounted = false; };
   }, []);
 
   // ========= 2) VALIDACIÓN =========
@@ -254,7 +263,7 @@ export default function FooterPage() {
     return errs;
   };
 
-  // ========= NUEVO: Manejo de selección de archivos con Capacitor =========
+  // ========= MANEJO DE ARCHIVOS CON CAPACITOR =========
   const handleSelectFile = async (field) => {
     if (uploading) return;
 
@@ -267,69 +276,83 @@ export default function FooterPage() {
     try {
       setUploading(true);
 
-      const mediaResult = await openMediaPicker({
-        source: 'photos',
-        allowEditing: false,
-        quality: 90,
-        resultType: 'DataUrl'
-      });
+      // Si es plataforma nativa, usar Capacitor
+      if (isNativePlatform()) {
+        const mediaResult = await openMediaPicker({
+          source: 'photos',
+          allowEditing: false,
+          quality: 90,
+          resultType: 'DataUrl'
+        });
 
-      if (!mediaResult || !mediaResult.file) {
-        console.log('Usuario canceló la selección');
-        return;
+        if (!mediaResult || !mediaResult.file) {
+          console.log('Usuario canceló la selección');
+          return;
+        }
+
+        const file = mediaResult.file;
+
+        // Validaciones básicas
+        if (!file.type.startsWith('image/')) {
+          toast.error('Solo se permiten imágenes.');
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('La imagen es muy grande (máx 5MB).');
+          return;
+        }
+
+        // Subir a Strapi
+        const formData = new FormData();
+        formData.append('files', file);
+
+        const uploadRes = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text();
+          console.error('Error upload:', errText);
+          toast.error('No se pudo subir la imagen.');
+          return;
+        }
+
+        const uploaded = await uploadRes.json();
+        const uploadedFile = uploaded[0];
+
+        // Actualizar el estado correspondiente
+        const previewUrl = uploadedFile.url.startsWith('http')
+          ? uploadedFile.url
+          : `${API_URL}${uploadedFile.url}`;
+
+        if (field === 'img_ilustracion' || field === 'logo_principal') {
+          setEditData(prev => ({
+            ...prev,
+            [field]: uploadedFile.id,
+            [`${field}_preview`]: previewUrl
+          }));
+        }
+
+        toast.success('Imagen subida correctamente.');
+        return uploadedFile.id;
+      } else {
+        // Para web, usar input file tradicional
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleFileChange(field, file);
+          }
+        };
+        input.click();
       }
-
-      const file = mediaResult.file;
-
-      // Validaciones básicas
-      if (!file.type.startsWith('image/')) {
-        toast.error('Solo se permiten imágenes.');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('La imagen es muy grande (máx 5MB).');
-        return;
-      }
-
-      // Subir a Strapi
-      const formData = new FormData();
-      formData.append('files', file);
-
-      const uploadRes = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: formData,
-      });
-
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text();
-        console.error('Error upload:', errText);
-        toast.error('No se pudo subir la imagen.');
-        return;
-      }
-
-      const uploaded = await uploadRes.json();
-      const uploadedFile = uploaded[0];
-
-      // Actualizar el estado correspondiente
-      const previewUrl = uploadedFile.url.startsWith('http')
-        ? uploadedFile.url
-        : `${API_URL}${uploadedFile.url}`;
-
-      if (field === 'img_ilustracion' || field === 'logo_principal') {
-        setEditData(prev => ({
-          ...prev,
-          [field]: uploadedFile.id,
-          [`${field}_preview`]: previewUrl
-        }));
-      }
-
-      toast.success('Imagen subida correctamente.');
-      return uploadedFile.id;
-
     } catch (err) {
       console.error('Error subiendo imagen:', err);
       toast.error('No se pudo subir la imagen: ' + err.message);
@@ -339,7 +362,7 @@ export default function FooterPage() {
     }
   };
 
-  // ========= NUEVO: Manejo de iconos para redes =========
+  // ========= MANEJO DE ICONOS PARA REDES =========
   const handleSelectIcon = async (index) => {
     if (uploading) return;
 
@@ -352,66 +375,80 @@ export default function FooterPage() {
     try {
       setUploading(true);
 
-      const mediaResult = await openMediaPicker({
-        source: 'photos',
-        allowEditing: false,
-        quality: 90,
-        resultType: 'DataUrl'
-      });
+      // Si es plataforma nativa, usar Capacitor
+      if (isNativePlatform()) {
+        const mediaResult = await openMediaPicker({
+          source: 'photos',
+          allowEditing: false,
+          quality: 90,
+          resultType: 'DataUrl'
+        });
 
-      if (!mediaResult || !mediaResult.file) {
-        console.log('Usuario canceló la selección');
-        return;
+        if (!mediaResult || !mediaResult.file) {
+          console.log('Usuario canceló la selección');
+          return;
+        }
+
+        const file = mediaResult.file;
+
+        // Validaciones
+        if (!file.type.startsWith('image/')) {
+          toast.error('Solo se permiten imágenes.');
+          return;
+        }
+
+        // Subir a Strapi
+        const formData = new FormData();
+        formData.append('files', file);
+
+        const uploadRes = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text();
+          console.error('Error upload:', errText);
+          toast.error('No se pudo subir el icono.');
+          return;
+        }
+
+        const uploaded = await uploadRes.json();
+        const uploadedFile = uploaded[0];
+
+        const previewUrl = uploadedFile.url.startsWith('http')
+          ? uploadedFile.url
+          : `${API_URL}${uploadedFile.url}`;
+
+        // Actualizar la red específica
+        setEditRedes(prev => 
+          prev.map((red, i) => 
+            i === index ? {
+              ...red,
+              iconoId: uploadedFile.id,
+              iconoUrl: previewUrl
+            } : red
+          )
+        );
+
+        toast.success('Icono subido correctamente.');
+        return uploadedFile.id;
+      } else {
+        // Para web, usar input file tradicional
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleIconChange(index, file);
+          }
+        };
+        input.click();
       }
-
-      const file = mediaResult.file;
-
-      // Validaciones
-      if (!file.type.startsWith('image/')) {
-        toast.error('Solo se permiten imágenes.');
-        return;
-      }
-
-      // Subir a Strapi
-      const formData = new FormData();
-      formData.append('files', file);
-
-      const uploadRes = await fetch(`${API_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-        body: formData,
-      });
-
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text();
-        console.error('Error upload:', errText);
-        toast.error('No se pudo subir el icono.');
-        return;
-      }
-
-      const uploaded = await uploadRes.json();
-      const uploadedFile = uploaded[0];
-
-      const previewUrl = uploadedFile.url.startsWith('http')
-        ? uploadedFile.url
-        : `${API_URL}${uploadedFile.url}`;
-
-      // Actualizar la red específica
-      setEditRedes(prev => 
-        prev.map((red, i) => 
-          i === index ? {
-            ...red,
-            iconoId: uploadedFile.id,
-            iconoUrl: previewUrl
-          } : red
-        )
-      );
-
-      toast.success('Icono subido correctamente.');
-      return uploadedFile.id;
-
     } catch (err) {
       console.error('Error subiendo icono:', err);
       toast.error('No se pudo subir el icono: ' + err.message);
@@ -421,9 +458,40 @@ export default function FooterPage() {
     }
   };
 
+  // ========= HANDLERS PARA WEB (input file tradicional) =========
+  const handleFileChange = (field, file) => {
+    if (!file) {
+      setEditData((prev) => ({
+        ...prev,
+        [field]: null,
+        [`${field}_preview`]: prev[`${field}_preview`] || null,
+      }));
+      return;
+    }
+    const preview = URL.createObjectURL(file);
+    setEditData((prev) => ({
+      ...prev,
+      [field]: file,
+      [`${field}_preview`]: preview,
+    }));
+  };
+
+  const handleIconChange = (index, file) => {
+    setEditRedes((prev) => {
+      const next = [...prev];
+      const preview = file ? URL.createObjectURL(file) : next[index].iconoUrl;
+      next[index] = {
+        ...next[index],
+        iconoFile: file,
+        iconoUrl: preview,
+      };
+      return next;
+    });
+  };
+
   // ========= 3) ABRIR MODAL =========
   const handleEditClick = () => {
-    if (!canEdit) {
+    if (!isAdmin) {
       toast.error('Necesitás rol "Administrador" o "SuperAdministrador" para editar el footer.');
       return;
     }
@@ -540,19 +608,72 @@ export default function FooterPage() {
     }
 
     try {
-      // Las imágenes ya fueron subidas durante la selección, solo usamos los IDs
-      const ilustracionId = editData.img_ilustracion;
-      const logoId = editData.logo_principal;
+      // subir ilustracion
+      let ilustracionId =
+        footerData?.img_ilustracion?.data?.id ||
+        footerData?.img_ilustracion?.id ||
+        editData.img_ilustracion;
+        
+      if (editData.img_ilustracion instanceof File) {
+        const form = new FormData();
+        form.append('files', editData.img_ilustracion);
+        const up = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        const upJson = await up.json().catch(() => null);
+        if (up.ok && upJson?.[0]?.id) {
+          ilustracionId = upJson[0].id;
+        }
+      }
 
-      // redes finales
+      // subir logo
+      let logoId =
+        footerData?.logo_principal?.data?.id ||
+        footerData?.logo_principal?.id ||
+        editData.logo_principal;
+        
+      if (editData.logo_principal instanceof File) {
+        const form = new FormData();
+        form.append('files', editData.logo_principal);
+        const up = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        const upJson = await up.json().catch(() => null);
+        if (up.ok && upJson?.[0]?.id) {
+          logoId = upJson[0].id;
+        }
+      }
+
+      // subir iconos de redes
       const redesFinal = [];
       for (const red of editRedes) {
         if (red._delete) continue;
 
+        let iconoId = red.iconoId || null;
+
+        if (red.iconoFile instanceof File) {
+          const form = new FormData();
+          form.append('files', red.iconoFile);
+          const up = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: form,
+          });
+          const upJson = await up.json().catch(() => null);
+          if (up.ok && upJson?.[0]?.id) {
+            iconoId = upJson[0].id;
+          }
+        }
+
+        // repeatable component → NO mandar id del componente
         redesFinal.push({
           nombre: (red.nombre || '').trim(),
           url: cleanUrl(red.url || ''),
-          icono: red.iconoId ?? null,
+          icono: iconoId ?? null,
         });
       }
 
@@ -585,7 +706,6 @@ export default function FooterPage() {
         );
       }
 
-      // re-traer con populate seguro
       await fetchFooter();
       setEditing(false);
       toast.success('Footer actualizado correctamente.', { id: toastId });
@@ -658,8 +778,8 @@ export default function FooterPage() {
               </a>
             </div>
 
-            {/* editar */}
-            {canEdit && (
+            {/* editar: SOLO si es Admin / SuperAdmin */}
+            {isAdmin && (
               <div className="text-end mb-2">
                 <button
                   type="button"
@@ -835,8 +955,8 @@ export default function FooterPage() {
         </div>
       </footer>
 
-      {/* MODAL */}
-      {editing && (
+      {/* MODAL: SOLO si isAdmin === true */}
+      {isAdmin && editing && (
         <div className={styles.footerEditOverlay}>
           <div className={styles.footerEditModal}>
             <div className={styles.footerEditHeader}>
