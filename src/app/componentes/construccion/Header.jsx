@@ -131,16 +131,6 @@ export default function Header({ variant = 'light' }) {
 
     if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
-        <li key="agendas-admin">
-          <Link href={`/agendas-admin`} onClick={closeMenu}>
-            Editar Agendas
-          </Link>
-        </li>
-      )
-    }
-
-    if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
-      items.push(
         <li key="gestor-usuarios">
           <Link href="/gestor-usuarios" onClick={closeMenu}>
             Gestor de usuarios
@@ -149,11 +139,21 @@ export default function Header({ variant = 'light' }) {
       )
     }
 
-      if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+    if (userRole === 'Administrador' || userRole === 'SuperAdministrador') {
+      items.push(
+        <li key="agendas-admin">
+          <Link href={`/agendas-admin`} onClick={closeMenu}>
+            Moderación de Agendas
+          </Link>
+        </li>
+      )
+    }
+
+    if (userRole === 'Profesor' || userRole === 'Administrador' || userRole === 'SuperAdministrador') {
       items.push(
         <li key="admin-usina">
           <Link href="/panel-moderacion" onClick={closeMenu}>
-            Panel de Moderación
+            Moderación de Usinas
           </Link>
         </li>
       )

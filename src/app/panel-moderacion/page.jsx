@@ -5,6 +5,7 @@ import { API_URL, URL, API_TOKEN } from '@/app/config';
 import styles from '@/styles/components/Administrador/PanelModeracionUsina.module.css';
 import Header from '@/app/componentes/construccion/Header';
 import Footer from '@/app/componentes/construccion/Footer';
+import { isNativePlatform, openMediaPicker } from '@/app/utils/mediaPicker';
 import toast from 'react-hot-toast';
 
 /* =========================================================
@@ -149,12 +150,44 @@ async function crearNotificacionInlineUsina({
   return false;
 }
 
+/* =========================================================
+   Funciones para manejar media (imágenes y videos)
+========================================================= */
+const getPreviewUrl = (media) => {
+  if (!media) return '/placeholder.jpg';
+  
+  // Para imágenes - usar la URL original
+  if (media.mime?.startsWith('image/')) {
+    return media.url;
+  }
+  
+  // Para videos - usar el preview GIF si existe
+  if (media.mime?.startsWith('video/') && media.previewUrl) {
+    return media.previewUrl;
+  }
+  
+  // Fallback
+  return media.url || '/placeholder.jpg';
+};
+
+const getMediaUrl = (media) => {
+  if (!media) return '/placeholder.jpg';
+  
+  // Para ambos casos (imágenes y videos) usar la URL original
+  return media.url || '/placeholder.jpg';
+};
+
+const getMediaType = (media) => {
+  if (!media) return 'image';
+  return media.mime?.startsWith('video/') ? 'video' : 'image';
+};
+
 export default function AdminUsinasPage() {
   const [usinas, setUsinas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('pendientes');
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedMedia, setSelectedMedia] = useState(null);
   const [modal, setModal] = useState({ open: false, action: '', usina: null });
+  const [tab, setTab] = useState('pendientes');
 
   // auth / user / rol
   const [jwt, setJwt] = useState(null);
@@ -177,6 +210,7 @@ export default function AdminUsinasPage() {
   const [editMotivo, setEditMotivo] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const [editErrors, setEditErrors] = useState({});
+  const [uploadingMedia, setUploadingMedia] = useState(false);
 
   // JWT + me + rol
   useEffect(() => {
@@ -217,13 +251,14 @@ export default function AdminUsinasPage() {
         const normalized = items.map((item) => {
           const a = item.attributes ?? item;
 
-          // media
-          let mediaUrl = '/placeholder.jpg';
+          // media - usando las nuevas funciones
           const mediaField = a.media;
           const mediaData = mediaField?.data ?? mediaField;
           const mediaAttrs = mediaData?.attributes ?? mediaData;
-          const urlPath = mediaAttrs?.url;
-          if (urlPath) mediaUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
+          
+          const previewUrl = getPreviewUrl(mediaAttrs);
+          const mediaUrl = getMediaUrl(mediaAttrs);
+          const mediaType = getMediaType(mediaAttrs);
 
           // creador
           const creadorField = a.creador;
@@ -235,7 +270,10 @@ export default function AdminUsinasPage() {
             documentId: item.documentId ?? item.id,        // respaldo
             titulo: a.titulo ?? 'Sin título',
             aprobado: a.aprobado ?? 'pendiente',
-            mediaUrl,
+            previewUrl: previewUrl,
+            mediaUrl: mediaUrl.startsWith('http') ? mediaUrl : `${URL}${mediaUrl}`,
+            mediaType,
+            mimeType: mediaAttrs?.mime,
             creador: creadorAttrs
               ? {
                   id: creadorData?.id,
@@ -364,16 +402,91 @@ export default function AdminUsinasPage() {
     else if (action === 'eliminar') eliminarUsina(usina);
   };
 
+  /* =================== NUEVO: Manejo de selección de media con Capacitor =================== */
+  const handleSelectMedia = async () => {
+    if (uploadingMedia) return;
+
+    try {
+      setUploadingMedia(true);
+
+      const mediaResult = await openMediaPicker({
+        source: 'photos',
+        allowEditing: false,
+        quality: 90,
+        resultType: 'DataUrl'
+      });
+
+      if (!mediaResult || !mediaResult.file) {
+        console.log('Usuario canceló la selección');
+        return;
+      }
+
+      const file = mediaResult.file;
+
+      // Validaciones para imágenes y videos
+      const okImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+      const okVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-m4v', 'video/*'];
+      const maxImageMB = 5;
+      const maxVideoMB = 50;
+
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+
+      if (!isImage && !isVideo) {
+        toast.error('Solo se permiten imágenes o videos.');
+        return;
+      }
+
+      if (isImage && !okImageTypes.includes(file.type)) {
+        toast.error('Formato de imagen inválido (JPG, PNG, WEBP o AVIF).');
+        return;
+      }
+
+      if (isVideo && !okVideoTypes.some(type => type === file.type || type === 'video/*')) {
+        toast.error('Formato de video inválido (MP4, MOV, M4V).');
+        return;
+      }
+
+      const maxSize = isImage ? maxImageMB : maxVideoMB;
+      if (file.size > maxSize * 1024 * 1024) {
+        toast.error(`El archivo supera ${maxSize} MB.`);
+        return;
+      }
+
+      // Actualizar el estado con el archivo seleccionado
+      setEditFile(file);
+      toast.success(isImage ? 'Imagen seleccionada correctamente' : 'Video seleccionado correctamente');
+
+    } catch (err) {
+      console.error('Error seleccionando media:', err);
+      toast.error('Error al seleccionar el archivo: ' + err.message);
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
   /* =================== EDICIÓN =================== */
   const validarEdicion = () => {
     const e = {};
     if (!editTitulo || editTitulo.trim().length < 3) e.titulo = 'Mínimo 3 caracteres.';
     if (!editMotivo || editMotivo.trim().length < 5) e.motivo = 'Especificá el motivo (mín. 5).';
     if (editFile) {
-      const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
-      if (!ok.includes(editFile.type)) e.media = 'Formato inválido (JPG, PNG, WEBP o AVIF).';
-      const maxMB = 5;
-      if (editFile.size > maxMB * 1024 * 1024) e.media = `La imagen supera ${maxMB} MB.`;
+      const isImage = editFile.type.startsWith('image/');
+      const isVideo = editFile.type.startsWith('video/');
+      
+      if (isImage) {
+        const okImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+        if (!okImageTypes.includes(editFile.type)) e.media = 'Formato de imagen inválido (JPG, PNG, WEBP o AVIF).';
+        const maxImageMB = 5;
+        if (editFile.size > maxImageMB * 1024 * 1024) e.media = `La imagen supera ${maxImageMB} MB.`;
+      } else if (isVideo) {
+        const okVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-m4v'];
+        if (!okVideoTypes.includes(editFile.type)) e.media = 'Formato de video inválido (MP4, MOV, M4V).';
+        const maxVideoMB = 50;
+        if (editFile.size > maxVideoMB * 1024 * 1024) e.media = `El video supera ${maxVideoMB} MB.`;
+      } else {
+        e.media = 'Tipo de archivo no soportado.';
+      }
     }
     return e;
   };
@@ -410,7 +523,7 @@ export default function AdminUsinasPage() {
         const upJson = await upRes.json();
         if (!upRes.ok || !upJson?.[0]?.id) {
           await logHttpError(upRes, 'media:upload');
-          throw new Error('Error al subir la imagen.');
+          throw new Error('Error al subir el archivo.');
         }
         mediaId = upJson[0].id;
       }
@@ -438,7 +551,7 @@ export default function AdminUsinasPage() {
             ? {
                 ...u,
                 titulo: editTitulo.trim(),
-                mediaUrl: mediaId ? URL + (u.mediaUrl?.startsWith('http') ? '' : '') : u.mediaUrl, // si subiste imagen, refrescá luego
+                // Si se subió nueva media, actualizamos la URL (esto se refrescará en el próximo fetch)
               }
             : u
         )
@@ -501,6 +614,17 @@ export default function AdminUsinasPage() {
   const handlePageSizeChange = (newSize) =>
     setPagination({ page: 1, pageSize: parseInt(newSize), total: usinasFiltradas.length });
 
+  // Función para manejar clic en la imagen/video
+  const handleMediaClick = (usina) => {
+    setSelectedMedia(usina);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeMediaModal = () => {
+    setSelectedMedia(null);
+    document.body.style.overflow = 'auto';
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -528,13 +652,12 @@ export default function AdminUsinasPage() {
               >
                 {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                 <span className={styles.tabCount}>
-                  ({usinas.filter((u) =>
-                    tipo === 'pendientes'
-                      ? u.aprobado === 'pendiente'
-                      : tipo === 'aprobadas'
-                      ? u.aprobado === 'aprobada'
-                      : u.aprobado === 'rechazada'
-                  ).length})
+                  ({usinas.filter((u) => {
+                    if (tipo === 'pendientes') return u.aprobado === 'pendiente';
+                    if (tipo === 'aprobadas') return u.aprobado === 'aprobada';
+                    if (tipo === 'rechazadas') return u.aprobado === 'rechazada';
+                    return false;
+                  }).length})
                 </span>
               </button>
             ))}
@@ -571,12 +694,23 @@ export default function AdminUsinasPage() {
                 <div key={usina.documentId} className={styles.usinaCard}>
                   <div
                     className={styles.imageContainer}
-                    onClick={() => usina.mediaUrl && setSelectedImage(usina.mediaUrl)}
+                    onClick={() => handleMediaClick(usina)}
                   >
-                    {usina.mediaUrl && usina.mediaUrl !== '/placeholder.jpg' ? (
-                      <img src={usina.mediaUrl} alt={usina.titulo} className={styles.image} />
+                    {usina.previewUrl && usina.previewUrl !== '/placeholder.jpg' ? (
+                      <>
+                        {/* Siempre usar img para la preview - si es video, previewUrl será el GIF */}
+                        <img 
+                          src={usina.previewUrl} 
+                          alt={usina.titulo} 
+                          className={styles.image}
+                        />
+                        {/* Indicador de video */}
+                        {usina.mediaType === 'video' && (
+                          <div className={styles.videoIndicator}>▶</div>
+                        )}
+                      </>
                     ) : (
-                      <div className={styles.noImage}>Sin imagen</div>
+                      <div className={styles.noImage}>Sin archivo</div>
                     )}
                   </div>
 
@@ -595,6 +729,11 @@ export default function AdminUsinasPage() {
 
                     <div className={`${styles.estado} ${styles[usina.aprobado]}`}>
                       Estado: {usina.aprobado}
+                    </div>
+
+                    {/* Indicador de tipo de media */}
+                    <div className={styles.mediaType}>
+                      Tipo: {usina.mediaType === 'video' ? 'Video' : 'Imagen'}
                     </div>
                   </div>
 
@@ -719,14 +858,44 @@ export default function AdminUsinasPage() {
             </div>
           )}
 
-          {/* Modal Imagen */}
-          {selectedImage && (
-            <div className={styles.modalOverlay} onClick={() => setSelectedImage(null)}>
+          {/* Modal Media (imagen/video) */}
+          {selectedMedia && (
+            <div className={styles.modalOverlay} onClick={closeMediaModal}>
               <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                <button className={styles.modalClose} onClick={() => setSelectedImage(null)}>
+                <button className={styles.modalClose} onClick={closeMediaModal}>
                   ✕
                 </button>
-                <img src={selectedImage} alt="Trabajo" className={styles.modalImage} />
+
+                <div className={styles.modalMediaContainer}>
+                  {selectedMedia.mediaType === 'video' ? (
+                    <video 
+                      src={selectedMedia.mediaUrl} 
+                      className={styles.modalMedia}
+                      controls
+                      autoPlay
+                      muted
+                      playsInline
+                    >
+                      Tu navegador no soporta el elemento de video.
+                    </video>
+                  ) : (
+                    <img src={selectedMedia.mediaUrl} alt={selectedMedia.titulo} className={styles.modalMedia} />
+                  )}
+                </div>
+
+                <div className={styles.modalInfo}>
+                  <h2>{selectedMedia.titulo}</h2>
+
+                  {selectedMedia.creador && (
+                    <p>
+                      <b>Creador:</b> {selectedMedia.creador.name} {selectedMedia.creador.surname}{' '}
+                      <span className={styles.username}>@{selectedMedia.creador.username}</span>
+                    </p>
+                  )}
+
+                  <p><b>Carrera:</b> {selectedMedia.creador?.carrera || 'No especificada'}</p>
+                  <p><b>Tipo:</b> {selectedMedia.mediaType === 'video' ? 'Video' : 'Imagen'}</p>
+                </div>
               </div>
             </div>
           )}
@@ -768,7 +937,7 @@ export default function AdminUsinasPage() {
               <div className={styles.editModal} onClick={(e) => e.stopPropagation()}>
                 <h2 className={styles.modalTitle}>Editar usina</h2>
                 <p className={styles.modalText}>
-                  Modificá el título y/o la imagen. <br/>
+                  Modificá el título y/o el archivo multimedia. <br/>
                   <strong>El motivo de la modificación</strong> se enviará al creador por notificación.
                 </p>
 
@@ -789,28 +958,68 @@ export default function AdminUsinasPage() {
                   <div className={`${styles.formGroup} ${styles.mediaEditWrapper}`}>
                     <div className={styles.mediaPreviewBox}>
                       {editFile ? (
-                        <img
-                          src={URL.createObjectURL(editFile)}
-                          alt="Nueva imagen"
-                          className={styles.mediaPreviewImg}
-                        />
-                      ) : editTarget?.mediaUrl && editTarget.mediaUrl !== '/placeholder.jpg' ? (
-                        <img src={editTarget.mediaUrl} alt="Actual" className={styles.mediaPreviewImg} />
+                        editFile.type.startsWith('video/') ? (
+                          <video
+                            src={URL.createObjectURL(editFile)}
+                            className={styles.mediaPreviewImg}
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={URL.createObjectURL(editFile)}
+                            alt="Nueva imagen"
+                            className={styles.mediaPreviewImg}
+                          />
+                        )
+                      ) : editTarget?.previewUrl && editTarget.previewUrl !== '/placeholder.jpg' ? (
+                        editTarget.mediaType === 'video' ? (
+                          <video
+                            src={editTarget.previewUrl}
+                            className={styles.mediaPreviewImg}
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img src={editTarget.previewUrl} alt="Actual" className={styles.mediaPreviewImg} />
+                        )
                       ) : (
-                        <span className={styles.noMedia}>Sin imagen</span>
+                        <span className={styles.noMedia}>Sin archivo</span>
                       )}
                     </div>
-                    <div>
-                      <label className={styles.label} htmlFor="media">Imagen (opcional)</label>
+                    
+                    {/* Input file tradicional solo para web */}
+                    {!isNativePlatform() && (
                       <input
                         id="media"
                         className={styles.fileInput}
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/quicktime,video/x-m4v"
                         onChange={(e) => setEditFile(e.target.files?.[0] || null)}
                       />
-                      {editErrors.media && <span className={styles.errorText}>{editErrors.media}</span>}
-                    </div>
+                    )}
+
+                    {/* Botón para seleccionar media en app nativa */}
+                    <button
+                      type="button"
+                      onClick={handleSelectMedia}
+                      className={styles.mediaSelectButton}
+                      disabled={uploadingMedia}
+                    >
+                      {uploadingMedia ? 'Seleccionando...' : 
+                       isNativePlatform() ? '📱 Elegir archivo' : 'Seleccionar archivo'}
+                    </button>
+
+                    {/* Mostrar información del archivo seleccionado */}
+                    {editFile && (
+                      <div className={styles.selectedFileInfo}>
+                        <p>Archivo seleccionado: {editFile.name}</p>
+                        <p>Tipo: {editFile.type.startsWith('video/') ? 'Video' : 'Imagen'}</p>
+                        <p>Tamaño: {(editFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    )}
+                    
+                    {editErrors.media && <span className={styles.errorText}>{editErrors.media}</span>}
                   </div>
 
                   <div className={styles.formGroup}>

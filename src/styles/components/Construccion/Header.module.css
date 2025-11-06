@@ -571,10 +571,6 @@
 }
 
 @media (min-width: 992px) and (max-width: 1499px) {
-  .navbarToggler {
-    display: none;
-  }
-
   .menuCollapse {
     position: fixed;
     top: 0;
