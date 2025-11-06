@@ -12,6 +12,7 @@ import CrearUsinaModal from './usina/CrearUsinaModal';
 import { Toaster } from 'react-hot-toast';
 
 export default function PerfilPublicoPage({ params }) {
+  // ✅ Usar use(params) para Next.js 14+ con Server Components
   const { username } = use(params);
 
   const [userData, setUserData] = useState(null);
@@ -65,6 +66,93 @@ export default function PerfilPublicoPage({ params }) {
     }
   };
 
+  // 🔄 Función para cargar todas las usinas del usuario (incluyendo rechazadas/pendientes)
+  const fetchAllUserUsinas = async (userId) => {
+    try {
+      const jwt = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null;
+      
+      const headers = jwt
+        ? { Authorization: `Bearer ${jwt}` }
+        : API_TOKEN
+        ? { Authorization: `Bearer ${API_TOKEN}` }
+        : {};
+
+      const qs =
+        `filters[creador][id][$eq]=${userId}` +
+        `&publicationState=preview` +
+        `&sort=createdAt:desc` +
+        `&pagination[pageSize]=200` +
+        `&populate[0]=media` +
+        `&populate[1]=creador`;
+
+      const res = await fetch(`${API_URL}/usinas?${qs}`, { headers });
+      const json = await res.json().catch(() => null);
+      const items = Array.isArray(json?.data) ? json.data : [];
+
+      // Normalización de usinas
+      const normalizedUsinas = items.map((item) => {
+        const a = item.attributes ?? item;
+
+        // media
+        let mediaUrl = '/placeholder.jpg';
+        let previewUrl = '/placeholder.jpg';
+        let mediaType = 'image';
+        const mediaField = a.media;
+        const mediaData = mediaField?.data ?? mediaField;
+        const mediaAttrs = mediaData?.attributes ?? mediaData;
+        const urlPath = mediaAttrs?.url;
+        const mime = mediaAttrs?.mime || '';
+        
+        if (urlPath) {
+          const fullUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
+          mediaUrl = fullUrl;
+          
+          // Para videos, usar previewUrl si existe, sino usar la miniatura de Strapi
+          if (mime.startsWith('video/')) {
+            mediaType = 'video';
+            previewUrl = a.previewUrl || mediaAttrs?.formats?.thumbnail?.url 
+              ? `${URL}${mediaAttrs.formats.thumbnail.url}`
+              : fullUrl;
+          } else {
+            previewUrl = fullUrl;
+          }
+        }
+
+        // creador
+        const creadorField = a.creador;
+        const creadorData = creadorField?.data ?? creadorField;
+        const creadorAttrs = creadorData?.attributes ?? creadorData;
+
+        return {
+          id: item.id,
+          documentId: item.documentId ?? item.id,
+          titulo: a.titulo ?? 'Sin título',
+          aprobado: (a.aprobado ?? 'pendiente').toLowerCase(),
+          mediaUrl,
+          previewUrl,
+          mediaType,
+          creador: creadorAttrs
+            ? {
+                id: creadorData?.id,
+                name: creadorAttrs.name || '',
+                surname: creadorAttrs.surname || '',
+                username: creadorAttrs.username || '',
+                carrera: creadorAttrs.carrera || 'Sin carrera',
+              }
+            : null,
+          createdAt: a.createdAt || item.createdAt,
+          publishedAt: a.publishedAt || item.publishedAt,
+          link: a.link || null,
+        };
+      });
+
+      return normalizedUsinas;
+    } catch (error) {
+      console.error('Error al cargar todas las usinas del usuario:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     // Sincronizar tab con hash
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
@@ -81,7 +169,17 @@ export default function PerfilPublicoPage({ params }) {
             const userRes = await fetch(`${API_URL}/users/me`, {
               headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             });
-            if (userRes.ok) setCurrentUser(await userRes.json());
+            if (userRes.ok) {
+              const currentUserData = await userRes.json();
+              setCurrentUser(currentUserData);
+              
+              // Si es el perfil del usuario actual, cargar TODAS las usinas (incluyendo rechazadas/pendientes)
+              if (currentUserData.username === username) {
+                const allUsinas = await fetchAllUserUsinas(currentUserData.id);
+                setUsinas(allUsinas);
+                setUsinasTotalCount(allUsinas.length);
+              }
+            }
           } catch (err) {
             console.error('Error al obtener usuario logueado:', err);
           }
@@ -102,8 +200,9 @@ export default function PerfilPublicoPage({ params }) {
         const user = users[0];
         setUserData(user);
 
-        // USINAS: contamos TODAS (sin importar estado) y además preparamos "aprobadas" para la vista pública
-        if (Array.isArray(user.usinas_creadas)) {
+        // Solo procesar usinas si NO es el usuario actual (ya las cargamos arriba)
+        const isCurrentUser = currentUser && currentUser.username === username;
+        if (!isCurrentUser && Array.isArray(user.usinas_creadas)) {
           // Unique por documentId
           const uniqueAll = user.usinas_creadas.filter(
             (u, i, self) => i === self.findIndex((x) => x.documentId === u.documentId)
@@ -112,7 +211,7 @@ export default function PerfilPublicoPage({ params }) {
           // 🔢 Conteo total (independiente del estado)
           setUsinasTotalCount(uniqueAll.length);
 
-          // Para mostrar en la galería de terceros: solo aprobadas (tu componente UsinaGallery ya carga todas para el propio dueño)
+          // Para mostrar en la galería de terceros: solo aprobadas
           const approvedUsinas = uniqueAll
             .filter((u) => (u.aprobado || '').toLowerCase() === 'aprobada')
             .map((usina) => {
@@ -142,7 +241,7 @@ export default function PerfilPublicoPage({ params }) {
           if (user?.id) {
             fetchTotalUsinasCount(user.id);
           }
-        } else {
+        } else if (!isCurrentUser) {
           setUsinas([]);
           setUsinasTotalCount(0);
         }
@@ -175,12 +274,19 @@ export default function PerfilPublicoPage({ params }) {
     };
 
     fetchData();
-  }, [username]);
+  }, [username, currentUser]);
 
-  const handleUsinaCreada = (nuevaUsina) => {
-    // Al crear, normalmente queda "pendiente": sumamos al contador total.
-    setUsinasTotalCount((c) => c + 1);
-    // Si querés, podés optimizar agregando al estado visible si viene aprobada.
+  const handleUsinaCreada = async (nuevaUsina) => {
+    // Al crear una usina, actualizar la lista si es el usuario actual
+    const isCurrent = currentUser && currentUser.username === username;
+    if (isCurrent && currentUser?.id) {
+      const allUsinas = await fetchAllUserUsinas(currentUser.id);
+      setUsinas(allUsinas);
+      setUsinasTotalCount(allUsinas.length);
+    } else {
+      // Si no es el usuario actual, solo incrementar el contador
+      setUsinasTotalCount((c) => c + 1);
+    }
   };
 
   // Update desde InformacionPersonal
@@ -191,10 +297,6 @@ export default function PerfilPublicoPage({ params }) {
     setUserData((prev) => ({ ...prev, ...updatedData }));
   };
   const handleAvatarOverlayChange = (show) => setShowAvatarOverlay(show);
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab !== 'informacion') setShowAvatarOverlay(false);
-  };
 
   if (loading) {
     return (
@@ -383,7 +485,6 @@ export default function PerfilPublicoPage({ params }) {
                   className={`${styles.navButton} ${activeTab === 'trabajos' ? styles.active : ''}`}
                   onClick={() => setActiveTab('trabajos')}
                 >
-                  {/* 🔢 ahora muestra el total real de usinas, sin importar estado */}
                   Trabajos ({usinasTotalCount})
                 </button>
               )}

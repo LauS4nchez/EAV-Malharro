@@ -687,6 +687,46 @@ export default function AdminUsinasPage() {
             </div>
           )}
 
+          {/* Paginación (abajo) */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                className={styles.paginationBtn}
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+              >
+                Anterior
+              </button>
+
+              <div className={styles.paginationNumbers}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => page === 1 || page === totalPages || Math.abs(page - pagination.page) <= 1)
+                  .map((page, index, array) => {
+                    const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                    return (
+                      <span key={page}>
+                        {showEllipsis && <span className={styles.paginationEllipsis}>...</span>}
+                        <button
+                          className={`${styles.paginationBtn} ${pagination.page === page ? styles.paginationBtnActive : ''}`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      </span>
+                    );
+                  })}
+              </div>
+
+              <button
+                className={styles.paginationBtn}
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === totalPages}
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
+
           {/* Grid */}
           <div className={styles.usinaGrid}>
             {usinasPaginated.length > 0 ? (
@@ -817,46 +857,6 @@ export default function AdminUsinasPage() {
               </div>
             )}
           </div>
-
-          {/* Paginación (abajo) */}
-          {totalPages > 1 && (
-            <div className={styles.pagination}>
-              <button
-                className={styles.paginationBtn}
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-              >
-                Anterior
-              </button>
-
-              <div className={styles.paginationNumbers}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((page) => page === 1 || page === totalPages || Math.abs(page - pagination.page) <= 1)
-                  .map((page, index, array) => {
-                    const showEllipsis = index > 0 && page - array[index - 1] > 1;
-                    return (
-                      <span key={page}>
-                        {showEllipsis && <span className={styles.paginationEllipsis}>...</span>}
-                        <button
-                          className={`${styles.paginationBtn} ${pagination.page === page ? styles.paginationBtnActive : ''}`}
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </button>
-                      </span>
-                    );
-                  })}
-              </div>
-
-              <button
-                className={styles.paginationBtn}
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === totalPages}
-              >
-                Siguiente
-              </button>
-            </div>
-          )}
 
           {/* Modal Media (imagen/video) */}
           {selectedMedia && (

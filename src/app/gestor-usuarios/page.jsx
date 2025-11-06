@@ -597,6 +597,44 @@ export default function GestorUsuarios() {
           totalUsers={users.length}
           filteredCount={filteredUsers.length}
         />
+                <div className={styles.paginationContainer}>
+          <div className={styles.itemsPerPage}>
+            <span className={styles.paginationText}>Mostrar </span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(e.target.value)}
+              className={styles.pageSelect}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className={styles.paginationText}> entradas por página</span>
+          </div>
+
+          <div className={styles.pagination}>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={styles.pageButton}
+            >
+              ‹
+            </button>
+
+            <span className={styles.pageInfo}>
+              Página {currentPage} de {totalPages}
+            </span>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={styles.pageButton}
+            >
+              ›
+            </button>
+          </div>
+        </div>
 
         <div className={styles.tableContainer}>
           <table className={styles.usersTable}>
@@ -1012,45 +1050,6 @@ export default function GestorUsuarios() {
               })}
             </tbody>
           </table>
-        </div>
-
-        <div className={styles.paginationContainer}>
-          <div className={styles.itemsPerPage}>
-            <span className={styles.paginationText}>Mostrar </span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(e.target.value)}
-              className={styles.pageSelect}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-            <span className={styles.paginationText}> entradas por página</span>
-          </div>
-
-          <div className={styles.pagination}>
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={styles.pageButton}
-            >
-              ‹
-            </button>
-
-            <span className={styles.pageInfo}>
-              Página {currentPage} de {totalPages}
-            </span>
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={styles.pageButton}
-            >
-              ›
-            </button>
-          </div>
         </div>
 
         {filteredUsers.length === 0 && (
