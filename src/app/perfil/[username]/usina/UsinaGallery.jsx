@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { API_URL, API_TOKEN } from '@/app/config';
+import { createPortal } from 'react-dom';
+import { API_URL, API_TOKEN, URL } from '@/app/config';
 import usinaStyles from '@/styles/components/Usina/Usina.module.css';
 import styles from '@/styles/components/Perfil/PerfilPublico.module.css';
 import toast from 'react-hot-toast';
@@ -9,6 +10,89 @@ import UsinaFilters from './UsinaFilters';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+/* =========================================================
+   Helpers de notificaciones
+========================================================= */
+async function crearNotificacionInline({
+  token,
+  titulo,
+  mensaje,
+  receptorId,
+  emisorId,
+  usinaId,
+}) {
+  if (!token) return;
+  try {
+    const data = {
+      titulo,
+      mensaje,
+      tipo: 'usina',
+      leida: 'no-leida',
+      fechaEmision: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
+    };
+    if (receptorId) data.receptor = Number(receptorId);
+    if (emisorId) data.emisor = Number(emisorId);
+    if (usinaId) data.usinaAfectada = Number(usinaId);
+
+    const res = await fetch(`${API_URL}/notificaciones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ data }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      console.error('[noti] error creando notificación:', err);
+    }
+  } catch (e) {
+    console.error('[noti] exception:', e);
+  }
+}
+
+/**
+ * Notifica a todos los usuarios con rol Admin/Profesor/SuperAdmin que una usina volvió a "pendiente".
+ * Usa API_TOKEN para actuar como sistema.
+ */
+async function notificarRolesVuelveAPendiente({ usinaTitulo, usinaId, editorId }) {
+  if (!API_TOKEN) return;
+  try {
+    const usersRes = await fetch(
+      `${API_URL}/users?populate=role&pagination[pageSize]=1000`,
+      { headers: { Authorization: `Bearer ${API_TOKEN}` } }
+    );
+    const raw = await usersRes.json();
+
+    const usuarios = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+      ? raw.data.map((u) => ({ id: u.id, ...u.attributes }))
+      : [];
+
+    const destinatarios = usuarios.filter((u) => {
+      const r = u.role?.name || u.role?.type || u.role?.displayName || u.role;
+      return r === 'Administrador' || r === 'Profesor' || r === 'SuperAdministrador';
+    });
+
+    const titulo = 'Usina editada: quedó pendiente';
+    const mensaje = `La usina "${usinaTitulo}" fue editada y pasó a estado pendiente para revisión.`;
+
+    await Promise.all(
+      destinatarios.map((u) =>
+        crearNotificacionInline({
+          token: API_TOKEN,
+          titulo,
+          mensaje,
+          receptorId: u.id,
+          emisorId: editorId,
+          usinaId,
+        })
+      )
+    );
+  } catch (err) {
+    console.error('[noti roles] fallo al listar/notificar:', err);
+  }
+}
 
 export default function UsinaGallery({ usinas = [], loading, isCurrentUser, currentUserId }) {
   const [selectedUsina, setSelectedUsina] = useState(null);
@@ -23,6 +107,9 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
   const [imageHovered, setImageHovered] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // 🔹 Estado para paginación
   const [pagination, setPagination] = useState({
     page: 1,
@@ -30,12 +117,113 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     total: 0,
   });
 
-  // 🔹 Estado para filtros
-  const [filters, setFilters] = useState({
+  // 🔹 Estado para filtros (incluye estado para ver rechazadas/pendientes/aprobadas)
+  const [filters, setFilters] = useState(() => ({
     searchTerm: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
-  });
+    status: isCurrentUser ? 'todas' : 'aprobada',
+  }));
+
+  // 🔹 Lista de usinas efectiva (cuando es tu perfil, sobreescribimos con fetch "full")
+  const [ownUsinas, setOwnUsinas] = useState(usinas);
+  useEffect(() => setOwnUsinas(usinas), [usinas]);
+
+  // 🔹 Carga FULL de mis usinas (incluye rechazadas/pendientes) si es mi perfil
+  useEffect(() => {
+    if (!isCurrentUser || !currentUserId) return;
+    let ignore = false;
+
+    (async () => {
+      const jwt = (typeof window !== 'undefined' && localStorage.getItem('jwt')) || null;
+
+      const headers = jwt
+        ? { Authorization: `Bearer ${jwt}` }
+        : API_TOKEN
+        ? { Authorization: `Bearer ${API_TOKEN}` }
+        : {};
+
+      const qs =
+        `filters[creador][id][$eq]=${currentUserId}` +
+        `&publicationState=preview` +
+        `&sort=createdAt:desc` +
+        `&pagination[pageSize]=200` +
+        `&populate[0]=media` +
+        `&populate[1]=creador`;
+
+      try {
+        const res = await fetch(`${API_URL}/usinas?${qs}`, { headers });
+        const json = await res.json().catch(() => null);
+        const items = Array.isArray(json?.data) ? json.data : [];
+
+        // Normalización calcada al Panel de Moderación
+        const normalized = items.map((item) => {
+          const a = item.attributes ?? item;
+
+          // media
+          let mediaUrl = '/placeholder.jpg';
+          let previewUrl = '/placeholder.jpg';
+          let mediaType = 'image';
+          const mediaField = a.media;
+          const mediaData = mediaField?.data ?? mediaField;
+          const mediaAttrs = mediaData?.attributes ?? mediaData;
+          const urlPath = mediaAttrs?.url;
+          const mime = mediaAttrs?.mime || '';
+          
+          if (urlPath) {
+            const fullUrl = urlPath.startsWith('http') ? urlPath : `${URL}${urlPath}`;
+            mediaUrl = fullUrl;
+            
+            // Para videos, usar previewUrl si existe, sino usar la miniatura de Strapi
+            if (mime.startsWith('video/')) {
+              mediaType = 'video';
+              // Si existe un previewUrl específico, usarlo, sino usar la miniatura automática de Strapi
+              previewUrl = a.previewUrl || mediaAttrs?.formats?.thumbnail?.url 
+                ? `${URL}${mediaAttrs.formats.thumbnail.url}`
+                : fullUrl; // fallback al video mismo si no hay miniatura
+            } else {
+              previewUrl = fullUrl;
+            }
+          }
+
+          // creador
+          const creadorField = a.creador;
+          const creadorData = creadorField?.data ?? creadorField;
+          const creadorAttrs = creadorData?.attributes ?? creadorData;
+
+          return {
+            id: item.id,
+            documentId: item.documentId ?? item.id,
+            titulo: a.titulo ?? 'Sin título',
+            aprobado: (a.aprobado ?? 'pendiente').toLowerCase(),
+            mediaUrl,
+            previewUrl,
+            mediaType,
+            creador: creadorAttrs
+              ? {
+                  id: creadorData?.id,
+                  name: creadorAttrs.name || '',
+                  surname: creadorAttrs.surname || '',
+                  username: creadorAttrs.username || '',
+                  carrera: creadorAttrs.carrera || 'Sin carrera',
+                }
+              : null,
+            createdAt: a.createdAt || item.createdAt,
+            publishedAt: a.publishedAt || item.publishedAt,
+            link: a.link || null,
+          };
+        });
+
+        if (!ignore) setOwnUsinas(normalized);
+      } catch (e) {
+        console.error('No se pudieron traer todas las usinas del usuario:', e);
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [isCurrentUser, currentUserId]);
 
   // 🔹 normalizar texto
   const normalizeText = (text) =>
@@ -45,11 +233,25 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
 
+  // 🔹 Fuente de datos: si es tu perfil → ownUsinas; si no → props
+  const sourceUsinas = isCurrentUser ? ownUsinas : usinas;
+
   // 🔹 aplicar filtros y orden
   const filteredAndSortedUsinas = useMemo(() => {
-    if (!Array.isArray(usinas) || !usinas.length) return [];
+    if (!Array.isArray(sourceUsinas) || !sourceUsinas.length) return [];
 
-    let filtered = [...usinas];
+    let filtered = [...sourceUsinas];
+
+    // Estado
+    if (isCurrentUser) {
+      if (filters.status && filters.status !== 'todas') {
+        filtered = filtered.filter(
+          (u) => (u.aprobado || '').toLowerCase() === filters.status
+        );
+      }
+    } else {
+      filtered = filtered.filter((u) => (u.aprobado || '').toLowerCase() === 'aprobada');
+    }
 
     // búsqueda
     if (filters.searchTerm) {
@@ -80,7 +282,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     });
 
     return filtered;
-  }, [usinas, filters]);
+  }, [sourceUsinas, filters, isCurrentUser]);
 
   // 🔹 paginación
   const totalUsinas = filteredAndSortedUsinas.length;
@@ -299,7 +501,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     }
   };
 
-  // 🔹 guardar edición
+  // 🔹 guardar edición → vuelve a pendiente + notificación a roles
   const guardarCambios = async (e) => {
     e?.preventDefault();
     if (!selectedUsina) return;
@@ -323,7 +525,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
       API_TOKEN ||
       null;
     let mediaId = null;
-    const usinaId = selectedUsina.documentId || selectedUsina.id;
+    const usinaIdParaPUT = selectedUsina.documentId || selectedUsina.id;
 
     if (!token) {
       toast.error('No hay sesión para editar la usina.', { id: toastId });
@@ -367,7 +569,7 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         updateData.media = mediaId;
       }
 
-      const res = await fetch(`${API_URL}/usinas/${usinaId}`, {
+      const res = await fetch(`${API_URL}/usinas/${usinaIdParaPUT}`, {
         method: 'PUT', // si tu Strapi es v5 y solo acepta PATCH, cambiá acá
         headers: {
           'Content-Type': 'application/json',
@@ -376,9 +578,22 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         body: JSON.stringify({ data: updateData }),
       });
 
+      const json = await res.json().catch(() => null);
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error?.message || 'Error al actualizar usina');
+        throw new Error(json?.error?.message || 'Error al actualizar usina');
+      }
+
+      const usinaIdNumerico = json?.data?.id || selectedUsina.id || null;
+
+      // 🔹 Notificar a Admin/Profesor/SuperAdministrador
+      try {
+        await notificarRolesVuelveAPendiente({
+          usinaTitulo: editData.titulo.trim(),
+          usinaId: usinaIdNumerico,
+          editorId: currentUserId,
+        });
+      } catch (notifErr) {
+        console.error('No se pudo notificar a roles:', notifErr);
       }
 
       toast.success(
@@ -398,8 +613,9 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     }
   };
 
-  // 🔹 helper para imagen de tarjeta
+  // 🔹 helper para imagen de tarjeta (usa previewUrl para mostrar miniatura en el grid)
   const getCardImage = (usina) => {
+    // Para el grid, siempre usar previewUrl (que puede ser miniatura para videos)
     if (usina.previewUrl) return usina.previewUrl;
     if (usina.mediaUrl) return usina.mediaUrl;
     // strapi style: usina.media.data.attributes.url
@@ -409,15 +625,16 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
     return '/placeholder.jpg';
   };
 
-  // 🔹 helper para imagen/video del modal
+  // 🔹 helper para imagen/video del modal (usa mediaUrl para mostrar el contenido completo)
   const getModalMedia = (usina) => {
     if (!usina) return { url: '/placeholder.jpg', type: 'image' };
-    const url =
-      usina.mediaUrl ||
-      usina.previewUrl ||
-      usina.media?.data?.attributes?.url ||
-      usina.media?.url ||
-      '/placeholder.jpg';
+    
+    // Para el modal, usar mediaUrl para mostrar el video completo
+    const url = usina.mediaUrl || 
+                usina.media?.data?.attributes?.url || 
+                usina.media?.url || 
+                '/placeholder.jpg';
+    
     const type = usina.mediaType || 'image';
     return { url, type };
   };
@@ -434,17 +651,17 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
   return (
     <>
       {/* 🔹 Filtros */}
-      {Array.isArray(usinas) && usinas.length > 0 && (
+      {Array.isArray(sourceUsinas) && sourceUsinas.length > 0 && (
         <UsinaFilters
           filters={filters}
           onFiltersChange={handleFiltersChange}
-          totalUsinas={usinas.length}
+          totalUsinas={sourceUsinas.length}
           filteredCount={filteredAndSortedUsinas.length}
         />
       )}
 
       {/* 🔹 Controles de paginación - arriba */}
-      {Array.isArray(usinas) && usinas.length > 0 && (
+      {Array.isArray(sourceUsinas) && sourceUsinas.length > 0 && (
         <div className={styles.paginationControls}>
           <div className={styles.pageSizeSelector}>
             <label htmlFor="pageSize" className={styles.textSizeSelector}>
@@ -463,6 +680,24 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
             </select>
             <span className={styles.textSizeSelector}>entradas por página</span>
           </div>
+
+          {/* 🔹 Selector de estado (solo si es tu perfil) */}
+          {isCurrentUser && (
+            <div className={styles.pageSizeSelector}>
+              <label htmlFor="status" className={styles.textSizeSelector}>Estado:</label>
+              <select
+                id="status"
+                value={filters.status}
+                onChange={(e) => handleFiltersChange({ status: e.target.value })}
+                className={styles.pageSizeSelect}
+              >
+                <option value="todas">Todas</option>
+                <option value="aprobada">Aprobadas</option>
+                <option value="pendiente">Pendientes</option>
+                <option value="rechazada">Rechazadas</option>
+              </select>
+            </div>
+          )}
 
           <div className={styles.paginationInfo}>
             Mostrando {Math.min(endIndex, totalUsinas)} de {totalUsinas} trabajos
@@ -560,6 +795,8 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
           <p className={styles.noPublicaciones}>
             {filters.searchTerm
               ? 'No se encontraron trabajos que coincidan con tu búsqueda.'
+              : isCurrentUser
+              ? 'No tenés trabajos con el estado seleccionado.'
               : 'Este usuario aún no ha publicado trabajos aprobados.'}
           </p>
         )}
@@ -730,56 +967,59 @@ export default function UsinaGallery({ usinas = [], loading, isCurrentUser, curr
         </div>
       )}
 
-      {/* 🔹 Modal de confirmación de eliminación */}
-      {showDeleteConfirm && (
-        <div className={styles.confirmModalOverlay} onClick={closeDeleteConfirm}>
-          <div
-            className={styles.confirmModalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.confirmModalHeader}>
-              <h3 className={styles.confirmModalTitle}>Confirmar Eliminación</h3>
-              <button
-                className={styles.confirmCloseButton}
-                onClick={closeDeleteConfirm}
-              >
-                ✕
-              </button>
-            </div>
+      {/* 🔹 Modal de confirmación de eliminación (Portal en body) */}
+      {mounted && showDeleteConfirm &&
+        createPortal(
+          <div className={styles.confirmModalOverlay} onClick={closeDeleteConfirm}>
+            <div
+              className={styles.confirmModalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.confirmModalHeader}>
+                <h3 className={styles.confirmModalTitle}>Confirmar Eliminación</h3>
+                <button
+                  className={styles.confirmCloseButton}
+                  onClick={closeDeleteConfirm}
+                >
+                  ✕
+                </button>
+              </div>
 
-            <div className={styles.confirmModalBody}>
-              <div className={styles.warningIcon}>⚠️</div>
-              <p className={styles.confirmModalText}>
-                ¿Estás seguro de que querés eliminar la usina{' '}
-                <strong className={styles.confirmationTitulo}>
-                  "{selectedUsina?.titulo}"
-                </strong>
-                ?
-              </p>
-              <p className={styles.warningText}>
-                Esta acción es irreversible y no se puede deshacer.
-              </p>
-            </div>
+              <div className={styles.confirmModalBody}>
+                <div className={styles.warningIcon}>⚠️</div>
+                <p className={styles.confirmModalText}>
+                  ¿Estás seguro de que querés eliminar la usina{' '}
+                  <strong className={styles.confirmationTitulo}>
+                    "{selectedUsina?.titulo}"
+                  </strong>
+                  ?
+                </p>
+                <p className={styles.warningText}>
+                  Esta acción es irreversible y no se puede deshacer.
+                </p>
+              </div>
 
-            <div className={styles.confirmModalActions}>
-              <button
-                className={styles.cancelConfirmButton}
-                onClick={closeDeleteConfirm}
-                disabled={deleting}
-              >
-                Cancelar
-              </button>
-              <button
-                className={styles.confirmDeleteButton}
-                onClick={handleDeleteUsina}
-                disabled={deleting}
-              >
-                {deleting ? 'Eliminando...' : 'Sí, Eliminar'}
-              </button>
+              <div className={styles.confirmModalActions}>
+                <button
+                  className={styles.cancelConfirmButton}
+                  onClick={closeDeleteConfirm}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className={styles.confirmDeleteButton}
+                  onClick={handleDeleteUsina}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Eliminando...' : 'Sí, Eliminar'}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )
+      }
     </>
   );
 }
